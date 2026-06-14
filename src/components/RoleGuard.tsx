@@ -21,15 +21,15 @@ export default function RoleGuard({
   if (loading) {
     return (
       <div style={{
+        minHeight: '100vh',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        minHeight: '100vh',
+        background: 'var(--color-bg)',
         fontFamily: 'var(--font-body)',
         color: 'var(--color-text-muted)',
       }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '2rem', marginBottom: '1rem', animation: 'pulse 1.5s infinite' }}>🧶</div>
           <p>Loading...</p>
         </div>
       </div>

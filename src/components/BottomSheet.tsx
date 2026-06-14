@@ -82,21 +82,20 @@ export default function BottomSheet({ workshop, onClose }: BottomSheetProps) {
         </div>
 
         <div className={styles.content}>
-          {/* Image Carousel */}
-          <div className={styles.imageCarousel}>
-            <div
-              className={styles.workshopImage}
-              style={{ background: `${catMeta?.color || '#c4956a'}22` }}
-            >
-              {catMeta?.emoji || '🏠'}
+          {/* Image Carousel (Only show if images exist) */}
+          {workshop.images && workshop.images.length > 0 && (
+            <div className={styles.imageCarousel}>
+              {workshop.images.map((img, idx) => (
+                <div key={idx} className={styles.workshopImage} style={{ padding: 0 }}>
+                  <img 
+                    src={img} 
+                    alt={`${workshop.name.ko || workshop.name.en} - image ${idx + 1}`} 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                  />
+                </div>
+              ))}
             </div>
-            <div
-              className={styles.workshopImage}
-              style={{ background: `${catMeta?.color || '#c4956a'}15` }}
-            >
-              🎨
-            </div>
-          </div>
+          )}
 
           {/* Header */}
           <div className={styles.workshopHeader}>

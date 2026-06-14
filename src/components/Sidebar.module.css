@@ -59,19 +59,19 @@
 }
 
 .navItem:hover {
-  background: var(--color-accent-light);
-  color: var(--color-accent);
+  background: #f5f5f5;
+  color: #000000;
 }
 
 .navItemActive {
-  background: var(--color-accent);
-  color: var(--color-text-inverse);
-  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.25);
+  background: #000000;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .navItemActive:hover {
-  background: var(--color-accent-hover);
-  color: var(--color-text-inverse);
+  background: #222222;
+  color: #ffffff;
 }
 
 .navIcon {

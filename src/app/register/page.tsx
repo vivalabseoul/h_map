@@ -84,7 +84,6 @@ export default function RegisterPage() {
       }}>
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 'var(--space-8)' }}>
-          <div style={{ fontSize: '2.5rem', marginBottom: 'var(--space-3)' }}>🧶</div>
           <h1 style={{
             fontFamily: 'var(--font-heading)',
             fontSize: 'var(--font-size-2xl)',

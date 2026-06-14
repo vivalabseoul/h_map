@@ -27,7 +27,7 @@ export default function ContactPage() {
       // 1. Save to Mock DB so Admin can reply
       await createInquiry({
         userId: user?.id || 'guest',
-        userName: user?.user_metadata?.full_name || user?.email?.split('@')[0] || '비회원',
+        userName: user?.displayName || user?.email?.split('@')[0] || '비회원',
         userEmail: user?.email || 'guest@example.com',
         title,
         category,

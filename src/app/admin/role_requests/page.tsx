@@ -61,7 +61,7 @@ export default function RoleRequestsAdminPage() {
       await updateUserRole(request.user_id, request.requested_role);
 
       // 2. Update request status
-      const { error } = await supabase
+      const { error } = await supabase!
         .from('role_requests')
         .update({ status: 'approved' })
         .eq('id', request.id);
@@ -81,7 +81,7 @@ export default function RoleRequestsAdminPage() {
     if (reason === null) return; // cancelled
 
     try {
-      const { error } = await supabase
+      const { error } = await supabase!
         .from('role_requests')
         .update({ 
           status: 'rejected', 

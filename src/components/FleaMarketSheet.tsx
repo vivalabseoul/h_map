@@ -60,14 +60,10 @@ export default function FleaMarketSheet({ market, onClose }: FleaMarketSheetProp
         </div>
 
         <div className={styles.content}>
-          {/* Image/Poster */}
-          {market.posterUrl ? (
+          {/* Image/Poster (Only show if exists) */}
+          {market.posterUrl && (
             <div style={{ width: '100%', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginBottom: 'var(--space-4)' }}>
               <img src={market.posterUrl} alt="Poster" style={{ width: '100%', height: 'auto', display: 'block' }} />
-            </div>
-          ) : (
-            <div className={styles.imageCarousel}>
-              <div className={styles.workshopImage} style={{ background: '#f0f0f0' }}>🎪</div>
             </div>
           )}
 

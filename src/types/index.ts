@@ -207,7 +207,7 @@ export const SMART_TAGS = [
 export type SmartTag = (typeof SMART_TAGS)[number];
 
 export const REGIONS: { key: Region; label: Record<Locale, string>; emoji: string; available: boolean; center: [number, number]; zoom: number }[] = [
-  { key: 'korea', label: { en: 'Korea', ja: '韓国', zh: '韩国', ko: '한국' }, emoji: '🇰🇷', available: true, center: [37.576, 126.988], zoom: 15 },
+  { key: 'korea', label: { en: 'Korea', ja: '韓国', zh: '韩国', ko: '한국' }, emoji: '🇰🇷', available: true, center: [36.3, 127.8], zoom: 7 },
   { key: 'southeast_asia', label: { en: 'Southeast Asia', ja: '東南アジア', zh: '东南亚', ko: '동남아시아' }, emoji: '🌏', available: false, center: [13.7563, 100.5018], zoom: 12 },
   { key: 'north_america', label: { en: 'North America', ja: '北米', zh: '北美', ko: '북미' }, emoji: '🌎', available: false, center: [40.7128, -74.006], zoom: 12 },
   { key: 'northern_europe', label: { en: 'Northern Europe', ja: '北欧', zh: '北欧', ko: '북유럽' }, emoji: '🇸🇪', available: false, center: [59.3293, 18.0686], zoom: 12 },

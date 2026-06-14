@@ -6,7 +6,6 @@ export default function AboutPage() {
     <main>
       <div className="page-container">
         <div className="card" style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
-          <div style={{ fontSize: '4rem', marginBottom: 'var(--space-4)' }}>🧶</div>
           <h1 style={{ marginBottom: 'var(--space-2)' }}>Art flow map</h1>
           <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-8)' }}>
             Discover Local Craft Studios & Flea Markets

@@ -138,7 +138,7 @@
 }
 
 @media (max-width: 640px) {
-  .userName {
+  /* .userName {
     display: none;
-  }
+  } */
 }
