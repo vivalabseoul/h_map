@@ -3,7 +3,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Search, Shield } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
-import { getAllUsers, updateUserRole, toggleUserDisabled } from '@/lib/firestore';
+import { getAllUsers, updateUserRole, toggleUserDisabled } from '@/lib/database';
 import { getAssignableRoles } from '@/lib/permissions';
 import type { AppUser, UserRole } from '@/types';
 
@@ -18,29 +18,29 @@ export default function MembersPage() {
     getAllUsers().then(setUsers);
   }, []);
 
-  const handleRoleChange = useCallback(async (uid: string, newRole: UserRole) => {
+  const handleRoleChange = useCallback(async (id: string, newRole: UserRole) => {
     try {
-      await updateUserRole(uid, newRole);
-      setUsers((prev) => prev.map((u) => u.uid === uid ? { ...u, role: newRole } : u));
+      await updateUserRole(id, newRole);
+      setUsers((prev) => prev.map((u) => u.id === id ? { ...u, role: newRole } : u));
     } catch (err) {
       console.error('Role change error:', err);
     }
   }, []);
 
-  const handleToggleDisabled = useCallback(async (uid: string, disabled: boolean) => {
+  const handleToggleDisabled = useCallback(async (id: string, disabled: boolean) => {
     try {
-      await toggleUserDisabled(uid, disabled);
-      setUsers((prev) => prev.map((u) => u.uid === uid ? { ...u, disabled } : u));
+      await toggleUserDisabled(id, disabled);
+      setUsers((prev) => prev.map((u) => u.id === id ? { ...u, disabled } : u));
     } catch (err) {
       console.error('Toggle disabled error:', err);
     }
   }, []);
 
-  const handleForceRemove = useCallback(async (uid: string) => {
+  const handleForceRemove = useCallback(async (id: string) => {
     if (confirm('정말로 이 회원을 강제 탈퇴시키겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
       try {
         // Mock remove logic
-        setUsers((prev) => prev.filter((u) => u.uid !== uid));
+        setUsers((prev) => prev.filter((u) => u.id !== id));
       } catch (err) {
         console.error('Force remove error:', err);
       }
@@ -120,7 +120,7 @@ export default function MembersPage() {
           </thead>
           <tbody>
             {filtered.map((user) => (
-              <tr key={user.uid}>
+              <tr key={user.id}>
                 <td style={{ fontWeight: 500 }}>{user.displayName || '—'}</td>
                 <td style={{ color: 'var(--color-text-secondary)' }}>{user.email}</td>
                 <td>
@@ -143,7 +143,7 @@ export default function MembersPage() {
                         className="form-select"
                         style={{ padding: '4px 28px 4px 8px', fontSize: 'var(--font-size-xs)', minWidth: '100px' }}
                         value={user.role}
-                        onChange={(e) => handleRoleChange(user.uid, e.target.value as UserRole)}
+                        onChange={(e) => handleRoleChange(user.id, e.target.value as UserRole)}
                       >
                         {assignableRoles.map((r) => (
                           <option key={r} value={r}>{roleLabel(r)}</option>
@@ -154,13 +154,13 @@ export default function MembersPage() {
                       <>
                         <button
                           className={`btn btn-sm ${user.disabled ? 'btn-success' : 'btn-warning'}`}
-                          onClick={() => handleToggleDisabled(user.uid, !user.disabled)}
+                          onClick={() => handleToggleDisabled(user.id, !user.disabled)}
                         >
                           {user.disabled ? t('admin.enable_account') : t('admin.disable_account')}
                         </button>
                         <button
                           className="btn btn-sm btn-danger"
-                          onClick={() => handleForceRemove(user.uid)}
+                          onClick={() => handleForceRemove(user.id)}
                         >
                           강제 탈퇴
                         </button>

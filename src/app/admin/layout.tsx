@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
-import { LayoutDashboard, Users, Store, BookOpen, MessageSquare } from 'lucide-react';
-import Sidebar from '@/components/Sidebar';
+import { LayoutDashboard, Users, Store, BookOpen, MessageSquare, Star, Tent, PlusCircle } from 'lucide-react';
+import Sidebar, { SidebarItem } from '@/components/Sidebar';
 import RoleGuard from '@/components/RoleGuard';
 import { useLanguage } from '@/context/LanguageContext';
 
@@ -16,12 +16,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           emoji="🛡️"
           subtitle="Manage your platform"
           items={[
+            { type: 'header', label: '📊 통계 및 관리' },
             { href: '/admin', label: t('admin.dashboard'), icon: <LayoutDashboard size={18} /> },
             { href: '/admin/members', label: t('admin.members'), icon: <Users size={18} /> },
             { href: '/admin/workshops', label: t('admin.workshops') || '스튜디오 관리', icon: <Store size={18} /> },
             { href: '/admin/courses', label: t('admin.courses') || '워크샵 관리', icon: <BookOpen size={18} /> },
-            { href: '/admin/inquiries', label: '문의 관리 (Inquiries)', icon: <MessageSquare size={18} /> },
-          ]}
+            { href: '/admin/flea_markets', label: '플리마켓 관리', icon: <Tent size={18} /> },
+            { href: '/admin/reviews', label: '리뷰 관리', icon: <Star size={18} /> },
+            { href: '/admin/inquiries', label: '문의 관리', icon: <MessageSquare size={18} /> },
+            
+            { type: 'divider' },
+            { type: 'header', label: '✍️ 직접 등록' },
+            { href: '/admin/workshops/new', label: '스튜디오 등록', icon: <PlusCircle size={18} /> },
+            { href: '/admin/courses/new', label: '워크샵 개설', icon: <PlusCircle size={18} /> },
+            { href: '/admin/flea_markets/new', label: '플리마켓 등록', icon: <PlusCircle size={18} /> },
+          ] as SidebarItem[]}
         />
         <div className="dashboard-content">{children}</div>
       </div>

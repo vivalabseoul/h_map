@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Plus } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
-import { getWorkshopsByOwner } from '@/lib/firestore';
+import { getWorkshopsByOwner } from '@/lib/database';
 import { CATEGORIES } from '@/types';
 import type { Workshop } from '@/types';
 
@@ -14,7 +14,7 @@ export default function InstructorWorkshopsPage() {
   const [workshops, setWorkshops] = useState<Workshop[]>([]);
 
   useEffect(() => {
-    if (user) getWorkshopsByOwner(user.uid).then(setWorkshops);
+    if (user) getWorkshopsByOwner(user.id).then(setWorkshops);
   }, [user]);
 
   const handleDelete = async (id: string) => {

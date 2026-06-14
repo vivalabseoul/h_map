@@ -4,7 +4,7 @@ import { X, Navigation, Share2, MapPin, Phone, Globe, Star } from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext';
 import { CATEGORIES } from '@/types';
 import type { Workshop, Course, AppUser } from '@/types';
-import { getCoursesByWorkshop, getUserProfile } from '@/lib/firestore';
+import { getCoursesByWorkshop, getUserProfile } from '@/lib/database';
 import CourseCard from './CourseCard';
 import ReviewSection from './ReviewSection';
 import styles from './BottomSheet.module.css';
@@ -40,7 +40,7 @@ export default function BottomSheet({ workshop, onClose }: BottomSheetProps) {
 
   const handleNavigateNaver = useCallback(() => {
     const name = encodeURIComponent(workshop.name[locale] || '');
-    const url = `https://map.naver.com/p/directions/-/-/${workshop.lng},${workshop.lat},${name}/-/transit`;
+    const url = `https://map.naver.com/p/directions/-/${workshop.lng},${workshop.lat},${name}/-/transit`;
     window.open(url, '_blank', 'noopener,noreferrer');
   }, [workshop.lat, workshop.lng, workshop.name, locale]);
 

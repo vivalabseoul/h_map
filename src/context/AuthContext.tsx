@@ -3,12 +3,12 @@
 // Auth Context — Provides auth + role state
 // ==========================================
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import type { User } from 'firebase/auth';
+import type { User } from '@supabase/supabase-js';
 import { onAuthChange, getUserRole, signInWithGoogle, signInWithEmail, registerWithEmail, signOutUser } from '@/lib/auth';
-import type { UserRole } from '@/types';
+import type { AppUser, UserRole } from '@/types';
 
 interface AuthContextValue {
-  user: User | null;
+  user: AppUser | null;
   userRole: UserRole | null;
   loading: boolean;
   signInGoogle: () => Promise<void>;
@@ -30,22 +30,39 @@ const AuthContext = createContext<AuthContextValue>({
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthChange(async (firebaseUser) => {
-      setUser(firebaseUser);
-      if (firebaseUser) {
-        const role = await getUserRole(firebaseUser.uid);
-        setUserRole(role);
+    const { unsubscribe } = onAuthChange(async (supabaseUser) => {
+      if (supabaseUser) {
+        // We import getUserProfile below
+        const { getUserProfile } = await import('@/lib/database');
+        const profile = await getUserProfile(supabaseUser.id);
+        if (profile) {
+          setUser(profile);
+          setUserRole(profile.role);
+        } else {
+          setUser({
+            id: supabaseUser.id,
+            email: supabaseUser.email || '',
+            displayName: supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || '',
+            photoURL: supabaseUser.user_metadata?.avatar_url || '',
+            role: 'member',
+            createdAt: new Date().toISOString(),
+            preferredLocale: 'ko',
+          });
+          const role = await getUserRole(supabaseUser.id);
+          setUserRole(role);
+        }
       } else {
+        setUser(null);
         setUserRole(null);
       }
       setLoading(false);
     });
-    return unsubscribe;
+    return () => unsubscribe();
   }, []);
 
   const signInGoogle = useCallback(async () => {
@@ -68,7 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loginAsDemo = useCallback((role: UserRole) => {
     const fakeUser = {
-      uid: role === 'instructor' ? 'demo-instructor-1' : `demo_${role}_123`,
+      id: role === 'instructor' ? 'demo-instructor-1' : `demo_${role}_123`,
       email: `demo_${role}@example.com`,
       displayName: role === 'super_admin' ? '슈퍼관리자' : role === 'instructor' ? '강사' : '일반회원',
       photoURL: `https://api.dicebear.com/7.x/avataaars/svg?seed=${role}`,

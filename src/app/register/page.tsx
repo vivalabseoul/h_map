@@ -34,14 +34,8 @@ export default function RegisterPage() {
       await register(email, password, displayName);
       router.push('/');
     } catch (err: unknown) {
-      const firebaseErr = err as { code?: string };
-      if (firebaseErr.code === 'auth/email-already-in-use') {
-        setError('Email is already registered');
-      } else if (firebaseErr.code === 'auth/weak-password') {
-        setError('Password is too weak');
-      } else {
-        setError('Registration failed. Please try again.');
-      }
+      const authErr = err as { message?: string };
+      setError(authErr.message || '가입에 실패했습니다. 이메일과 비밀번호를 다시 확인해 주세요.');
     } finally {
       setLoading(false);
     }

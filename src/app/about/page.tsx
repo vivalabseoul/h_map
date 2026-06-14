@@ -1,11 +1,9 @@
 import React from 'react';
-import Header from '@/components/Header';
 import Image from 'next/image';
 
 export default function AboutPage() {
   return (
     <main>
-      <Header />
       <div className="page-container">
         <div className="card" style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
           <div style={{ fontSize: '4rem', marginBottom: 'var(--space-4)' }}>🧶</div>

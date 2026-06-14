@@ -13,6 +13,10 @@
   font-family: var(--font-body);
 }
 
+.mapContainer :global(.leaflet-bottom) {
+  bottom: 44px !important;
+}
+
 /* Custom marker styles */
 .markerIcon {
   display: flex;
@@ -40,7 +44,7 @@
 /* Region selector */
 .regionBar {
   position: fixed;
-  bottom: 24px;
+  bottom: calc(44px + 24px);
   left: 50%;
   transform: translateX(-50%);
   z-index: var(--z-filter);
@@ -111,7 +115,7 @@
 
 @media (max-width: 640px) {
   .regionBar {
-    bottom: 16px;
+    bottom: calc(44px + 16px);
     left: 12px;
     right: 12px;
     transform: none;

@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Users, Store, BookOpen, Calendar } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
-import { getAllUsers, getWorkshops, getCourses } from '@/lib/firestore';
+import { getAllUsers, getWorkshops, getCourses } from '@/lib/database';
 
 export default function AdminDashboard() {
   const { t } = useLanguage();

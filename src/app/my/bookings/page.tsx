@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
-import { getBookingsByUser, updateBookingStatus } from '@/lib/firestore';
+import { getBookingsByUser, updateBookingStatus } from '@/lib/database';
 import type { Booking } from '@/types';
 
 export default function MyBookingsPage() {
@@ -12,7 +12,7 @@ export default function MyBookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
 
   useEffect(() => {
-    if (user) getBookingsByUser(user.uid).then(setBookings);
+    if (user) getBookingsByUser(user.id).then(setBookings);
   }, [user]);
 
   const handleCancel = async (bookingId: string) => {

@@ -2,9 +2,10 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { createWorkshop } from '@/lib/firestore';
+import { createWorkshop } from '@/lib/database';
 import type { WorkshopCategory, Region, Locale } from '@/types';
 import { CATEGORIES, REGIONS } from '@/types';
+import AddressSearch from '@/components/AddressSearch';
 
 export default function CreateStudioPage() {
   const router = useRouter();
@@ -18,10 +19,18 @@ export default function CreateStudioPage() {
   const [address, setAddress] = useState<Record<Locale, string>>({ en: '', ja: '', zh: '', ko: '' });
   const [category, setCategory] = useState<WorkshopCategory>('pottery');
   const [region, setRegion] = useState<Region>('korea');
+  const [lat, setLat] = useState<number | null>(null);
+  const [lng, setLng] = useState<number | null>(null);
   const [phone, setPhone] = useState('');
   const [website, setWebsite] = useState('');
   const [snsInstagram, setSnsInstagram] = useState('');
   const [snsYoutube, setSnsYoutube] = useState('');
+
+  const handleAddressSelect = (selectedAddress: string, selectedLat: number, selectedLng: number) => {
+    setAddress(prev => ({ ...prev, [activeTab]: selectedAddress }));
+    setLat(selectedLat);
+    setLng(selectedLng);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,14 +39,14 @@ export default function CreateStudioPage() {
 
     try {
       await createWorkshop({
-        ownerId: user.uid,
+        ownerId: user.id,
         ownerName: user.displayName || 'Instructor',
         name,
         category,
         description,
         address,
-        lat: REGIONS.find(r => r.key === region)?.center[0] || 37.576,
-        lng: REGIONS.find(r => r.key === region)?.center[1] || 126.988,
+        lat: lat ?? (REGIONS.find(r => r.key === region)?.center[0] || 37.576),
+        lng: lng ?? (REGIONS.find(r => r.key === region)?.center[1] || 126.988),
         images: ['https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=800&q=80'],
         tags: ['Beginner_Friendly'], // Mock default tags
         phone,
@@ -127,7 +136,8 @@ export default function CreateStudioPage() {
           </div>
 
           <div className="form-group" style={{ marginBottom: 'var(--space-6)' }}>
-            <label className="form-label">주소 (Address) - {activeTab.toUpperCase()}</label>
+            <AddressSearch onSelect={handleAddressSelect} />
+            <label className="form-label">주소 상세 (Address) - {activeTab.toUpperCase()}</label>
             <input
               type="text"
               className="form-input"
@@ -136,6 +146,11 @@ export default function CreateStudioPage() {
               placeholder="예: 서울시 종로구 북촌로 123"
               required={activeTab === 'ko'}
             />
+            {lat && lng && (
+              <div style={{ fontSize: '0.8rem', color: 'var(--color-success)', marginTop: 'var(--space-1)' }}>
+                📍 위도: {lat.toFixed(4)}, 경도: {lng.toFixed(4)}
+              </div>
+            )}
           </div>
 
           <hr className="divider" />

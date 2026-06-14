@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
-import { getCourses } from '@/lib/firestore';
+import { getCourses } from '@/lib/database';
 import type { Course } from '@/types';
 
 export default function AdminCoursesPage() {

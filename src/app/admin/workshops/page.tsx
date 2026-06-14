@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
-import { getWorkshops } from '@/lib/firestore';
+import { getWorkshops } from '@/lib/database';
 import type { Workshop } from '@/types';
 import { CATEGORIES } from '@/types';
 

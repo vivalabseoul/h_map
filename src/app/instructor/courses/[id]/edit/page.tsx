@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { createCourse, getWorkshopsByOwner, getCoursesByInstructor } from '@/lib/firestore';
+import { createCourse, getWorkshopsByOwner, getCoursesByInstructor } from '@/lib/database';
 import type { Workshop, Locale } from '@/types';
 
 export default function EditCoursePage() {
@@ -27,8 +27,8 @@ export default function EditCoursePage() {
     if (user && params.id) {
       // Load both workshops and the course to edit
       Promise.all([
-        getWorkshopsByOwner(user.uid),
-        getCoursesByInstructor(user.uid)
+        getWorkshopsByOwner(user.id),
+        getCoursesByInstructor(user.id)
       ]).then(([workshopsData, coursesData]) => {
         setWorkshops(workshopsData);
         const target = coursesData.find(c => c.id === params.id);

@@ -1,0 +1,401 @@
+// ==========================================
+// Supabase CRUD Operations
+// ==========================================
+import { supabase, isSupabaseConfigured } from './supabase';
+import type {
+  Workshop,
+  Course,
+  Booking,
+  Review,
+  UserRole,
+  Inquiry,
+  AppUser,
+  FleaMarket,
+} from '@/types';
+import { demoWorkshops, demoReviews, demoCourses, demoBookings, demoInquiries } from '@/data/workshops';
+
+// --- Mappers (snake_case -> camelCase) ---
+const mapWorkshop = (d: any): Workshop => ({
+  id: d.id, ownerId: d.owner_id, ownerName: d.owner_name, name: d.name, category: d.category,
+  description: d.description, address: d.address, lat: d.lat, lng: d.lng,
+  images: d.images || [], rating: d.rating, reviewCount: d.review_count,
+  tags: d.tags || [], phone: d.phone, website: d.website, snsLinks: d.sns_links,
+  region: d.region, status: d.status, createdAt: d.created_at,
+});
+const mapCourse = (d: any): Course => ({
+  id: d.id, workshopId: d.workshop_id, instructorId: d.instructor_id, instructorName: d.instructor_name,
+  title: d.title, description: d.description, price: d.price, duration: d.duration,
+  maxParticipants: d.max_participants, currentParticipants: d.current_participants,
+  status: d.status, startDate: d.start_date, createdAt: d.created_at,
+});
+const mapBooking = (d: any): Booking => ({
+  id: d.id, courseId: d.course_id, userId: d.user_id, userName: d.user_name,
+  status: d.status, createdAt: d.created_at,
+});
+const mapReview = (d: any): Review => ({
+  id: d.id, workshopId: d.workshop_id, userId: d.user_id, userName: d.user_name,
+  userPhoto: d.user_photo, rating: d.rating, text: d.text, locale: d.locale, createdAt: d.created_at,
+});
+const mapUser = (d: any): AppUser => ({
+  id: d.id, email: d.email, displayName: d.display_name, photoURL: d.photo_url,
+  role: d.role, createdAt: d.created_at, preferredLocale: d.preferred_locale,
+  bio: d.bio, disabled: d.disabled,
+});
+const mapInquiry = (d: any): Inquiry => ({
+  id: d.id, userId: d.user_id, userName: d.user_name, userEmail: d.user_email,
+  title: d.title, category: d.category, content: d.content, status: d.status,
+  reply: d.reply, createdAt: d.created_at,
+});
+const mapFleaMarket = (d: any): FleaMarket => ({
+  id: d.id, creatorId: d.creator_id, creatorName: d.creator_name, name: d.name,
+  date: d.date, address: d.address, lat: d.lat, lng: d.lng, admissionFee: d.admission_fee,
+  posterUrl: d.poster_url, images: d.images || [], description: d.description,
+  phone: d.phone, website: d.website, instagram: d.instagram, youtube: d.youtube,
+  vendorApplicationLink: d.vendor_application_link,
+  applicationClicks: d.application_clicks || 0,
+  createdAt: d.created_at,
+});
+
+// ==========================================
+// Workshops
+// ==========================================
+export async function getWorkshops(): Promise<Workshop[]> {
+  if (!supabase || !isSupabaseConfigured) return demoWorkshops;
+  const { data } = await supabase.from('workshops').select('*').order('created_at', { ascending: false });
+  return (data || []).map(mapWorkshop);
+}
+
+export async function getWorkshopsByOwner(ownerId: string): Promise<Workshop[]> {
+  if (!supabase || !isSupabaseConfigured) return demoWorkshops.filter(w => w.ownerId === ownerId);
+  const { data } = await supabase.from('workshops').select('*').eq('owner_id', ownerId).order('created_at', { ascending: false });
+  return (data || []).map(mapWorkshop);
+}
+
+export async function getWorkshopById(id: string): Promise<Workshop | null> {
+  if (!supabase || !isSupabaseConfigured) return demoWorkshops.find(w => w.id === id) || null;
+  const { data } = await supabase.from('workshops').select('*').eq('id', id).single();
+  return data ? mapWorkshop(data) : null;
+}
+
+export async function createWorkshop(data: Omit<Workshop, 'id' | 'createdAt' | 'rating' | 'reviewCount'>): Promise<string> {
+  if (!supabase) throw new Error('Supabase not configured');
+  const insertData = {
+    owner_id: data.ownerId, owner_name: data.ownerName, name: data.name, category: data.category,
+    description: data.description, address: data.address, lat: data.lat, lng: data.lng,
+    images: data.images, tags: data.tags, phone: data.phone, website: data.website,
+    sns_links: data.snsLinks, region: data.region, status: data.status,
+  };
+  const { data: res, error } = await supabase.from('workshops').insert(insertData).select('id').single();
+  if (error) throw error;
+  return res.id;
+}
+
+export async function updateWorkshop(id: string, data: Partial<Workshop>): Promise<void> {
+  if (!supabase) throw new Error('Supabase not configured');
+  const updateData: any = {};
+  if (data.name) updateData.name = data.name;
+  if (data.description) updateData.description = data.description;
+  if (data.address) updateData.address = data.address;
+  if (data.category) updateData.category = data.category;
+  if (data.status) updateData.status = data.status;
+  if (data.images) updateData.images = data.images;
+  if (data.phone) updateData.phone = data.phone;
+  
+  await supabase.from('workshops').update(updateData).eq('id', id);
+}
+
+export async function deleteWorkshop(id: string): Promise<void> {
+  if (!supabase) throw new Error('Supabase not configured');
+  await supabase.from('workshops').delete().eq('id', id);
+}
+
+// ==========================================
+// Courses
+// ==========================================
+export async function getCourses(): Promise<Course[]> {
+  if (!supabase || !isSupabaseConfigured) return demoCourses;
+  const { data } = await supabase.from('courses').select('*').order('created_at', { ascending: false });
+  return (data || []).map(mapCourse);
+}
+
+export async function getCoursesByWorkshop(workshopId: string): Promise<Course[]> {
+  if (!supabase || !isSupabaseConfigured) return demoCourses.filter(c => c.workshopId === workshopId);
+  const { data } = await supabase.from('courses').select('*').eq('workshop_id', workshopId).order('created_at', { ascending: false });
+  return (data || []).map(mapCourse);
+}
+
+export async function getCoursesByInstructor(instructorId: string): Promise<Course[]> {
+  if (!supabase || !isSupabaseConfigured) return demoCourses.filter(c => c.instructorId === instructorId);
+  const { data } = await supabase.from('courses').select('*').eq('instructor_id', instructorId).order('created_at', { ascending: false });
+  return (data || []).map(mapCourse);
+}
+
+export async function createCourse(data: Omit<Course, 'id' | 'createdAt' | 'currentParticipants'>): Promise<string> {
+  if (!supabase) throw new Error('Supabase not configured');
+  const insertData = {
+    workshop_id: data.workshopId, instructor_id: data.instructorId, instructor_name: data.instructorName,
+    title: data.title, description: data.description, price: data.price, duration: data.duration,
+    max_participants: data.maxParticipants, status: data.status, start_date: data.startDate,
+  };
+  const { data: res, error } = await supabase.from('courses').insert(insertData).select('id').single();
+  if (error) throw error;
+  return res.id;
+}
+
+export async function updateCourse(id: string, data: Partial<Course>): Promise<void> {
+  if (!supabase) throw new Error('Supabase not configured');
+  const updateData: any = {};
+  if (data.title) updateData.title = data.title;
+  if (data.description) updateData.description = data.description;
+  if (data.price) updateData.price = data.price;
+  if (data.status) updateData.status = data.status;
+  await supabase.from('courses').update(updateData).eq('id', id);
+}
+
+export async function deleteCourse(id: string): Promise<void> {
+  if (!supabase) throw new Error('Supabase not configured');
+  await supabase.from('courses').delete().eq('id', id);
+}
+
+// ==========================================
+// Bookings
+// ==========================================
+export async function createBooking(courseId: string, userId: string, userName: string): Promise<string> {
+  if (!supabase) throw new Error('Supabase not configured');
+  const { data: res, error } = await supabase.from('bookings').insert({
+    course_id: courseId, user_id: userId, user_name: userName, status: 'confirmed'
+  }).select('id').single();
+  if (error) throw error;
+
+  // Increment course participants
+  // Note: Supabase doesn't have an atomic increment via simple RPC unless defined. 
+  // For safety, let's read and update or use an RPC. Since we don't have RPC yet:
+  const { data: c } = await supabase.from('courses').select('current_participants').eq('id', courseId).single();
+  if (c) {
+    await supabase.from('courses').update({ current_participants: (c.current_participants || 0) + 1 }).eq('id', courseId);
+  }
+
+  return res.id;
+}
+
+export async function cancelBooking(bookingId: string, courseId: string): Promise<void> {
+  if (!supabase) throw new Error('Supabase not configured');
+  await supabase.from('bookings').update({ status: 'cancelled' }).eq('id', bookingId);
+  
+  const { data: c } = await supabase.from('courses').select('current_participants').eq('id', courseId).single();
+  if (c) {
+    await supabase.from('courses').update({ current_participants: Math.max(0, (c.current_participants || 1) - 1) }).eq('id', courseId);
+  }
+}
+
+export async function updateBookingStatus(bookingId: string, status: string): Promise<void> {
+  if (!supabase) throw new Error('Supabase not configured');
+  await supabase.from('bookings').update({ status }).eq('id', bookingId);
+}
+
+export async function getBookingsByUser(userId: string): Promise<Booking[]> {
+  if (!supabase || !isSupabaseConfigured) return demoBookings;
+  const { data } = await supabase.from('bookings').select('*').eq('user_id', userId).order('created_at', { ascending: false });
+  return (data || []).map(mapBooking);
+}
+
+export async function getBookingsByCourse(courseId: string): Promise<Booking[]> {
+  if (!supabase || !isSupabaseConfigured) return [];
+  const { data } = await supabase.from('bookings').select('*').eq('course_id', courseId);
+  return (data || []).map(mapBooking);
+}
+
+// ==========================================
+// Reviews
+// ==========================================
+export async function getReviews(workshopId: string): Promise<Review[]> {
+  if (!supabase || !isSupabaseConfigured) return demoReviews.filter(r => r.workshopId === workshopId);
+  const { data } = await supabase.from('reviews').select('*').eq('workshop_id', workshopId).order('created_at', { ascending: false });
+  return (data || []).map(mapReview);
+}
+
+export async function getAllReviews(): Promise<Review[]> {
+  if (!supabase || !isSupabaseConfigured) return demoReviews;
+  const { data } = await supabase.from('reviews').select('*').order('created_at', { ascending: false });
+  return (data || []).map(mapReview);
+}
+
+export async function getReviewsByUser(userId: string): Promise<Review[]> {
+  if (!supabase || !isSupabaseConfigured) return demoReviews.slice(0, 3);
+  const { data } = await supabase.from('reviews').select('*').eq('user_id', userId).order('created_at', { ascending: false });
+  return (data || []).map(mapReview);
+}
+
+export async function addReview(data: Omit<Review, 'id' | 'createdAt'>): Promise<string> {
+  if (!supabase) throw new Error('Supabase not configured');
+  const { data: res, error } = await supabase.from('reviews').insert({
+    workshop_id: data.workshopId, user_id: data.userId, user_name: data.userName,
+    user_photo: data.userPhoto, rating: data.rating, text: data.text, locale: data.locale
+  }).select('id').single();
+  if (error) throw error;
+
+  const { data: w } = await supabase.from('workshops').select('review_count').eq('id', data.workshopId).single();
+  if (w) {
+    await supabase.from('workshops').update({ review_count: (w.review_count || 0) + 1 }).eq('id', data.workshopId);
+  }
+  return res.id;
+}
+
+export async function deleteReview(id: string): Promise<void> {
+  if (!supabase) throw new Error('Supabase not configured');
+  await supabase.from('reviews').delete().eq('id', id);
+}
+
+// ==========================================
+// Users
+// ==========================================
+export async function getUserProfileData(id: string): Promise<AppUser | null> {
+  if (!supabase || !isSupabaseConfigured) {
+    return {
+      id, email: 'instructor@example.com', displayName: '비바랩 마스터',
+      photoURL: `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}`,
+      role: 'instructor', createdAt: new Date().toISOString(), preferredLocale: 'ko',
+    } as AppUser;
+  }
+  const { data } = await supabase.from('users').select('*').eq('id', id).single();
+  return data ? mapUser(data) : null;
+}
+// Alias for getUserProfile since I had a naming conflict
+export { getUserProfileData as getUserProfile };
+
+
+export async function getAllUsers(): Promise<AppUser[]> {
+  if (!supabase || !isSupabaseConfigured) return [];
+  const { data } = await supabase.from('users').select('*').order('created_at', { ascending: false });
+  return (data || []).map(mapUser);
+}
+
+export async function updateUserRole(id: string, role: UserRole): Promise<void> {
+  if (!supabase) throw new Error('Supabase not configured');
+  await supabase.from('users').update({ role }).eq('id', id);
+}
+
+export async function toggleUserDisabled(id: string, disabled: boolean): Promise<void> {
+  if (!supabase) throw new Error('Supabase not configured');
+  await supabase.from('users').update({ disabled }).eq('id', id);
+}
+
+// ==========================================
+// Inquiries
+// ==========================================
+export async function getInquiries(): Promise<Inquiry[]> {
+  if (!supabase || !isSupabaseConfigured) return demoInquiries;
+  const { data } = await supabase.from('inquiries').select('*').order('created_at', { ascending: false });
+  return (data || []).map(mapInquiry);
+}
+
+export async function createInquiry(data: Omit<Inquiry, 'id' | 'createdAt' | 'status' | 'reply'>): Promise<string> {
+  if (!supabase || !isSupabaseConfigured) {
+    const newInq = { ...data, id: `inq_${Date.now()}`, status: 'pending', createdAt: new Date().toISOString() } as Inquiry;
+    demoInquiries.unshift(newInq);
+    return newInq.id;
+  }
+  const { data: res, error } = await supabase.from('inquiries').insert({
+    user_id: data.userId, user_name: data.userName, user_email: data.userEmail,
+    title: data.title, category: data.category, content: data.content, status: 'pending'
+  }).select('id').single();
+  if (error) throw error;
+  return res.id;
+}
+
+export async function updateInquiryReply(id: string, reply: string): Promise<void> {
+  if (!supabase || !isSupabaseConfigured) {
+    const idx = demoInquiries.findIndex(i => i.id === id);
+    if (idx > -1) { demoInquiries[idx].reply = reply; demoInquiries[idx].status = 'resolved'; }
+    return;
+  }
+  await supabase.from('inquiries').update({ reply, status: 'resolved' }).eq('id', id);
+}
+
+// ==========================================
+// Flea Markets
+// ==========================================
+export async function getFleaMarkets(): Promise<FleaMarket[]> {
+  if (!supabase || !isSupabaseConfigured) return [];
+  const { data } = await supabase.from('flea_markets').select('*').order('created_at', { ascending: false });
+  return (data || []).map(mapFleaMarket);
+}
+
+export async function getFleaMarketsByCreator(creatorId: string): Promise<FleaMarket[]> {
+  if (!supabase || !isSupabaseConfigured) return [];
+  const { data } = await supabase.from('flea_markets').select('*').eq('creator_id', creatorId).order('created_at', { ascending: false });
+  return (data || []).map(mapFleaMarket);
+}
+
+export async function getFleaMarketById(id: string): Promise<FleaMarket | null> {
+  if (!supabase || !isSupabaseConfigured) return null;
+  const { data } = await supabase.from('flea_markets').select('*').eq('id', id).single();
+  return data ? mapFleaMarket(data) : null;
+}
+
+export async function createFleaMarket(data: Omit<FleaMarket, 'id' | 'createdAt'>): Promise<string> {
+  if (!supabase) throw new Error('Supabase not configured');
+  const insertData = {
+    creator_id: data.creatorId, creator_name: data.creatorName, name: data.name,
+    date: data.date, address: data.address, lat: data.lat, lng: data.lng,
+    admission_fee: data.admissionFee, poster_url: data.posterUrl, images: data.images,
+    description: data.description, phone: data.phone, website: data.website,
+    instagram: data.instagram, youtube: data.youtube,
+    vendor_application_link: data.vendorApplicationLink,
+  };
+  const { data: res, error } = await supabase.from('flea_markets').insert(insertData).select('id').single();
+  if (error) throw error;
+  return res.id;
+}
+
+export async function updateFleaMarket(id: string, data: Partial<FleaMarket>): Promise<void> {
+  if (!supabase) throw new Error('Supabase not configured');
+  const updateData: any = {};
+  if (data.name) updateData.name = data.name;
+  if (data.date) updateData.date = data.date;
+  if (data.address) updateData.address = data.address;
+  if (data.lat !== undefined) updateData.lat = data.lat;
+  if (data.lng !== undefined) updateData.lng = data.lng;
+  if (data.admissionFee !== undefined) updateData.admission_fee = data.admissionFee;
+  if (data.posterUrl !== undefined) updateData.poster_url = data.posterUrl;
+  if (data.images !== undefined) updateData.images = data.images;
+  if (data.description) updateData.description = data.description;
+  if (data.phone !== undefined) updateData.phone = data.phone;
+  if (data.website !== undefined) updateData.website = data.website;
+  if (data.instagram !== undefined) updateData.instagram = data.instagram;
+  if (data.youtube !== undefined) updateData.youtube = data.youtube;
+  if (data.vendorApplicationLink !== undefined) updateData.vendor_application_link = data.vendorApplicationLink;
+
+  await supabase.from('flea_markets').update(updateData).eq('id', id);
+}
+
+export async function deleteFleaMarket(id: string): Promise<void> {
+  if (!supabase) throw new Error('Supabase not configured');
+  await supabase.from('flea_markets').delete().eq('id', id);
+}
+
+export async function incrementVendorApplicationClick(id: string): Promise<void> {
+  if (!supabase) return;
+  // We use an RPC call to avoid race conditions when incrementing clicks
+  await supabase.rpc('increment_application_clicks', { market_id: id });
+}
+
+// ==========================================
+// Storage
+// ==========================================
+export async function uploadImage(file: File, folder = 'uploads'): Promise<string> {
+  if (!supabase) throw new Error('Supabase not configured');
+  
+  const fileExt = file.name.split('.').pop() || 'jpg';
+  const fileName = `${folder}/${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+
+  const { data, error } = await supabase.storage.from('images').upload(fileName, file, {
+    cacheControl: '3600',
+    upsert: false
+  });
+
+  if (error) throw error;
+
+  const { data: publicData } = supabase.storage.from('images').getPublicUrl(fileName);
+  return publicData.publicUrl;
+}

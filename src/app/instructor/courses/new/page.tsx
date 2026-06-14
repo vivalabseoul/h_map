@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { createCourse, getWorkshopsByOwner } from '@/lib/firestore';
+import { createCourse, getWorkshopsByOwner } from '@/lib/database';
 import type { Workshop, Locale } from '@/types';
 
 export default function CreateCoursePage() {
@@ -23,7 +23,7 @@ export default function CreateCoursePage() {
 
   useEffect(() => {
     if (user) {
-      getWorkshopsByOwner(user.uid).then((data) => {
+      getWorkshopsByOwner(user.id).then((data) => {
         setWorkshops(data);
         if (data.length > 0) {
           setWorkshopId(data[0].id);
@@ -43,14 +43,13 @@ export default function CreateCoursePage() {
       await createCourse({
         workshopId,
         workshopName: selectedWorkshop?.name,
-        instructorId: user.uid,
+        instructorId: user.id,
         instructorName: user.displayName || 'Instructor',
         title,
         description,
         price,
         duration,
         maxParticipants,
-        currentParticipants: 0,
         status: 'open',
         startDate: startDate ? new Date(startDate).toISOString() : new Date().toISOString(),
       });

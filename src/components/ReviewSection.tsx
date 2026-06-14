@@ -3,7 +3,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Star, Globe } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
-import { getReviews, addReview } from '@/lib/firestore';
+import { getReviews, addReview } from '@/lib/database';
 import type { Review } from '@/types';
 import styles from './ReviewSection.module.css';
 
@@ -30,7 +30,7 @@ export default function ReviewSection({ workshopId }: ReviewSectionProps) {
     try {
       await addReview({
         workshopId,
-        userId: user.uid,
+        userId: user.id,
         userName: user.displayName || 'Anonymous',
         userPhoto: user.photoURL || undefined,
         rating: newRating,

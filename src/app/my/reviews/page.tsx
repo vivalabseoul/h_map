@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
-import { getReviewsByUser } from '@/lib/firestore';
+import { getReviewsByUser } from '@/lib/database';
 import type { Review } from '@/types';
 
 export default function MyReviewsPage() {
@@ -12,7 +12,7 @@ export default function MyReviewsPage() {
   const [reviews, setReviews] = useState<Review[]>([]);
 
   useEffect(() => {
-    if (user) getReviewsByUser(user.uid).then(setReviews);
+    if (user) getReviewsByUser(user.id).then(setReviews);
   }, [user]);
 
   const renderStars = (rating: number) => {

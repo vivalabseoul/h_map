@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Store, BookOpen, Users } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
-import { getWorkshopsByOwner, getCoursesByInstructor } from '@/lib/firestore';
+import { getWorkshopsByOwner, getCoursesByInstructor } from '@/lib/database';
 
 export default function InstructorDashboard() {
   const { t } = useLanguage();
@@ -14,8 +14,8 @@ export default function InstructorDashboard() {
     if (!user) return;
     async function load() {
       const [workshops, courses] = await Promise.all([
-        getWorkshopsByOwner(user!.uid),
-        getCoursesByInstructor(user!.uid),
+        getWorkshopsByOwner(user!.id),
+        getCoursesByInstructor(user!.id),
       ]);
       setStats({
         workshops: workshops.length,

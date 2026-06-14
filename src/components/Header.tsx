@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { Map, LayoutDashboard, BookOpen, Shield } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
-import { isAdmin, isInstructor } from '@/lib/permissions';
+import { isAdmin, isInstructor, isMarketCoordinator } from '@/lib/permissions';
 import AuthButton from './AuthButton';
 import LanguageSwitcher from './LanguageSwitcher';
 import styles from './Header.module.css';
@@ -48,6 +48,16 @@ export default function Header() {
           >
             <Shield size={16} />
             {t('nav.admin')}
+          </Link>
+        )}
+
+        {isMarketCoordinator(userRole) && (
+          <Link
+            href="/market_coordinator"
+            className={`${styles.navLink} ${pathname.startsWith('/market_coordinator') ? styles.navLinkActive : ''}`}
+          >
+            🎪
+            {t('nav.market') || '플리마켓'}
           </Link>
         )}
 

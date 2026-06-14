@@ -4,7 +4,7 @@
 
 export type Locale = 'en' | 'ja' | 'zh' | 'ko';
 
-export type UserRole = 'super_admin' | 'manager' | 'instructor' | 'member';
+export type UserRole = 'super_admin' | 'manager' | 'instructor' | 'market_coordinator' | 'member';
 
 export type WorkshopCategory =
   | 'pottery'
@@ -26,7 +26,7 @@ export type BookingStatus = 'confirmed' | 'cancelled';
 // User
 // ==========================================
 export interface AppUser {
-  uid: string;
+  id: string;
   email: string;
   displayName: string;
   photoURL: string;
@@ -64,6 +64,31 @@ export interface Workshop {
   };
   region: Region;
   status: WorkshopStatus;
+  createdAt: string;
+}
+
+// ==========================================
+// Flea Market
+// ==========================================
+export interface FleaMarket {
+  id: string;
+  creatorId: string;
+  creatorName?: string;
+  name: Record<Locale, string>;
+  date: string;
+  address: Record<Locale, string>;
+  lat: number;
+  lng: number;
+  admissionFee?: string;
+  posterUrl?: string;
+  images: string[];
+  description: Record<Locale, string>;
+  phone?: string;
+  website?: string;
+  instagram?: string;
+  youtube?: string;
+  vendorApplicationLink?: string;
+  applicationClicks?: number;
   createdAt: string;
 }
 

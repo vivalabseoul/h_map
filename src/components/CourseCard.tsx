@@ -3,7 +3,7 @@ import React, { useState, useCallback } from 'react';
 import { Clock, DollarSign, Users, Calendar } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
-import { createBooking } from '@/lib/firestore';
+import { createBooking } from '@/lib/database';
 import type { Course } from '@/types';
 import styles from './CourseCard.module.css';
 
@@ -25,7 +25,7 @@ export default function CourseCard({ course }: CourseCardProps) {
     if (!user || !canApply || applying) return;
     setApplying(true);
     try {
-      await createBooking(course.id, user.uid, user.displayName || 'User');
+      await createBooking(course.id, user.id, user.displayName || 'User');
       setApplied(true);
     } catch (error) {
       console.error('Booking error:', error);

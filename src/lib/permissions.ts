@@ -20,7 +20,11 @@ export type Permission =
   | 'manage_courses'
   | 'manage_members'
   | 'change_roles'
-  | 'system_settings';
+  | 'system_settings'
+  | 'create_flea_market'
+  | 'edit_own_flea_market'
+  | 'delete_own_flea_market'
+  | 'manage_flea_markets';
 
 const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
   super_admin: [
@@ -29,6 +33,7 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'create_course', 'edit_own_course', 'delete_own_course', 'view_applicants',
     'manage_workshops', 'manage_courses', 'manage_members',
     'change_roles', 'system_settings',
+    'create_flea_market', 'edit_own_flea_market', 'delete_own_flea_market', 'manage_flea_markets',
   ],
   manager: [
     'view_map', 'view_workshops', 'book_course', 'cancel_booking', 'write_review',
@@ -40,6 +45,10 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'view_map', 'view_workshops', 'write_review',
     'create_workshop', 'edit_own_workshop', 'delete_own_workshop',
     'create_course', 'edit_own_course', 'delete_own_course', 'view_applicants',
+  ],
+  market_coordinator: [
+    'view_map', 'view_workshops', 'write_review',
+    'create_flea_market', 'edit_own_flea_market', 'delete_own_flea_market',
   ],
   member: [
     'view_map', 'view_workshops',
@@ -70,11 +79,18 @@ export function isInstructor(role: UserRole | null): boolean {
 }
 
 /**
+ * Check if a role can access the market coordinator dashboard
+ */
+export function isMarketCoordinator(role: UserRole | null): boolean {
+  return role === 'market_coordinator' || role === 'super_admin' || role === 'manager';
+}
+
+/**
  * Get the available roles a user can assign based on their own role
  */
 export function getAssignableRoles(currentUserRole: UserRole): UserRole[] {
   if (currentUserRole === 'super_admin') {
-    return ['member', 'instructor', 'manager'];
+    return ['member', 'instructor', 'market_coordinator', 'manager'];
   }
   return [];
 }

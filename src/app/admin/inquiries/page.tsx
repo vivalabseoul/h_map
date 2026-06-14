@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { getInquiries, updateInquiryReply } from '@/lib/firestore';
+import { getInquiries, updateInquiryReply } from '@/lib/database';
 import type { Inquiry } from '@/types';
 
 export default function AdminInquiriesPage() {

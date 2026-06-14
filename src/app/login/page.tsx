@@ -25,13 +25,11 @@ export default function LoginPage() {
       await signInEmail(email, password);
       router.push('/');
     } catch (err: unknown) {
-      const firebaseErr = err as { code?: string };
-      if (firebaseErr.code === 'auth/user-not-found' || firebaseErr.code === 'auth/wrong-password') {
-        setError('Invalid email or password');
-      } else if (firebaseErr.code === 'auth/invalid-email') {
-        setError('Invalid email format');
+      const authErr = err as { message?: string };
+      if (authErr.message?.includes('Invalid login credentials')) {
+        setError('이메일 또는 비밀번호가 올바르지 않습니다.');
       } else {
-        setError('Login failed. Please try again.');
+        setError(authErr.message || '로그인에 실패했습니다. 다시 시도해 주세요.');
       }
     } finally {
       setLoading(false);

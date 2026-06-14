@@ -620,7 +620,7 @@ input, textarea, select {
 
 .dashboard-content {
   flex: 1;
-  padding: var(--space-8);
+  padding: calc(var(--header-height) + var(--space-8)) var(--space-8) var(--space-8);
   margin-left: var(--sidebar-width);
   background: var(--color-bg);
 }

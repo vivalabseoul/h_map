@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { getWorkshopsByOwner, createWorkshop } from '@/lib/firestore';
+import { getWorkshopsByOwner, createWorkshop } from '@/lib/database';
 import type { WorkshopCategory, Region, Locale } from '@/types';
 import { CATEGORIES, REGIONS } from '@/types';
 
@@ -27,7 +27,7 @@ export default function EditStudioPage() {
 
   useEffect(() => {
     if (user && params.id) {
-      getWorkshopsByOwner(user.uid).then(data => {
+      getWorkshopsByOwner(user.id).then(data => {
         const target = data.find(w => w.id === params.id);
         if (target) {
           setName(target.name);

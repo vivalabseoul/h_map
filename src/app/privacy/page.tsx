@@ -1,10 +1,8 @@
 import React from 'react';
-import Header from '@/components/Header';
 
 export default function PrivacyPage() {
   return (
     <main>
-      <Header />
       <div className="page-container">
         <div className="card" style={{ maxWidth: '800px', margin: '0 auto' }}>
           <h1 style={{ marginBottom: 'var(--space-6)' }}>개인정보처리방침 (Privacy Policy)</h1>

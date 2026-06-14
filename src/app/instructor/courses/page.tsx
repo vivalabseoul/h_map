@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Plus } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
-import { getCoursesByInstructor } from '@/lib/firestore';
+import { getCoursesByInstructor } from '@/lib/database';
 import type { Course } from '@/types';
 
 export default function InstructorCoursesPage() {
@@ -13,7 +13,7 @@ export default function InstructorCoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
 
   useEffect(() => {
-    if (user) getCoursesByInstructor(user.uid).then(setCourses);
+    if (user) getCoursesByInstructor(user.id).then(setCourses);
   }, [user]);
 
   const handleDelete = async (id: string) => {

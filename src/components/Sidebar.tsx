@@ -5,11 +5,10 @@ import { usePathname } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import styles from './Sidebar.module.css';
 
-interface SidebarItem {
-  href: string;
-  label: string;
-  icon: React.ReactNode;
-}
+export type SidebarItem = 
+  | { type?: 'link'; href: string; label: string; icon: React.ReactNode }
+  | { type: 'header'; label: string }
+  | { type: 'divider' };
 
 interface SidebarProps {
   title: string;
@@ -32,7 +31,19 @@ export default function Sidebar({ title, subtitle, emoji = '🧶', items }: Side
       </div>
 
       <nav className={styles.nav}>
-        {items.map((item) => {
+        {items.map((item, index) => {
+          if (item.type === 'header') {
+            return (
+              <div key={`header-${index}`} style={{ padding: 'var(--space-4) var(--space-4) var(--space-2)', fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                {item.label}
+              </div>
+            );
+          }
+          if (item.type === 'divider') {
+            return <div key={`divider-${index}`} style={{ height: '1px', backgroundColor: 'var(--color-border)', margin: 'var(--space-2) var(--space-4)' }} />;
+          }
+
+          // Default is 'link'
           const isActive = pathname === item.href;
           return (
             <Link
@@ -47,12 +58,6 @@ export default function Sidebar({ title, subtitle, emoji = '🧶', items }: Side
         })}
       </nav>
 
-      <div className={styles.sidebarFooter}>
-        <Link href="/" className={styles.backLink}>
-          <ArrowLeft size={16} />
-          Back to Map
-        </Link>
-      </div>
     </aside>
   );
 }

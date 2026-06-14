@@ -1,10 +1,8 @@
 import React from 'react';
-import Header from '@/components/Header';
 
 export default function TermsPage() {
   return (
     <main>
-      <Header />
       <div className="page-container">
         <div className="card" style={{ maxWidth: '800px', margin: '0 auto' }}>
           <h1 style={{ marginBottom: 'var(--space-6)' }}>사이트 이용규정 (Terms of Service)</h1>

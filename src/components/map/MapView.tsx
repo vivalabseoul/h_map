@@ -5,8 +5,9 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import WorkshopMarker from './WorkshopMarker';
 import { useLanguage } from '@/context/LanguageContext';
-import type { Workshop, Region } from '@/types';
+import type { Workshop, Region, FleaMarket } from '@/types';
 import { REGIONS } from '@/types';
+import { Marker, Popup } from 'react-leaflet';
 import styles from './MapView.module.css';
 
 // Fix Leaflet default icon issue in Next.js
@@ -19,9 +20,11 @@ L.Icon.Default.mergeOptions({
 
 interface MapViewProps {
   workshops: Workshop[];
+  fleaMarkets?: FleaMarket[];
   selectedRegion: Region;
   onRegionChange: (region: Region) => void;
   onMarkerClick: (workshop: Workshop) => void;
+  onFleaMarketClick?: (market: FleaMarket) => void;
 }
 
 function MapUpdater({ center, zoom }: { center: [number, number]; zoom: number }) {
@@ -32,7 +35,7 @@ function MapUpdater({ center, zoom }: { center: [number, number]; zoom: number }
   return null;
 }
 
-function MapContent({ workshops, selectedRegion, onRegionChange, onMarkerClick }: MapViewProps) {
+function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChange, onMarkerClick, onFleaMarketClick }: MapViewProps) {
   const { locale, t } = useLanguage();
   const regionData = REGIONS.find((r) => r.key === selectedRegion) || REGIONS[0];
 
@@ -59,28 +62,46 @@ function MapContent({ workshops, selectedRegion, onRegionChange, onMarkerClick }
               onClick={() => onMarkerClick(workshop)}
             />
           ))}
+
+          {fleaMarkets.map((market) => (
+            <Marker
+              key={market.id}
+              position={[market.lat, market.lng]}
+              icon={L.divIcon({
+                className: 'custom-marker',
+                html: `<div style="background-color: #0284c7; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3); font-size: 16px;">🎪</div>`,
+                iconSize: [32, 32],
+                iconAnchor: [16, 16],
+              })}
+              eventHandlers={{
+                click: () => onFleaMarketClick && onFleaMarketClick(market),
+              }}
+            >
+              <Popup>
+                <div style={{ fontFamily: 'Inter, sans-serif', width: '200px' }}>
+                  <strong style={{ fontSize: '14px', display: 'block', marginBottom: '4px' }}>{market.name[locale] || market.name.ko || market.name.en}</strong>
+                  <div style={{ fontSize: '12px', color: '#555', marginBottom: '2px' }}>
+                    📍 {market.address[locale] || market.address.ko || market.address.en}
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#0284c7', fontWeight: 500 }}>
+                    📅 {market.date}
+                  </div>
+                  <button 
+                    style={{ marginTop: '8px', width: '100%', padding: '6px', background: '#0284c7', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (onFleaMarketClick) onFleaMarketClick(market);
+                    }}
+                  >
+                    상세 보기
+                  </button>
+                </div>
+              </Popup>
+            </Marker>
+          ))}
         </MapContainer>
       </div>
 
-      {/* Region Selector */}
-      <div className={styles.regionBar} id="region-selector">
-        {REGIONS.map((region) => (
-          <button
-            key={region.key}
-            className={`${styles.regionTab} ${
-              selectedRegion === region.key ? styles.regionTabActive : ''
-            } ${!region.available ? styles.regionTabDisabled : ''}`}
-            onClick={() => region.available && onRegionChange(region.key)}
-            disabled={!region.available}
-          >
-            <span>{region.emoji}</span>
-            <span>{region.label[locale]}</span>
-            {!region.available && (
-              <span className={styles.comingSoon}>{t('region.coming_soon')}</span>
-            )}
-          </button>
-        ))}
-      </div>
     </>
   );
 }

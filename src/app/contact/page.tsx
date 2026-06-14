@@ -1,8 +1,7 @@
 'use client';
 import React, { useState } from 'react';
-import Header from '@/components/Header';
 import { useAuth } from '@/context/AuthContext';
-import { createInquiry } from '@/lib/firestore';
+import { createInquiry } from '@/lib/database';
 import type { InquiryCategory } from '@/types';
 
 export default function ContactPage() {
@@ -27,8 +26,8 @@ export default function ContactPage() {
     try {
       // 1. Save to Mock DB so Admin can reply
       await createInquiry({
-        userId: user?.uid,
-        userName: user?.displayName || '비회원',
+        userId: user?.id || 'guest',
+        userName: user?.user_metadata?.full_name || user?.email?.split('@')[0] || '비회원',
         userEmail: user?.email || 'guest@example.com',
         title,
         category,
@@ -54,7 +53,6 @@ export default function ContactPage() {
 
   return (
     <main>
-      <Header />
       <div className="page-container">
         <div className="card" style={{ maxWidth: '600px', margin: '0 auto' }}>
           <h1 style={{ marginBottom: 'var(--space-2)' }}>문의하기 (Contact Us)</h1>

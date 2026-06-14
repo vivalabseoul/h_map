@@ -1,54 +1,53 @@
 // ==========================================
-// Auth Helpers — Google + Email/Password
+// Auth Helpers — Supabase
 // ==========================================
-import {
-  GoogleAuthProvider,
-  signInWithPopup,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  updateProfile,
-  signOut,
-  onAuthStateChanged,
-  type User,
-} from 'firebase/auth';
-import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
-import { auth, db, isFirebaseConfigured } from './firebase';
+import { supabase, isSupabaseConfigured } from './supabase';
+import type { User } from '@supabase/supabase-js';
 import type { AppUser, UserRole } from '@/types';
 
-const googleProvider = new GoogleAuthProvider();
-
 /**
- * Create or update the user document in Firestore
+ * Create or update the user document in public.users
  */
 async function ensureUserDocument(user: User, role: UserRole = 'member'): Promise<void> {
-  if (!db) return;
-  const userRef = doc(db, 'users', user.uid);
-  const userSnap = await getDoc(userRef);
+  if (!supabase || !isSupabaseConfigured) return;
+  
+  // Check if user exists
+  const { data: existingUser } = await supabase
+    .from('users')
+    .select('id')
+    .eq('id', user.id)
+    .single();
 
-  if (!userSnap.exists()) {
-    await setDoc(userRef, {
-      uid: user.uid,
+  if (!existingUser) {
+    const displayName = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || '';
+    const photoURL = user.user_metadata?.avatar_url || '';
+    
+    await supabase.from('users').insert({
+      id: user.id,
       email: user.email || '',
-      displayName: user.displayName || '',
-      photoURL: user.photoURL || '',
+      display_name: displayName,
+      photo_url: photoURL,
       role,
-      createdAt: serverTimestamp(),
-      preferredLocale: 'en',
+      preferred_locale: 'ko',
       disabled: false,
     });
   }
 }
 
 /**
- * Fetch user role from Firestore
+ * Fetch user role
  */
-export async function getUserRole(uid: string): Promise<UserRole> {
-  if (!db) return 'member';
+export async function getUserRole(id: string): Promise<UserRole> {
+  if (!supabase || !isSupabaseConfigured) return 'member';
   try {
-    const userRef = doc(db, 'users', uid);
-    const userSnap = await getDoc(userRef);
-    if (userSnap.exists()) {
-      return (userSnap.data() as AppUser).role;
+    const { data, error } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', id)
+      .single();
+      
+    if (data && !error) {
+      return data.role as UserRole;
     }
   } catch (error) {
     console.warn('Error fetching user role:', error);
@@ -57,15 +56,30 @@ export async function getUserRole(uid: string): Promise<UserRole> {
 }
 
 /**
- * Fetch full user profile from Firestore
+ * Fetch full user profile
  */
-export async function getUserProfile(uid: string): Promise<AppUser | null> {
-  if (!db) return null;
+export async function getUserProfile(id: string): Promise<AppUser | null> {
+  if (!supabase || !isSupabaseConfigured) return null;
   try {
-    const userRef = doc(db, 'users', uid);
-    const userSnap = await getDoc(userRef);
-    if (userSnap.exists()) {
-      return userSnap.data() as AppUser;
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', id)
+      .single();
+      
+    if (data && !error) {
+      // Map snake_case to camelCase
+      return {
+        id: data.id,
+        email: data.email,
+        displayName: data.display_name,
+        photoURL: data.photo_url,
+        role: data.role,
+        createdAt: data.created_at,
+        preferredLocale: data.preferred_locale,
+        bio: data.bio,
+        disabled: data.disabled
+      } as AppUser;
     }
   } catch (error) {
     console.warn('Error fetching user profile:', error);
@@ -76,19 +90,20 @@ export async function getUserProfile(uid: string): Promise<AppUser | null> {
 /**
  * Google Sign-In
  */
-export async function signInWithGoogle(): Promise<User | null> {
-  if (!auth) {
-    alert('Firebase is not configured. Please set up your .env.local file.');
-    return null;
+export async function signInWithGoogle(): Promise<void> {
+  if (!supabase || !isSupabaseConfigured) {
+    alert('Supabase is not configured. Please set up your .env.local file.');
+    return;
   }
   try {
-    const result = await signInWithPopup(auth, googleProvider);
-    await ensureUserDocument(result.user);
-    return result.user;
-  } catch (error: unknown) {
-    const err = error as { code?: string; message?: string };
-    if (err.code === 'auth/popup-closed-by-user') return null;
-    console.error('Google sign-in error:', err.message);
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin,
+      }
+    });
+  } catch (error) {
+    console.error('Google sign-in error:', error);
     throw error;
   }
 }
@@ -96,20 +111,17 @@ export async function signInWithGoogle(): Promise<User | null> {
 /**
  * Email/Password Sign-In
  */
-export async function signInWithEmail(
-  email: string,
-  password: string
-): Promise<User | null> {
-  if (!auth) {
-    alert('Firebase is not configured. Please set up your .env.local file.');
+export async function signInWithEmail(email: string, password: string): Promise<User | null> {
+  if (!supabase || !isSupabaseConfigured) {
+    alert('Supabase is not configured.');
     return null;
   }
   try {
-    const result = await signInWithEmailAndPassword(auth, email, password);
-    return result.user;
-  } catch (error: unknown) {
-    const err = error as { code?: string; message?: string };
-    console.error('Email sign-in error:', err.message);
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    return data.user;
+  } catch (error) {
+    console.error('Email sign-in error:', error);
     throw error;
   }
 }
@@ -117,23 +129,28 @@ export async function signInWithEmail(
 /**
  * Email/Password Registration
  */
-export async function registerWithEmail(
-  email: string,
-  password: string,
-  displayName: string
-): Promise<User | null> {
-  if (!auth) {
-    alert('Firebase is not configured. Please set up your .env.local file.');
+export async function registerWithEmail(email: string, password: string, displayName: string): Promise<User | null> {
+  if (!supabase || !isSupabaseConfigured) {
+    alert('Supabase is not configured.');
     return null;
   }
   try {
-    const result = await createUserWithEmailAndPassword(auth, email, password);
-    await updateProfile(result.user, { displayName });
-    await ensureUserDocument(result.user, 'member');
-    return result.user;
-  } catch (error: unknown) {
-    const err = error as { code?: string; message?: string };
-    console.error('Registration error:', err.message);
+    const { data, error } = await supabase.auth.signUp({ 
+      email, 
+      password,
+      options: {
+        data: {
+          full_name: displayName,
+        }
+      }
+    });
+    if (error) throw error;
+    if (data.user) {
+      await ensureUserDocument(data.user, 'member');
+    }
+    return data.user;
+  } catch (error) {
+    console.error('Registration error:', error);
     throw error;
   }
 }
@@ -142,9 +159,9 @@ export async function registerWithEmail(
  * Sign Out
  */
 export async function signOutUser(): Promise<void> {
-  if (!auth) return;
+  if (!supabase) return;
   try {
-    await signOut(auth);
+    await supabase.auth.signOut();
   } catch (error) {
     console.error('Sign out error:', error);
   }
@@ -153,12 +170,28 @@ export async function signOutUser(): Promise<void> {
 /**
  * Auth state listener
  */
-export function onAuthChange(callback: (user: User | null) => void): () => void {
-  if (!auth) {
+export function onAuthChange(callback: (user: User | null) => void): { unsubscribe: () => void } {
+  if (!supabase) {
     callback(null);
-    return () => {};
+    return { unsubscribe: () => {} };
   }
-  return onAuthStateChanged(auth, callback);
+  
+  // Get initial session
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    callback(session?.user || null);
+    if (session?.user) {
+      ensureUserDocument(session.user);
+    }
+  });
+
+  const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    callback(session?.user || null);
+    if (session?.user) {
+      ensureUserDocument(session.user);
+    }
+  });
+  
+  return { unsubscribe: () => subscription.unsubscribe() };
 }
 
-export { isFirebaseConfigured };
+export { isSupabaseConfigured };

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { CalendarCheck, Star } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
-import { getBookingsByUser, getReviewsByUser } from '@/lib/firestore';
+import { getBookingsByUser, getReviewsByUser } from '@/lib/database';
 
 export default function MyDashboardPage() {
   const { t } = useLanguage();
@@ -15,8 +15,8 @@ export default function MyDashboardPage() {
     if (!user) return;
     async function load() {
       const [bookings, reviews] = await Promise.all([
-        getBookingsByUser(user!.uid),
-        getReviewsByUser(user!.uid),
+        getBookingsByUser(user!.id),
+        getReviewsByUser(user!.id),
       ]);
       setStats({
         bookings: bookings.filter((b) => b.status === 'confirmed').length,
