@@ -1,0 +1,198 @@
+'use client';
+import React, { useState, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { getWorkshopsByOwner, createWorkshop } from '@/lib/firestore';
+import type { WorkshopCategory, Region, Locale } from '@/types';
+import { CATEGORIES, REGIONS } from '@/types';
+
+export default function EditStudioPage() {
+  const router = useRouter();
+  const params = useParams();
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [initialLoad, setInitialLoad] = useState(true);
+
+  // Form states
+  const [activeTab, setActiveTab] = useState<Locale>('ko');
+  const [name, setName] = useState<Record<Locale, string>>({ en: '', ja: '', zh: '', ko: '' });
+  const [description, setDescription] = useState<Record<Locale, string>>({ en: '', ja: '', zh: '', ko: '' });
+  const [address, setAddress] = useState<Record<Locale, string>>({ en: '', ja: '', zh: '', ko: '' });
+  const [category, setCategory] = useState<WorkshopCategory>('pottery');
+  const [region, setRegion] = useState<Region>('korea');
+  const [phone, setPhone] = useState('');
+  const [website, setWebsite] = useState('');
+  const [snsInstagram, setSnsInstagram] = useState('');
+  const [snsYoutube, setSnsYoutube] = useState('');
+
+  useEffect(() => {
+    if (user && params.id) {
+      getWorkshopsByOwner(user.uid).then(data => {
+        const target = data.find(w => w.id === params.id);
+        if (target) {
+          setName(target.name);
+          setDescription(target.description);
+          setAddress(target.address);
+          setCategory(target.category);
+          setRegion(target.region);
+          setPhone(target.phone || '');
+          setWebsite(target.website || '');
+          setSnsInstagram(target.snsLinks?.instagram || '');
+          setSnsYoutube(target.snsLinks?.youtube || '');
+        }
+        setInitialLoad(false);
+      });
+    }
+  }, [user, params.id]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    setLoading(true);
+
+    try {
+      // In a real app, we would update, not create.
+      // await updateWorkshop(params.id as string, { ... });
+      router.push('/instructor/workshops');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to update studio');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLangChange = (field: 'name' | 'description' | 'address', value: string) => {
+    if (field === 'name') setName(prev => ({ ...prev, [activeTab]: value }));
+    if (field === 'description') setDescription(prev => ({ ...prev, [activeTab]: value }));
+    if (field === 'address') setAddress(prev => ({ ...prev, [activeTab]: value }));
+  };
+
+  const tabs: { key: Locale; label: string }[] = [
+    { key: 'ko', label: '한국어 (KO)' },
+    { key: 'en', label: 'English (EN)' },
+    { key: 'ja', label: '日本語 (JA)' },
+    { key: 'zh', label: '中文 (ZH)' },
+  ];
+
+  if (initialLoad) return <div style={{ padding: 'var(--space-6)' }}>Loading data...</div>;
+
+  return (
+    <div>
+      <div className="page-header">
+        <div>
+          <h1>스튜디오 수정 (Edit Studio)</h1>
+          <p>등록된 스튜디오 정보를 수정합니다.</p>
+        </div>
+      </div>
+
+      <div className="card" style={{ maxWidth: '800px' }}>
+        <form onSubmit={handleSubmit}>
+          
+          {/* Language Tabs */}
+          <div style={{ display: 'flex', gap: 'var(--space-2)', borderBottom: '1px solid var(--color-border)', marginBottom: 'var(--space-6)' }}>
+            {tabs.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setActiveTab(tab.key)}
+                style={{
+                  padding: 'var(--space-3) var(--space-4)',
+                  borderBottom: activeTab === tab.key ? '2px solid var(--color-accent)' : '2px solid transparent',
+                  color: activeTab === tab.key ? 'var(--color-accent)' : 'var(--color-text-secondary)',
+                  fontWeight: activeTab === tab.key ? 600 : 400,
+                  transition: 'all 0.2s'
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
+            <label className="form-label">스튜디오 이름 (Studio Name) - {activeTab.toUpperCase()}</label>
+            <input
+              type="text"
+              className="form-input"
+              value={name[activeTab]}
+              onChange={(e) => handleLangChange('name', e.target.value)}
+              placeholder="예: 비바랩 도자기 공방"
+              required={activeTab === 'ko'}
+            />
+          </div>
+
+          <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
+            <label className="form-label">스튜디오 소개 (Brand Intro) - {activeTab.toUpperCase()}</label>
+            <textarea
+              className="form-input form-textarea"
+              value={description[activeTab]}
+              onChange={(e) => handleLangChange('description', e.target.value)}
+              placeholder="스튜디오의 철학, 특징, 전반적인 브랜드를 소개해 주세요."
+              required={activeTab === 'ko'}
+            />
+          </div>
+
+          <div className="form-group" style={{ marginBottom: 'var(--space-6)' }}>
+            <label className="form-label">주소 (Address) - {activeTab.toUpperCase()}</label>
+            <input
+              type="text"
+              className="form-input"
+              value={address[activeTab]}
+              onChange={(e) => handleLangChange('address', e.target.value)}
+              placeholder="예: 서울시 종로구 북촌로 123"
+              required={activeTab === 'ko'}
+            />
+          </div>
+
+          <hr className="divider" />
+
+          {/* Global Config */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
+            <div className="form-group">
+              <label className="form-label">종목 (Category)</label>
+              <select className="form-select" value={category} onChange={(e) => setCategory(e.target.value as WorkshopCategory)}>
+                {CATEGORIES.map(c => (
+                  <option key={c.key} value={c.key}>{c.emoji} {c.key.toUpperCase()}</option>
+                ))}
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">지역 (Region)</label>
+              <select className="form-select" value={region} onChange={(e) => setRegion(e.target.value as Region)}>
+                {REGIONS.map(r => (
+                  <option key={r.key} value={r.key}>{r.emoji} {r.label.en}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
+            <div className="form-group">
+              <label className="form-label">전화번호 (Phone)</label>
+              <input type="text" className="form-input" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="010-1234-5678" />
+            </div>
+            <div className="form-group">
+              <label className="form-label">홈페이지 (Website)</label>
+              <input type="url" className="form-input" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://" />
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-8)' }}>
+            <div className="form-group">
+              <label className="form-label">인스타그램 (Instagram)</label>
+              <input type="url" className="form-input" value={snsInstagram} onChange={(e) => setSnsInstagram(e.target.value)} placeholder="https://instagram.com/..." />
+            </div>
+            <div className="form-group">
+              <label className="form-label">유튜브 (YouTube)</label>
+              <input type="url" className="form-input" value={snsYoutube} onChange={(e) => setSnsYoutube(e.target.value)} placeholder="https://youtube.com/..." />
+            </div>
+          </div>
+
+          <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%' }} disabled={loading}>
+            {loading ? '저장 중...' : '수정 내역 저장 (Save Changes)'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
