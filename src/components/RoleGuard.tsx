@@ -36,13 +36,17 @@ export default function RoleGuard({
     );
   }
 
-  if (!user) {
-    router.push(fallbackPath);
-    return null;
-  }
+  React.useEffect(() => {
+    if (!loading) {
+      if (!user) {
+        router.push(fallbackPath);
+      } else if (userRole && !allowedRoles.includes(userRole)) {
+        router.push('/');
+      }
+    }
+  }, [loading, user, userRole, allowedRoles, fallbackPath, router]);
 
-  if (userRole && !allowedRoles.includes(userRole)) {
-    router.push('/');
+  if (!user || (userRole && !allowedRoles.includes(userRole))) {
     return null;
   }
 
