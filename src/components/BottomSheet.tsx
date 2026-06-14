@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { X, Navigation, Share2, MapPin, Phone, Globe, Star } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { CATEGORIES } from '@/types';
@@ -11,10 +11,12 @@ import styles from './BottomSheet.module.css';
 
 interface BottomSheetProps {
   workshop: Workshop;
+  allWorkshops?: Workshop[];
+  onWorkshopClick?: (w: Workshop) => void;
   onClose: () => void;
 }
 
-export default function BottomSheet({ workshop, onClose }: BottomSheetProps) {
+export default function BottomSheet({ workshop, allWorkshops, onWorkshopClick, onClose }: BottomSheetProps) {
   const { locale, t } = useLanguage();
   const [courses, setCourses] = useState<Course[]>([]);
   const [instructor, setInstructor] = useState<AppUser | null>(null);
@@ -23,6 +25,30 @@ export default function BottomSheet({ workshop, onClose }: BottomSheetProps) {
     getCoursesByWorkshop(workshop.id).then(setCourses);
     getUserProfile(workshop.ownerId).then(setInstructor);
   }, [workshop.id, workshop.ownerId]);
+
+  const similarWorkshops = useMemo(() => {
+    if (!allWorkshops || allWorkshops.length === 0) return [];
+    
+    // Calculate score for each workshop
+    const scored = allWorkshops
+      .filter((w) => w.id !== workshop.id && w.status === 'active')
+      .map((w) => {
+        let score = 0;
+        if (w.category === workshop.category) score += 2;
+        w.tags.forEach(tag => {
+          if (workshop.tags.includes(tag)) score += 1;
+        });
+        if (w.region === workshop.region) score += 0.5;
+        return { workshop: w, score };
+      });
+      
+    // Sort by score and take top 3
+    return scored
+      .filter((s) => s.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3)
+      .map((s) => s.workshop);
+  }, [allWorkshops, workshop]);
 
   // Close on escape
   useEffect(() => {
@@ -209,6 +235,54 @@ export default function BottomSheet({ workshop, onClose }: BottomSheetProps) {
 
           {/* Reviews */}
           <ReviewSection workshopId={workshop.id} />
+
+          {/* Similar Workshops Recommendation */}
+          {similarWorkshops.length > 0 && (
+            <div style={{ marginTop: 'var(--space-6)', paddingTop: 'var(--space-6)', borderTop: '1px solid var(--color-border)' }}>
+              <h3 className={styles.sectionTitle}>{t('workshop.similar') || '추천 연관 공방 (Similar Workshops)'}</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', marginTop: 'var(--space-3)' }}>
+                {similarWorkshops.map((sim) => (
+                  <div 
+                    key={sim.id}
+                    onClick={() => {
+                      if (onWorkshopClick) onWorkshopClick(sim);
+                    }}
+                    style={{
+                      display: 'flex',
+                      gap: 'var(--space-3)',
+                      padding: 'var(--space-3)',
+                      background: 'var(--color-bg-secondary)',
+                      borderRadius: 'var(--radius-md)',
+                      cursor: 'pointer',
+                      border: '1px solid transparent',
+                      transition: 'border-color 0.2s'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'var(--color-accent)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'transparent')}
+                  >
+                    <div style={{ width: '60px', height: '60px', borderRadius: 'var(--radius-sm)', background: '#e0e0e0', flexShrink: 0, overflow: 'hidden' }}>
+                      {sim.images && sim.images[0] ? (
+                        <img src={sim.images[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>🎨</div>
+                      )}
+                    </div>
+                    <div style={{ flex: 1, overflow: 'hidden' }}>
+                      <h4 style={{ fontSize: 'var(--font-size-sm)', margin: '0 0 4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--color-text-primary)' }}>
+                        {sim.name[locale] || sim.name.ko || sim.name.en}
+                      </h4>
+                      <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', margin: '0 0 4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {sim.description[locale] || sim.description.ko || sim.description.en}
+                      </p>
+                      <div style={{ fontSize: '10px', color: 'var(--color-accent)', fontWeight: 500 }}>
+                        {sim.tags.slice(0, 3).map(t => `#${t}`).join(' ')}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </>

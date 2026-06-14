@@ -103,6 +103,8 @@ export default function HomePage() {
       {selectedWorkshop && (
         <BottomSheet
           workshop={selectedWorkshop}
+          allWorkshops={workshops}
+          onWorkshopClick={handleMarkerClick}
           onClose={() => setSelectedWorkshop(null)}
         />
       )}
