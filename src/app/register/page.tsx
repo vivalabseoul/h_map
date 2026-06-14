@@ -16,6 +16,8 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [role, setRole] = useState<'member' | 'instructor' | 'market_coordinator'>('member');
+  const [businessCard, setBusinessCard] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -29,9 +31,24 @@ export default function RegisterPage() {
       setError('Password must be at least 6 characters');
       return;
     }
+    if (role !== 'member') {
+      if (!businessCard) {
+        setError('크리에이터 및 마켓 코디네이터는 명함을 첨부해야 합니다.');
+        return;
+      }
+      if (businessCard.size > 200 * 1024) {
+        setError('명함 파일 크기는 200KB 이하여야 합니다.');
+        return;
+      }
+    }
+    
     setLoading(true);
     try {
-      await register(email, password, displayName);
+      await register(email, password, displayName, role, businessCard);
+      // If requested a special role, alert them
+      if (role !== 'member') {
+        alert('회원가입이 완료되었습니다. 관리자 승인 후 등급이 변경됩니다.');
+      }
       router.push('/');
     } catch (err: unknown) {
       const authErr = err as { message?: string };
@@ -149,6 +166,39 @@ export default function RegisterPage() {
               />
             </div>
           </div>
+
+          {/* Role Selection */}
+          <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
+            <label className="form-label">회원 유형 (Role)</label>
+            <select className="form-input" value={role} onChange={(e) => setRole(e.target.value as any)} style={{ width: '100%', padding: '10px' }}>
+              <option value="member">일반 회원 (Member)</option>
+              <option value="instructor">크리에이터 (Creator)</option>
+              <option value="market_coordinator">마켓 코디네이터 (Market Coordinator)</option>
+            </select>
+            {role !== 'member' && (
+              <div style={{ marginTop: '8px', padding: '10px', background: 'var(--color-bg-secondary)', borderRadius: '6px', fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
+                <span style={{ color: 'var(--color-accent)', fontWeight: 'bold' }}>안내:</span> 크리에이터 및 마켓 코디네이터는 가입 시 1차적으로 <strong>일반 회원</strong>으로 등록되며, 관리자의 명함 확인 및 승인 후에 해당 등급으로 변경됩니다.
+              </div>
+            )}
+          </div>
+
+          {/* Business Card Upload */}
+          {role !== 'member' && (
+            <div className="form-group" style={{ marginBottom: 'var(--space-6)' }}>
+              <label className="form-label">명함 첨부 (최대 200KB)</label>
+              <input type="file" accept="image/*" className="form-input" style={{ width: '100%', padding: '8px' }} 
+                onChange={(e) => {
+                  if (e.target.files && e.target.files.length > 0) {
+                    setBusinessCard(e.target.files[0]);
+                  }
+                }} 
+              />
+              <p style={{ fontSize: '11.5px', color: 'var(--color-text-muted)', marginTop: '6px', lineHeight: '1.4' }}>
+                * 회사명(또는 공방/축제명), 이름, 연락처가 명확히 표시된 명함 사진을 첨부해 주세요.<br/>
+                * 가입 후 관리자가 내용을 확인하여 등급을 승인해 드립니다.
+              </p>
+            </div>
+          )}
 
           <button type="submit" className="btn btn-primary btn-lg"
             style={{ width: '100%', marginBottom: 'var(--space-4)' }}

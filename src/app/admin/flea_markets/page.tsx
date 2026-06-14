@@ -3,11 +3,12 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getFleaMarkets, deleteFleaMarket } from '@/lib/database';
 import type { FleaMarket } from '@/types';
-import { Trash2, Pencil } from 'lucide-react';
+import { Trash2, Pencil, RefreshCw } from 'lucide-react';
 
 export default function AdminFleaMarketsPage() {
   const [markets, setMarkets] = useState<FleaMarket[]>([]);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
     fetchMarkets();
@@ -19,6 +20,22 @@ export default function AdminFleaMarketsPage() {
       setMarkets(data);
       setLoading(false);
     });
+  };
+
+  const handleSyncFestivals = async () => {
+    if (!confirm('공공 데이터 포털에서 최신 축제 정보를 가져오시겠습니까? 이 작업은 몇 초 정도 걸릴 수 있습니다.')) return;
+    setSyncing(true);
+    try {
+      const res = await fetch('/api/sync-festivals');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to sync');
+      alert(`동기화 성공! ${data.message}`);
+      fetchMarkets();
+    } catch (err: any) {
+      alert('동기화 실패: ' + err.message + '\n\n(.env.local 파일에 FESTIVAL_API_KEY가 있는지 확인해주세요)');
+    } finally {
+      setSyncing(false);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -38,12 +55,18 @@ export default function AdminFleaMarketsPage() {
     <div>
       <div className="page-header">
         <div>
-          <h1>플리마켓 관리</h1>
-          <p>등록된 전체 플리마켓을 확인하고 관리합니다.</p>
+          <h1>플리마켓 관리 (Admin)</h1>
+          <p>전체 플리마켓 현황 및 공공 축제 데이터 동기화</p>
         </div>
-        <Link href="/admin/flea_markets/new" className="btn btn-primary">
-          🎪 새 플리마켓 등록
-        </Link>
+        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+          <button onClick={handleSyncFestivals} disabled={syncing} className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+            <RefreshCw size={18} className={syncing ? 'spin' : ''} />
+            {syncing ? '동기화 중...' : '공공 축제 동기화'}
+          </button>
+          <Link href="/admin/flea_markets/new" className="btn btn-primary">
+            + 새 플리마켓 등록
+          </Link>
+        </div>
       </div>
 
       <div className="card">

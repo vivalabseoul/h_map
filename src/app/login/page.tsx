@@ -141,7 +141,7 @@ export default function LoginPage() {
               className="btn btn-secondary btn-sm"
               style={{ flex: 1, padding: '8px 4px' }}
             >
-              👨‍🏫 강사
+              👨‍🎨 크리에이터
             </button>
             <button
               onClick={() => { loginAsDemo('member'); router.push('/my'); }}

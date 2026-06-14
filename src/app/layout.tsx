@@ -1,15 +1,23 @@
 import type { Metadata } from 'next';
+import { Playfair_Display } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
 import { LanguageProvider } from '@/context/LanguageContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
+const playfair = Playfair_Display({ 
+  subsets: ['latin'],
+  variable: '--font-playfair',
+  weight: ['600', '700'],
+  style: ['normal', 'italic']
+});
+
 export const metadata: Metadata = {
-  title: 'Handmade Map — Discover Local Craft Workshops',
+  title: 'Art flow map — Discover Local Craft Workshops',
   description:
     'A visual-first, location-based platform helping tourists discover local handmade craft workshops worldwide. Pottery, leather, perfume, candle, textile, jewelry classes and more.',
-  keywords: 'handmade, workshop, craft, pottery, leather, perfume, map, travel, Seoul, Korea',
+  keywords: 'art flow map, handmade, workshop, craft, pottery, leather, perfume, map, travel, Seoul, Korea',
 };
 
 export default function RootLayout({
@@ -18,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={playfair.variable}>
       <body>
         <AuthProvider>
           <LanguageProvider>

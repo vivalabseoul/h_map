@@ -19,6 +19,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             { type: 'header', label: '📊 통계 및 관리' },
             { href: '/admin', label: t('admin.dashboard'), icon: <LayoutDashboard size={18} /> },
             { href: '/admin/members', label: t('admin.members'), icon: <Users size={18} /> },
+            { href: '/admin/role_requests', label: '등급 승인 관리', icon: <Users size={18} /> },
             { href: '/admin/workshops', label: t('admin.workshops') || '스튜디오 관리', icon: <Store size={18} /> },
             { href: '/admin/courses', label: t('admin.courses') || '워크샵 관리', icon: <BookOpen size={18} /> },
             { href: '/admin/flea_markets', label: '플리마켓 관리', icon: <Tent size={18} /> },

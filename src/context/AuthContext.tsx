@@ -13,7 +13,7 @@ interface AuthContextValue {
   loading: boolean;
   signInGoogle: () => Promise<void>;
   signInEmail: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, name: string) => Promise<void>;
+  register: (email: string, password: string, name: string, role?: UserRole, file?: File | null) => Promise<void>;
   logout: () => Promise<void>;
   loginAsDemo: (role: UserRole) => void;
 }
@@ -73,8 +73,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await signInWithEmail(email, password);
   }, []);
 
-  const registerFn = useCallback(async (email: string, password: string, name: string) => {
-    await registerWithEmail(email, password, name);
+  const registerFn = useCallback(async (email: string, password: string, name: string, role?: UserRole, file?: File | null) => {
+    await registerWithEmail(email, password, name, role, file);
   }, []);
 
   const logout = useCallback(async () => {
@@ -87,7 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const fakeUser = {
       id: role === 'instructor' ? 'demo-instructor-1' : `demo_${role}_123`,
       email: `demo_${role}@example.com`,
-      displayName: role === 'super_admin' ? '슈퍼관리자' : role === 'instructor' ? '강사' : '일반회원',
+      displayName: role === 'super_admin' ? '슈퍼관리자' : role === 'instructor' ? '크리에이터' : '일반회원',
       photoURL: `https://api.dicebear.com/7.x/avataaars/svg?seed=${role}`,
     } as any;
     setUser(fakeUser);

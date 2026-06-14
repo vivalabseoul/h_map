@@ -8,7 +8,7 @@ export default function PrivacyPage() {
           <h1 style={{ marginBottom: 'var(--space-6)' }}>개인정보처리방침 (Privacy Policy)</h1>
           <div style={{ lineHeight: '1.8', color: 'var(--color-text-secondary)' }}>
             <p><strong>1. 개인정보의 처리 목적</strong></p>
-            <p>Handmade Map(이하 "회사")은 다음의 목적을 위하여 개인정보를 처리합니다. 처리하고 있는 개인정보는 다음의 목적 이외의 용도로는 이용되지 않으며, 이용 목적이 변경되는 경우에는 사전 동의를 구합니다.</p>
+            <p>Art flow map(이하 "회사")은 다음의 목적을 위하여 개인정보를 처리합니다. 처리하고 있는 개인정보는 다음의 목적 이외의 용도로는 이용되지 않으며, 이용 목적이 변경되는 경우에는 사전 동의를 구합니다.</p>
             <br />
             <p><strong>2. 수집하는 개인정보 항목</strong></p>
             <p>회사는 회원가입, 상담, 서비스 신청 등을 위해 아래와 같은 개인정보를 수집하고 있습니다.<br />

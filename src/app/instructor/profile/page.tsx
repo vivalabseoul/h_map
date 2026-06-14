@@ -28,7 +28,7 @@ export default function InstructorProfilePage() {
       <div className="page-header">
         <div>
           <h1>프로필 (Profile)</h1>
-          <p>강사님의 프로필 사진과 소개를 작성해주세요.</p>
+          <p>크리에이터님의 프로필 사진과 소개를 작성해주세요.</p>
         </div>
       </div>
 
@@ -71,7 +71,7 @@ export default function InstructorProfilePage() {
               className="form-input"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="강사명 또는 닉네임"
+              placeholder="크리에이터명 또는 닉네임"
               required
             />
           </div>
@@ -82,7 +82,7 @@ export default function InstructorProfilePage() {
               className="form-input form-textarea"
               value={bio}
               onChange={(e) => setBio(e.target.value)}
-              placeholder="안녕하세요, 저는 OOO 강사입니다. 주로 어떤 작업을 하는지 짧게 소개해 주세요."
+              placeholder="안녕하세요, 저는 OOO 크리에이터입니다. 주로 어떤 작업을 하는지 짧게 소개해 주세요."
               maxLength={200}
             />
             <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', textAlign: 'right', marginTop: 'var(--space-1)' }}>

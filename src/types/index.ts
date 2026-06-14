@@ -89,6 +89,8 @@ export interface FleaMarket {
   youtube?: string;
   vendorApplicationLink?: string;
   applicationClicks?: number;
+  source?: 'user' | 'api';
+  externalId?: string;
   createdAt: string;
 }
 

@@ -11,7 +11,7 @@ export default function Footer() {
     <footer className={styles.footer}>
       <div className={styles.container}>
         <div className={styles.left}>
-          <span className={styles.brandName}>🧶 Handmade Map</span>
+          <span className={styles.brandName}>🎨 Art flow map</span>
           <span className={styles.hideMobile}>&copy; {new Date().getFullYear()}</span>
         </div>
         

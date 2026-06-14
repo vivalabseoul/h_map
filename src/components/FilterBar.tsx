@@ -13,6 +13,8 @@ interface FilterBarProps {
   activeTags: string[];
   onCategoryChange: (category: WorkshopCategory | 'all') => void;
   onTagToggle: (tag: string) => void;
+  viewMode?: 'map' | 'list';
+  onViewModeChange?: (mode: 'map' | 'list') => void;
 }
 
 export default function FilterBar({
@@ -22,6 +24,8 @@ export default function FilterBar({
   activeTags,
   onCategoryChange,
   onTagToggle,
+  viewMode = 'map',
+  onViewModeChange = () => {},
 }: FilterBarProps) {
   const { locale, t } = useLanguage();
   const [openDropdown, setOpenDropdown] = useState<'region' | 'category' | 'tags' | null>(null);
@@ -117,6 +121,18 @@ export default function FilterBar({
           </div>
         )}
       </div>
+
+      <div style={{ flexGrow: 1 }} />
+
+      {/* View Mode Toggle */}
+      <button 
+        className={styles.chip}
+        onClick={() => onViewModeChange(viewMode === 'map' ? 'list' : 'map')}
+        style={{ padding: '0 12px', background: 'var(--color-bg-secondary)' }}
+        title={viewMode === 'map' ? '목록 보기' : '지도 보기'}
+      >
+        {viewMode === 'map' ? '📋 목록' : '🗺️ 지도'}
+      </button>
 
     </div>
   );

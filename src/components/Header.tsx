@@ -18,8 +18,8 @@ export default function Header() {
   return (
     <header className={styles.header} id="main-header">
       <Link href="/" className={styles.logo}>
-        <span className={styles.logoEmoji}>🧶</span>
-        <span>Handmade<span className={styles.logoAccent}> Map</span></span>
+        <span className={styles.logoEmoji}>🎨</span>
+        <span>Art flow<span className={styles.logoAccent}> map</span></span>
       </Link>
 
       <nav className={styles.navLinks}>

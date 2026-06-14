@@ -63,25 +63,27 @@ function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChang
             />
           ))}
 
-          {fleaMarkets.map((market) => (
-            <Marker
-              key={market.id}
-              position={[market.lat, market.lng]}
-              icon={L.divIcon({
-                className: 'custom-marker',
-                html: `<div style="background-color: #0284c7; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3); font-size: 16px;">🎪</div>`,
-                iconSize: [32, 32],
-                iconAnchor: [16, 16],
-              })}
-              eventHandlers={{
-                click: () => onFleaMarketClick && onFleaMarketClick(market),
-              }}
-            >
+          {fleaMarkets.map((market) => {
+            const isApi = market.source === 'api';
+            const bgColor = isApi ? '#f59e0b' : '#0284c7';
+            const iconEmoji = isApi ? '🎉' : '🎪';
+            
+            return (
+              <Marker
+                key={market.id}
+                position={[market.lat, market.lng]}
+                icon={L.divIcon({
+                  className: 'custom-marker',
+                  html: `<div style="background-color: ${bgColor}; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3); font-size: 16px;">${iconEmoji}</div>`,
+                  iconSize: [32, 32],
+                  iconAnchor: [16, 16],
+                })}
+              >
               <Popup>
                 <div style={{ fontFamily: 'Inter, sans-serif', width: '200px' }}>
                   <strong style={{ fontSize: '14px', display: 'block', marginBottom: '4px' }}>{market.name[locale] || market.name.ko || market.name.en}</strong>
-                  <div style={{ fontSize: '12px', color: '#555', marginBottom: '2px' }}>
-                    📍 {market.address[locale] || market.address.ko || market.address.en}
+                  <div style={{ fontSize: '12px', color: '#555', marginBottom: '2px', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    💬 {market.description[locale] || market.description.ko || market.description.en || '소개글이 없습니다.'}
                   </div>
                   <div style={{ fontSize: '12px', color: '#0284c7', fontWeight: 500 }}>
                     📅 {market.date}
@@ -98,7 +100,8 @@ function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChang
                 </div>
               </Popup>
             </Marker>
-          ))}
+            );
+          })}
         </MapContainer>
       </div>
 

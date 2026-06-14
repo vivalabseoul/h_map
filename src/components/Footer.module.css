@@ -33,7 +33,10 @@
 }
 
 .brandName {
-  font-weight: 600;
+  font-family: var(--font-playfair), serif;
+  font-weight: 700;
+  font-style: italic;
+  font-size: 0.9rem;
   color: var(--color-text-primary);
 }
 

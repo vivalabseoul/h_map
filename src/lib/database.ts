@@ -53,6 +53,8 @@ const mapFleaMarket = (d: any): FleaMarket => ({
   phone: d.phone, website: d.website, instagram: d.instagram, youtube: d.youtube,
   vendorApplicationLink: d.vendor_application_link,
   applicationClicks: d.application_clicks || 0,
+  source: d.source || 'user',
+  externalId: d.external_id,
   createdAt: d.created_at,
 });
 

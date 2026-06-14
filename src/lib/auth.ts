@@ -129,7 +129,13 @@ export async function signInWithEmail(email: string, password: string): Promise<
 /**
  * Email/Password Registration
  */
-export async function registerWithEmail(email: string, password: string, displayName: string): Promise<User | null> {
+export async function registerWithEmail(
+  email: string, 
+  password: string, 
+  displayName: string,
+  requestedRole: UserRole = 'member',
+  businessCardFile?: File | null
+): Promise<User | null> {
   if (!supabase || !isSupabaseConfigured) {
     alert('Supabase is not configured.');
     return null;
@@ -146,7 +152,40 @@ export async function registerWithEmail(email: string, password: string, display
     });
     if (error) throw error;
     if (data.user) {
+      // Create user as 'member' initially
       await ensureUserDocument(data.user, 'member');
+
+      // If they requested a special role, handle upload and request
+      if (requestedRole !== 'member') {
+        let businessCardUrl = '';
+        if (businessCardFile) {
+          const fileExt = businessCardFile.name.split('.').pop();
+          const fileName = `${data.user.id}_${Date.now()}.${fileExt}`;
+          const { error: uploadError } = await supabase.storage
+            .from('business_cards')
+            .upload(fileName, businessCardFile);
+          
+          if (!uploadError) {
+            const { data: publicUrlData } = supabase.storage
+              .from('business_cards')
+              .getPublicUrl(fileName);
+            businessCardUrl = publicUrlData.publicUrl;
+          } else {
+            console.error('Business card upload error:', uploadError);
+          }
+        }
+
+        const { error: reqError } = await supabase.from('role_requests').insert({
+          user_id: data.user.id,
+          requested_role: requestedRole,
+          business_card_url: businessCardUrl,
+          status: 'pending'
+        });
+        
+        if (reqError) {
+          console.error('Error inserting role request:', reqError);
+        }
+      }
     }
     return data.user;
   } catch (error) {
