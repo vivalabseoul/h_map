@@ -53,6 +53,10 @@ export default function HomePage() {
     });
   }, [workshops, activeCategory, activeTags, selectedRegion]);
 
+  const filteredFleaMarkets = useMemo(() => {
+    return fleaMarkets.filter((m) => m.status !== 'inactive');
+  }, [fleaMarkets]);
+
   const handleTagToggle = useCallback((tag: string) => {
     setActiveTags((prev) =>
       prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
@@ -85,7 +89,7 @@ export default function HomePage() {
       {viewMode === 'map' ? (
         <MapView
           workshops={filteredWorkshops}
-          fleaMarkets={fleaMarkets}
+          fleaMarkets={filteredFleaMarkets}
           selectedRegion={selectedRegion}
           onRegionChange={setSelectedRegion}
           onMarkerClick={handleMarkerClick}
@@ -94,7 +98,7 @@ export default function HomePage() {
       ) : (
         <ListView
           workshops={filteredWorkshops}
-          fleaMarkets={fleaMarkets}
+          fleaMarkets={filteredFleaMarkets}
           onWorkshopClick={handleMarkerClick}
           onFleaMarketClick={handleFleaMarketClick}
         />
