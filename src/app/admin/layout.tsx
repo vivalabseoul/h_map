@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { LayoutDashboard, Users, Store, BookOpen, MessageSquare, Star, Tent, PlusCircle, Globe } from 'lucide-react';
+import { LayoutDashboard, Users, Store, BookOpen, MessageSquare, Star, Tent, PlusCircle, Globe, User } from 'lucide-react';
 import Sidebar, { SidebarItem } from '@/components/Sidebar';
 import RoleGuard from '@/components/RoleGuard';
 import { useLanguage } from '@/context/LanguageContext';
@@ -32,6 +32,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             { href: '/admin/workshops/new', label: '스튜디오 등록', icon: <PlusCircle size={18} /> },
             { href: '/admin/courses/new', label: '워크샵 개설', icon: <PlusCircle size={18} /> },
             { href: '/admin/flea_markets/new', label: '플리마켓 등록', icon: <PlusCircle size={18} /> },
+            { type: 'divider' },
+            { href: '/admin/profile', label: '프로필 설정', icon: <User size={18} /> },
           ] as SidebarItem[]}
         />
         <div className="dashboard-content">

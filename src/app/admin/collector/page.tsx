@@ -12,6 +12,7 @@ export default function PlacesCollectorPage() {
   const [query, setQuery] = useState('');
   const [languageCode, setLanguageCode] = useState('en');
   const [targetCategory, setTargetCategory] = useState('craft');
+  const [targetRegion, setTargetRegion] = useState('korea');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<any[]>([]);
   const [savingId, setSavingId] = useState<string | null>(null);
@@ -65,7 +66,7 @@ export default function PlacesCollectorPage() {
         phone: place.internationalPhoneNumber || '',
         website: place.websiteUri || '',
         snsLinks: {},
-        region: 'Global',
+        region: targetRegion as any,
         status: 'active' as const,
       };
 
@@ -95,9 +96,9 @@ export default function PlacesCollectorPage() {
       </div>
 
       <div style={{ background: 'var(--color-surface)', padding: 'var(--space-6)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', marginBottom: 'var(--space-8)' }}>
-        <form onSubmit={handleSearch} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr auto', gap: 'var(--space-4)', alignItems: 'end' }}>
+        <form onSubmit={handleSearch} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 2fr auto', gap: 'var(--space-4)', alignItems: 'end' }}>
           <div className="form-group">
-            <label className="form-label">검색 언어 (Language)</label>
+            <label className="form-label">검색 언어</label>
             <select className="form-select" value={languageCode} onChange={(e) => setLanguageCode(e.target.value)}>
               <option value="en">English (추천)</option>
               <option value="ko">한국어</option>
@@ -105,11 +106,20 @@ export default function PlacesCollectorPage() {
             </select>
           </div>
           <div className="form-group">
-            <label className="form-label">카테고리 할당 (Category)</label>
+            <label className="form-label">카테고리 할당</label>
             <select className="form-select" value={targetCategory} onChange={(e) => setTargetCategory(e.target.value)}>
               {CATEGORIES.map(cat => (
                 <option key={cat.key} value={cat.key}>{cat.emoji} {t(`filters.${cat.key}`)}</option>
               ))}
+            </select>
+          </div>
+          <div className="form-group">
+            <label className="form-label">지역 할당 (Region)</label>
+            <select className="form-select" value={targetRegion} onChange={(e) => setTargetRegion(e.target.value)}>
+              <option value="korea">한국 (Korea)</option>
+              <option value="southeast_asia">일본/동남아 (Japan/SEA)</option>
+              <option value="north_america">북미 (North America)</option>
+              <option value="northern_europe">북유럽 (Northern Europe)</option>
             </select>
           </div>
           <div className="form-group">

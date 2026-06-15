@@ -15,6 +15,12 @@ export default function ImageUpload({ initialUrl = '', onUpload, folder = 'poste
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  React.useEffect(() => {
+    if (initialUrl) {
+      setImageUrl(initialUrl);
+    }
+  }, [initialUrl]);
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
