@@ -1,14 +1,18 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// We use the service role key to bypass RLS for background syncing, 
-// or standard key if RLS allows inserts for admin.
-// For simplicity in MVP, we will just use standard supabase client assuming auth or we disable RLS for 'api' source.
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-const supabase = createClient(supabaseUrl, supabaseKey);
-
 export async function GET(request: Request) {
+  // We use the service role key to bypass RLS for background syncing, 
+  // or standard key if RLS allows inserts for admin.
+  // For simplicity in MVP, we will just use standard supabase client assuming auth or we disable RLS for 'api' source.
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+  
+  if (!supabaseUrl || !supabaseKey) {
+    return NextResponse.json({ error: 'Supabase credentials are not configured' }, { status: 500 });
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseKey);
   // Optional: check a secret token in the URL to prevent unauthorized syncs
   const { searchParams } = new URL(request.url);
   const secret = searchParams.get('secret');
