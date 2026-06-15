@@ -283,25 +283,36 @@ export async function addReview(data: Omit<Review, 'id' | 'createdAt'>): Promise
   }).select('id').single();
   if (error) throw error;
 
-  const { data: w } = await supabase.from('workshops').select('review_count, rating').eq('id', data.workshopId).single();
-  if (w) {
-    const oldCount = w.review_count || 0;
-    const oldRating = w.rating || 0;
-    const newCount = oldCount + 1;
-    const newRating = ((oldRating * oldCount) + data.rating) / newCount;
-    const roundedRating = Math.round(newRating * 10) / 10;
-
-    await supabase.from('workshops').update({ 
-      review_count: newCount,
-      rating: roundedRating
-    }).eq('id', data.workshopId);
-  }
+  await updateWorkshopRating(data.workshopId);
   return res.id;
 }
 
 export async function deleteReview(id: string): Promise<void> {
   if (!supabase) throw new Error('Supabase not configured');
+  // Get workshop_id before deleting
+  const { data: rev } = await supabase.from('reviews').select('workshop_id').eq('id', id).single();
+  
   await supabase.from('reviews').delete().eq('id', id);
+  
+  if (rev?.workshop_id) {
+    await updateWorkshopRating(rev.workshop_id);
+  }
+}
+
+async function updateWorkshopRating(workshopId: string) {
+  if (!supabase) return;
+  const { data: reviews } = await supabase.from('reviews').select('rating').eq('workshop_id', workshopId);
+  if (reviews) {
+    const newCount = reviews.length;
+    const sum = reviews.reduce((acc, r) => acc + (r.rating || 0), 0);
+    const newRating = newCount > 0 ? sum / newCount : 0;
+    const roundedRating = Math.round(newRating * 10) / 10;
+
+    await supabase.from('workshops').update({ 
+      review_count: newCount,
+      rating: roundedRating
+    }).eq('id', workshopId);
+  }
 }
 
 // ==========================================
