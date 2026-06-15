@@ -57,6 +57,7 @@ const mapFleaMarket = (d: any): FleaMarket => ({
   applicationClicks: d.application_clicks || 0,
   source: d.source || 'user',
   externalId: d.external_id,
+  status: d.status || 'active',
   createdAt: d.created_at,
 });
 
@@ -433,8 +434,13 @@ export async function updateFleaMarket(id: string, data: Partial<FleaMarket>): P
   if (data.instagram !== undefined) updateData.instagram = data.instagram;
   if (data.youtube !== undefined) updateData.youtube = data.youtube;
   if (data.vendorApplicationLink !== undefined) updateData.vendor_application_link = data.vendorApplicationLink;
+  if (data.status !== undefined) updateData.status = data.status;
 
-  await supabase.from('flea_markets').update(updateData).eq('id', id);
+  const { error } = await supabase.from('flea_markets').update(updateData).eq('id', id);
+  if (error) {
+    console.error('Update Flea Market Error:', error);
+    throw error;
+  }
 }
 
 export async function deleteFleaMarket(id: string): Promise<void> {
