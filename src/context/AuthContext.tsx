@@ -3,7 +3,6 @@
 // Auth Context — Provides auth + role state
 // ==========================================
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import type { User } from '@supabase/supabase-js';
 import { onAuthChange, getUserRole, signInWithGoogle, signInWithEmail, registerWithEmail, signOutUser, resetPasswordForEmail, updateUserPassword, findEmailByName } from '@/lib/auth';
 import type { AppUser, UserRole } from '@/types';
 
@@ -41,7 +40,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const { unsubscribe } = onAuthChange(async (supabaseUser) => {
       if (supabaseUser) {
-        // We import getUserProfile below
         const { getUserProfile } = await import('@/lib/database');
         const profile = await getUserProfile(supabaseUser.id);
         if (profile) {
@@ -69,34 +67,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  const signInGoogle = useCallback(async () => {
-    await signInWithGoogle();
-  }, []);
-
-  const signInEmailFn = useCallback(async (email: string, password: string) => {
-    await signInWithEmail(email, password);
-  }, []);
-
-  const registerFn = useCallback(async (email: string, password: string, name: string, role?: UserRole, file?: File | null) => {
-    await registerWithEmail(email, password, name, role, file);
-  }, []);
-
   const logout = useCallback(async () => {
     await signOutUser();
     setUser(null);
     setUserRole(null);
-  }, []);
-
-  const resetPassword = useCallback(async (email: string) => {
-    await resetPasswordForEmail(email);
-  }, []);
-
-  const updatePassword = useCallback(async (password: string) => {
-    await updateUserPassword(password);
-  }, []);
-
-  const findEmail = useCallback(async (name: string) => {
-    return await findEmailByName(name);
   }, []);
 
   return (
@@ -105,13 +79,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         userRole,
         loading,
-        signInGoogle: signInGoogle,
-        signInEmail: signInEmailFn,
-        register: registerFn,
+        signInGoogle: signInWithGoogle,
+        signInEmail: signInWithEmail,
+        register: registerWithEmail,
         logout,
-        resetPassword,
-        updatePassword,
-        findEmail,
+        resetPassword: resetPasswordForEmail,
+        updatePassword: updateUserPassword,
+        findEmail: findEmailByName,
       }}
     >
       {children}

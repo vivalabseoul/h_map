@@ -3,7 +3,7 @@
 // ==========================================
 import { supabase, isSupabaseConfigured } from './supabase';
 import type { User } from '@supabase/supabase-js';
-import type { AppUser, UserRole } from '@/types';
+import type { UserRole } from '@/types';
 
 /**
  * Create or update the user document in public.users
@@ -53,38 +53,6 @@ export async function getUserRole(id: string): Promise<UserRole> {
     console.warn('Error fetching user role:', error);
   }
   return 'member';
-}
-
-/**
- * Fetch full user profile
- */
-export async function getUserProfile(id: string): Promise<AppUser | null> {
-  if (!supabase || !isSupabaseConfigured) return null;
-  try {
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', id)
-      .single();
-      
-    if (data && !error) {
-      // Map snake_case to camelCase
-      return {
-        id: data.id,
-        email: data.email,
-        displayName: data.display_name,
-        photoURL: data.photo_url,
-        role: data.role,
-        createdAt: data.created_at,
-        preferredLocale: data.preferred_locale,
-        bio: data.bio,
-        disabled: data.disabled
-      } as AppUser;
-    }
-  } catch (error) {
-    console.warn('Error fetching user profile:', error);
-  }
-  return null;
 }
 
 /**

@@ -91,6 +91,7 @@ export interface FleaMarket {
   applicationClicks?: number;
   source?: 'user' | 'api';
   externalId?: string;
+  status?: 'active' | 'inactive';
   createdAt: string;
 }
 

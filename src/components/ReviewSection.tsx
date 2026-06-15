@@ -39,6 +39,7 @@ export default function ReviewSection({ workshopId, onReviewAdded }: ReviewSecti
         locale,
       });
       // Refresh reviews
+      const updated = await getReviews(workshopId);
       setReviews(updated);
       setNewRating(0);
       setNewText('');

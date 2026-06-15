@@ -439,6 +439,9 @@ export const demoCourses: Course[] = [
     currentParticipants: 5,
     status: 'open',
     startDate: '2026-07-01T10:00:00Z',
+    endDate: '2026-08-31T10:00:00Z',
+    availableDays: [1, 3, 5],
+    availableTimes: ['10:00', '14:00'],
     createdAt: '2025-06-01T09:00:00Z',
   },
   {
@@ -464,6 +467,9 @@ export const demoCourses: Course[] = [
     currentParticipants: 3,
     status: 'open',
     startDate: '2026-07-05T14:00:00Z',
+    endDate: '2026-08-31T14:00:00Z',
+    availableDays: [2, 4, 6],
+    availableTimes: ['14:00', '16:00'],
     createdAt: '2025-06-10T09:00:00Z',
   },
   {
@@ -489,6 +495,9 @@ export const demoCourses: Course[] = [
     currentParticipants: 8,
     status: 'open',
     startDate: '2026-07-03T11:00:00Z',
+    endDate: '2026-09-30T11:00:00Z',
+    availableDays: [1, 2, 3, 4, 5],
+    availableTimes: ['11:00', '15:00'],
     createdAt: '2025-06-05T09:00:00Z',
   },
   {
@@ -514,6 +523,9 @@ export const demoCourses: Course[] = [
     currentParticipants: 7,
     status: 'open',
     startDate: '2026-07-07T15:00:00Z',
+    endDate: '2026-08-31T15:00:00Z',
+    availableDays: [0, 6],
+    availableTimes: ['13:00', '15:00'],
     createdAt: '2025-06-12T09:00:00Z',
   },
   {
@@ -539,6 +551,9 @@ export const demoCourses: Course[] = [
     currentParticipants: 2,
     status: 'open',
     startDate: '2026-07-10T13:00:00Z',
+    endDate: '2026-09-30T13:00:00Z',
+    availableDays: [3, 5],
+    availableTimes: ['13:00'],
     createdAt: '2025-06-08T09:00:00Z',
   },
   {
@@ -663,6 +678,9 @@ export const demoBookings: Booking[] = [
     userId: 'demo-user',
     userName: 'Demo User',
     status: 'confirmed',
+    selectedDate: '2026-07-01',
+    selectedTime: '10:00',
+    participants: 2,
     createdAt: '2025-06-12T10:00:00Z',
   },
   {
@@ -671,6 +689,9 @@ export const demoBookings: Booking[] = [
     userId: 'demo-user',
     userName: 'Demo User',
     status: 'cancelled',
+    selectedDate: '2026-07-03',
+    selectedTime: '11:00',
+    participants: 1,
     createdAt: '2025-06-10T14:30:00Z',
   },
   {
@@ -679,6 +700,9 @@ export const demoBookings: Booking[] = [
     userId: 'demo-user',
     userName: 'Demo User',
     status: 'confirmed',
+    selectedDate: '2026-07-10',
+    selectedTime: '13:00',
+    participants: 1,
     createdAt: '2025-06-13T09:15:00Z',
   }
 ];
