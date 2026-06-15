@@ -282,9 +282,18 @@ export async function addReview(data: Omit<Review, 'id' | 'createdAt'>): Promise
   }).select('id').single();
   if (error) throw error;
 
-  const { data: w } = await supabase.from('workshops').select('review_count').eq('id', data.workshopId).single();
+  const { data: w } = await supabase.from('workshops').select('review_count, rating').eq('id', data.workshopId).single();
   if (w) {
-    await supabase.from('workshops').update({ review_count: (w.review_count || 0) + 1 }).eq('id', data.workshopId);
+    const oldCount = w.review_count || 0;
+    const oldRating = w.rating || 0;
+    const newCount = oldCount + 1;
+    const newRating = ((oldRating * oldCount) + data.rating) / newCount;
+    const roundedRating = Math.round(newRating * 10) / 10;
+
+    await supabase.from('workshops').update({ 
+      review_count: newCount,
+      rating: roundedRating
+    }).eq('id', data.workshopId);
   }
   return res.id;
 }

@@ -9,9 +9,10 @@ import styles from './ReviewSection.module.css';
 
 interface ReviewSectionProps {
   workshopId: string;
+  onReviewAdded?: () => void;
 }
 
-export default function ReviewSection({ workshopId }: ReviewSectionProps) {
+export default function ReviewSection({ workshopId, onReviewAdded }: ReviewSectionProps) {
   const { locale, t } = useLanguage();
   const { user } = useAuth();
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -38,10 +39,10 @@ export default function ReviewSection({ workshopId }: ReviewSectionProps) {
         locale,
       });
       // Refresh reviews
-      const updated = await getReviews(workshopId);
       setReviews(updated);
       setNewRating(0);
       setNewText('');
+      if (onReviewAdded) onReviewAdded();
     } catch (error) {
       console.error('Review submit error:', error);
     } finally {

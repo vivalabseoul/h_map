@@ -4,7 +4,7 @@ import { X, Navigation, Share2, MapPin, Phone, Globe, Star } from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext';
 import { CATEGORIES } from '@/types';
 import type { Workshop, Course, AppUser } from '@/types';
-import { getCoursesByWorkshop, getUserProfile } from '@/lib/database';
+import { getCoursesByWorkshop, getUserProfile, getWorkshopById } from '@/lib/database';
 import CourseCard from './CourseCard';
 import ReviewSection from './ReviewSection';
 import styles from './BottomSheet.module.css';
@@ -21,10 +21,23 @@ export default function BottomSheet({ workshop, allWorkshops, onWorkshopClick, o
   const [courses, setCourses] = useState<Course[]>([]);
   const [instructor, setInstructor] = useState<AppUser | null>(null);
 
+  const [currentRating, setCurrentRating] = useState(workshop.rating);
+  const [currentReviewCount, setCurrentReviewCount] = useState(workshop.reviewCount);
+
   useEffect(() => {
     getCoursesByWorkshop(workshop.id).then(setCourses);
     getUserProfile(workshop.ownerId).then(setInstructor);
-  }, [workshop.id, workshop.ownerId]);
+    setCurrentRating(workshop.rating);
+    setCurrentReviewCount(workshop.reviewCount);
+  }, [workshop]);
+
+  const handleReviewAdded = useCallback(async () => {
+    const updated = await getWorkshopById(workshop.id);
+    if (updated) {
+      setCurrentRating(updated.rating);
+      setCurrentReviewCount(updated.reviewCount);
+    }
+  }, [workshop.id]);
 
   const similarWorkshops = useMemo(() => {
     if (!allWorkshops || allWorkshops.length === 0) return [];
@@ -131,11 +144,11 @@ export default function BottomSheet({ workshop, allWorkshops, onWorkshopClick, o
           {/* Rating & Category */}
           <div className={styles.ratingRow}>
             <div className={styles.rating}>
-              <span className={styles.stars}>{renderStars(workshop.rating)}</span>
-              <span>{workshop.rating}</span>
+              <span className={styles.stars}>{renderStars(currentRating)}</span>
+              <span>{currentRating}</span>
             </div>
             <span className={styles.reviewCount}>
-              ({workshop.reviewCount} {t('workshop.reviews')})
+              ({currentReviewCount} {t('workshop.reviews')})
             </span>
             <span
               className={styles.categoryBadge}
@@ -234,7 +247,7 @@ export default function BottomSheet({ workshop, allWorkshops, onWorkshopClick, o
           )}
 
           {/* Reviews */}
-          <ReviewSection workshopId={workshop.id} />
+          <ReviewSection workshopId={workshop.id} onReviewAdded={handleReviewAdded} />
 
           {/* Similar Workshops Recommendation */}
           {similarWorkshops.length > 0 && (
