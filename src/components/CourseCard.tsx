@@ -28,6 +28,7 @@ export default function CourseCard({ course }: CourseCardProps) {
   };
 
   const handleConfirmBooking = async (selectedDate: string, selectedTime: string, participants: number, phone: string, name: string) => {
+    if (!user) return;
     setShowModal(false);
     setApplying(true);
     try {
