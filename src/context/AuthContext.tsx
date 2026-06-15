@@ -4,6 +4,7 @@
 // ==========================================
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { onAuthChange, getUserRole, signInWithGoogle, signInWithEmail, registerWithEmail, signOutUser, resetPasswordForEmail, updateUserPassword, findEmailByName } from '@/lib/auth';
+import type { User } from '@supabase/supabase-js';
 import type { AppUser, UserRole } from '@/types';
 
 interface AuthContextValue {
@@ -11,8 +12,8 @@ interface AuthContextValue {
   userRole: UserRole | null;
   loading: boolean;
   signInGoogle: () => Promise<void>;
-  signInEmail: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, name: string, role?: UserRole, file?: File | null) => Promise<void>;
+  signInEmail: (email: string, password: string) => Promise<User | null>;
+  register: (email: string, password: string, name: string, role?: UserRole, file?: File | null) => Promise<User | null>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   updatePassword: (password: string) => Promise<void>;
@@ -24,8 +25,8 @@ const AuthContext = createContext<AuthContextValue>({
   userRole: null,
   loading: true,
   signInGoogle: async () => {},
-  signInEmail: async () => {},
-  register: async () => {},
+  signInEmail: async () => null,
+  register: async () => null,
   logout: async () => {},
   resetPassword: async () => {},
   updatePassword: async () => {},

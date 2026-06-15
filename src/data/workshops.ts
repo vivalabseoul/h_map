@@ -569,6 +569,9 @@ export const demoCourses: Course[] = [
     currentParticipants: 2,
     status: 'open',
     startDate: '2026-07-02T10:00:00Z',
+    endDate: '2026-08-31T10:00:00Z',
+    availableDays: [2, 4],
+    availableTimes: ['10:00', '13:00'],
     createdAt: '2025-06-01T09:00:00Z',
   },
   {
@@ -584,6 +587,9 @@ export const demoCourses: Course[] = [
     currentParticipants: 10,
     status: 'closed',
     startDate: '2026-07-03T10:00:00Z',
+    endDate: '2026-08-31T10:00:00Z',
+    availableDays: [1, 3, 5],
+    availableTimes: ['10:00', '15:00'],
     createdAt: '2025-06-01T09:00:00Z',
   },
   {
@@ -599,6 +605,9 @@ export const demoCourses: Course[] = [
     currentParticipants: 4,
     status: 'open',
     startDate: '2026-07-04T10:00:00Z',
+    endDate: '2026-08-31T10:00:00Z',
+    availableDays: [0, 6],
+    availableTimes: ['10:00', '14:00'],
     createdAt: '2025-06-01T09:00:00Z',
   },
   {
@@ -614,6 +623,9 @@ export const demoCourses: Course[] = [
     currentParticipants: 1,
     status: 'open',
     startDate: '2026-07-05T10:00:00Z',
+    endDate: '2026-08-31T10:00:00Z',
+    availableDays: [1, 2, 3, 4, 5],
+    availableTimes: ['10:00'],
     createdAt: '2025-06-01T09:00:00Z',
   },
 ];
