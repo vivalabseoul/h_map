@@ -7,7 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 
 export default function LoginPage() {
-  const { signInGoogle, signInEmail, loginAsDemo } = useAuth();
+  const { signInGoogle, signInEmail } = useAuth();
   const { t } = useLanguage();
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -121,36 +121,6 @@ export default function LoginPage() {
           </svg>
           {t('auth.sign_in_google')}
         </button>
-
-        {/* Demo Login Options */}
-        <div style={{ marginTop: 'var(--space-6)', marginBottom: 'var(--space-6)' }}>
-          <p style={{ textAlign: 'center', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-3)' }}>
-            개발용 임시 로그인 (Demo)
-          </p>
-          <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'center' }}>
-            <button
-              onClick={() => { loginAsDemo('super_admin'); router.push('/admin'); }}
-              className="btn btn-secondary btn-sm"
-              style={{ flex: 1, padding: '8px 4px' }}
-            >
-              👑 슈퍼관리자
-            </button>
-            <button
-              onClick={() => { loginAsDemo('instructor'); router.push('/instructor'); }}
-              className="btn btn-secondary btn-sm"
-              style={{ flex: 1, padding: '8px 4px' }}
-            >
-              👨‍🎨 크리에이터
-            </button>
-            <button
-              onClick={() => { loginAsDemo('member'); router.push('/my'); }}
-              className="btn btn-secondary btn-sm"
-              style={{ flex: 1, padding: '8px 4px' }}
-            >
-              👤 일반회원
-            </button>
-          </div>
-        </div>
 
         {/* Divider */}
         <div style={{

@@ -73,10 +73,28 @@ function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChang
                 key={market.id}
                 position={[market.lat, market.lng]}
                 icon={L.divIcon({
-                  className: 'custom-marker',
-                  html: `<div style="background-color: ${bgColor}; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3); font-size: 16px;">${iconEmoji}</div>`,
-                  iconSize: [32, 32],
-                  iconAnchor: [16, 16],
+                  className: '',
+                  html: `
+                    <div style="
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      width: 42px;
+                      height: 42px;
+                      border-radius: 50% 50% 50% 0;
+                      transform: rotate(-45deg);
+                      background: ${bgColor};
+                      box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+                      border: 3px solid white;
+                      cursor: pointer;
+                      transition: transform 0.2s;
+                    ">
+                      <span style="transform: rotate(45deg); font-size: 1.15rem; line-height: 1;">${iconEmoji}</span>
+                    </div>
+                  `,
+                  iconSize: [42, 42],
+                  iconAnchor: [21, 42],
+                  popupAnchor: [0, -42],
                 })}
               >
               <Popup>

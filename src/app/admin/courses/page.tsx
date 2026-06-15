@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
-import { getCourses } from '@/lib/database';
+import { getCourses, updateCourse } from '@/lib/database';
 import type { Course } from '@/types';
 
 export default function AdminCoursesPage() {
@@ -12,10 +12,16 @@ export default function AdminCoursesPage() {
     getCourses().then(setCourses);
   }, []);
 
-  const handleToggleStatus = (id: string, currentStatus: string) => {
+  const handleToggleStatus = async (id: string, currentStatus: string) => {
     const newStatus = currentStatus === 'open' ? 'closed' : 'open';
     if (confirm(`워크샵 예약을 강제로 ${newStatus === 'open' ? '오픈' : '마감'} 하시겠습니까?`)) {
-      setCourses(prev => prev.map(c => c.id === id ? { ...c, status: newStatus as any } : c));
+      try {
+        await updateCourse(id, { status: newStatus as any });
+        setCourses(prev => prev.map(c => c.id === id ? { ...c, status: newStatus as any } : c));
+      } catch (err) {
+        console.error(err);
+        alert('상태 변경 중 오류가 발생했습니다.');
+      }
     }
   };
 

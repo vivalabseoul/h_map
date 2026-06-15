@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Plus } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
-import { getCoursesByInstructor } from '@/lib/database';
+import { getCoursesByInstructor, deleteCourse } from '@/lib/database';
 import type { Course } from '@/types';
 
 export default function InstructorCoursesPage() {
@@ -18,7 +18,13 @@ export default function InstructorCoursesPage() {
 
   const handleDelete = async (id: string) => {
     if (confirm(t('instructor.confirm_delete') || '정말 삭제하시겠습니까?')) {
-      setCourses(prev => prev.filter(c => c.id !== id));
+      try {
+        await deleteCourse(id);
+        setCourses(prev => prev.filter(c => c.id !== id));
+      } catch (err) {
+        console.error(err);
+        alert('삭제 중 오류가 발생했습니다.');
+      }
     }
   };
 
@@ -50,7 +56,7 @@ export default function InstructorCoursesPage() {
           <table className="table">
             <thead>
               <tr>
-                <th>Course</th>
+                <th>Course / Studio</th>
                 <th>Price</th>
                 <th>Duration</th>
                 <th>Participants</th>
@@ -62,7 +68,16 @@ export default function InstructorCoursesPage() {
             <tbody>
               {courses.map((c) => (
                 <tr key={c.id}>
-                  <td style={{ fontWeight: 500 }}>{c.title[locale]}</td>
+                  <td>
+                    <div style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                      {c.title[locale] || c.title.ko || c.title.en}
+                    </div>
+                    {c.workshopName && (
+                      <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
+                        {(c.workshopName as any)[locale] || (c.workshopName as any).ko || (c.workshopName as any).en}
+                      </div>
+                    )}
+                  </td>
                   <td>{c.price}</td>
                   <td>{c.duration}</td>
                   <td>{c.currentParticipants}/{c.maxParticipants}</td>

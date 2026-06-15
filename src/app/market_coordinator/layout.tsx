@@ -24,6 +24,10 @@ export default function MarketCoordinatorLayout({ children }: { children: React.
           items={sidebarItems} 
         />
         <div className="dashboard-content">
+          <div className="mobile-warning">
+            <span>⚠️</span>
+            <span><strong>안내:</strong> 플리마켓 등록 및 데이터 관리는 원활한 사용을 위해 <strong>데스크톱이나 노트북</strong> 환경에서의 사용을 권장합니다.</span>
+          </div>
           {children}
         </div>
       </div>

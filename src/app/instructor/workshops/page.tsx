@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Plus } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
-import { getWorkshopsByOwner } from '@/lib/database';
+import { getWorkshopsByOwner, deleteWorkshop } from '@/lib/database';
 import { CATEGORIES } from '@/types';
 import type { Workshop } from '@/types';
 
@@ -19,8 +19,13 @@ export default function InstructorWorkshopsPage() {
 
   const handleDelete = async (id: string) => {
     if (confirm(t('instructor.confirm_delete') || '정말 삭제하시겠습니까?')) {
-      // In a real app: await deleteWorkshop(id);
-      setWorkshops(prev => prev.filter(w => w.id !== id));
+      try {
+        await deleteWorkshop(id);
+        setWorkshops(prev => prev.filter(w => w.id !== id));
+      } catch (err) {
+        console.error(err);
+        alert('스튜디오 삭제 중 오류가 발생했습니다.');
+      }
     }
   };
 
@@ -52,11 +57,11 @@ export default function InstructorWorkshopsPage() {
           <table className="table">
             <thead>
               <tr>
-                <th>Workshop</th>
-                <th>Category</th>
-                <th>Rating</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th>스튜디오명 (Studio)</th>
+                <th>카테고리 (Category)</th>
+                <th>평점 (Rating)</th>
+                <th>상태 (Status)</th>
+                <th>관리 (Actions)</th>
               </tr>
             </thead>
             <tbody>
@@ -64,7 +69,9 @@ export default function InstructorWorkshopsPage() {
                 const cat = CATEGORIES.find((c) => c.key === w.category);
                 return (
                   <tr key={w.id}>
-                    <td style={{ fontWeight: 500 }}>{w.name[locale]}</td>
+                    <td style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                      {w.name[locale] || w.name.ko || w.name.en || '이름 없음'}
+                    </td>
                     <td><span className="badge badge-accent">{cat?.emoji} {t(`filters.${w.category}`)}</span></td>
                     <td>⭐ {w.rating}</td>
                     <td><span className={`badge ${w.status === 'active' ? 'badge-success' : 'badge-warning'}`}>{w.status}</span></td>

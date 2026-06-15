@@ -18,6 +18,16 @@ export default function RoleGuard({
   const { user, userRole, loading } = useAuth();
   const router = useRouter();
 
+  React.useEffect(() => {
+    if (!loading) {
+      if (!user) {
+        router.push(fallbackPath);
+      } else if (userRole && !allowedRoles.includes(userRole)) {
+        router.push('/');
+      }
+    }
+  }, [loading, user, userRole, allowedRoles, fallbackPath, router]);
+
   if (loading) {
     return (
       <div style={{
@@ -35,16 +45,6 @@ export default function RoleGuard({
       </div>
     );
   }
-
-  React.useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        router.push(fallbackPath);
-      } else if (userRole && !allowedRoles.includes(userRole)) {
-        router.push('/');
-      }
-    }
-  }, [loading, user, userRole, allowedRoles, fallbackPath, router]);
 
   if (!user || (userRole && !allowedRoles.includes(userRole))) {
     return null;

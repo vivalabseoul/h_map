@@ -171,7 +171,8 @@ export async function registerWithEmail(
               .getPublicUrl(fileName);
             businessCardUrl = publicUrlData.publicUrl;
           } else {
-            console.error('Business card upload error:', uploadError);
+            console.error('Business card upload error:', uploadError.message);
+            // Continue without business card URL - don't block registration
           }
         }
 
@@ -183,7 +184,10 @@ export async function registerWithEmail(
         });
         
         if (reqError) {
-          console.error('Error inserting role request:', reqError);
+          console.error('Error inserting role request:', reqError.message, reqError.code, reqError.hint, reqError.details);
+          alert(`등급 승인 요청 저장에 실패했습니다: ${reqError.message}`);
+        } else {
+          console.log('Role request inserted successfully for user:', data.user.id);
         }
       }
     }

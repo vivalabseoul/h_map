@@ -6,6 +6,7 @@ import { createWorkshop } from '@/lib/database';
 import type { WorkshopCategory, Region, Locale } from '@/types';
 import { CATEGORIES, REGIONS } from '@/types';
 import AddressSearch from '@/components/AddressSearch';
+import ImageUpload from '@/components/ImageUpload';
 
 export default function CreateStudioPage() {
   const router = useRouter();
@@ -25,6 +26,7 @@ export default function CreateStudioPage() {
   const [website, setWebsite] = useState('');
   const [snsInstagram, setSnsInstagram] = useState('');
   const [snsYoutube, setSnsYoutube] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
 
   const handleAddressSelect = (selectedAddress: string, selectedLat: number, selectedLng: number) => {
     setAddress(prev => ({ ...prev, [activeTab]: selectedAddress }));
@@ -47,7 +49,7 @@ export default function CreateStudioPage() {
         address,
         lat: lat ?? (REGIONS.find(r => r.key === region)?.center[0] || 37.576),
         lng: lng ?? (REGIONS.find(r => r.key === region)?.center[1] || 126.988),
-        images: ['https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=800&q=80'],
+        images: imageUrl ? [imageUrl] : [],
         tags: ['Beginner_Friendly'], // Mock default tags
         phone,
         website,
@@ -154,6 +156,15 @@ export default function CreateStudioPage() {
           </div>
 
           <hr className="divider" />
+
+          {/* Image Upload */}
+          <div style={{ marginBottom: 'var(--space-4)' }}>
+            <ImageUpload 
+              initialUrl={imageUrl} 
+              onUpload={setImageUrl} 
+              folder="workshops" 
+            />
+          </div>
 
           {/* Global Config */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>

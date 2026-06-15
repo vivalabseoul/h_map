@@ -4,7 +4,7 @@
    ========================================== */
 
 /* ---------- Google Fonts ---------- */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 /* ---------- CSS Custom Properties ---------- */
 :root {
@@ -44,8 +44,8 @@
   --color-info-light: rgba(91, 141, 217, 0.12);
 
   /* Typography */
-  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-heading: 'Playfair Display', Georgia, serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
+  --font-heading: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.8125rem;
   --font-size-base: 0.9375rem;
@@ -629,7 +629,30 @@ input, textarea, select {
   .dashboard-content {
     margin-left: 0;
     padding: var(--space-4);
-    padding-top: calc(var(--header-height) + var(--space-4));
+    /* header height + horizontal sidebar height (approx 50px) + spacing */
+    padding-top: calc(var(--header-height) + 55px + var(--space-4));
+  }
+
+  .mobile-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    word-break: keep-all;
+  }
+}
+
+/* Hide on desktop */
+@media (min-width: 769px) {
+  .mobile-warning {
+    display: none;
   }
 }
 

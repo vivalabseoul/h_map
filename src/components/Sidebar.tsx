@@ -2,13 +2,19 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, MapPin, BookOpen, Calendar } from 'lucide-react';
 import styles from './Sidebar.module.css';
 
 export type SidebarItem = 
   | { type?: 'link'; href: string; label: string; icon: React.ReactNode }
   | { type: 'header'; label: string }
   | { type: 'divider' };
+
+export const instructorMenuItems = [
+    { href: '/instructor/workshops', label: 'nav.my_workshops', icon: <MapPin size={20} /> },
+    { href: '/instructor/courses', label: 'nav.my_courses', icon: <BookOpen size={20} /> },
+    { href: '/instructor/bookings', label: 'nav.my_bookings', icon: <Calendar size={20} /> },
+];
 
 interface SidebarProps {
   title: string;
@@ -34,13 +40,13 @@ export default function Sidebar({ title, subtitle, emoji = '🧶', items }: Side
         {items.map((item, index) => {
           if (item.type === 'header') {
             return (
-              <div key={`header-${index}`} style={{ padding: 'var(--space-4) var(--space-4) var(--space-2)', fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <div key={`header-${index}`} className={styles.navHeader} style={{ padding: 'var(--space-4) var(--space-4) var(--space-2)', fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 {item.label}
               </div>
             );
           }
           if (item.type === 'divider') {
-            return <div key={`divider-${index}`} style={{ height: '1px', backgroundColor: 'var(--color-border)', margin: 'var(--space-2) var(--space-4)' }} />;
+            return <div key={`divider-${index}`} className={styles.navDivider} style={{ height: '1px', backgroundColor: 'var(--color-border)', margin: 'var(--space-2) var(--space-4)' }} />;
           }
 
           // Default is 'link'

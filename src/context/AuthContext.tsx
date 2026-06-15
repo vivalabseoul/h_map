@@ -15,7 +15,6 @@ interface AuthContextValue {
   signInEmail: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string, role?: UserRole, file?: File | null) => Promise<void>;
   logout: () => Promise<void>;
-  loginAsDemo: (role: UserRole) => void;
 }
 
 const AuthContext = createContext<AuthContextValue>({
@@ -26,7 +25,6 @@ const AuthContext = createContext<AuthContextValue>({
   signInEmail: async () => {},
   register: async () => {},
   logout: async () => {},
-  loginAsDemo: () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -83,17 +81,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUserRole(null);
   }, []);
 
-  const loginAsDemo = useCallback((role: UserRole) => {
-    const fakeUser = {
-      id: role === 'instructor' ? 'demo-instructor-1' : `demo_${role}_123`,
-      email: `demo_${role}@example.com`,
-      displayName: role === 'super_admin' ? '슈퍼관리자' : role === 'instructor' ? '크리에이터' : '일반회원',
-      photoURL: `https://api.dicebear.com/7.x/avataaars/svg?seed=${role}`,
-    } as any;
-    setUser(fakeUser);
-    setUserRole(role);
-  }, []);
-
   return (
     <AuthContext.Provider
       value={{
@@ -104,7 +91,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signInEmail: signInEmailFn,
         register: registerFn,
         logout,
-        loginAsDemo,
       }}
     >
       {children}

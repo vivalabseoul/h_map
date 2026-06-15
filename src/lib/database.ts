@@ -26,11 +26,13 @@ const mapCourse = (d: any): Course => ({
   id: d.id, workshopId: d.workshop_id, instructorId: d.instructor_id, instructorName: d.instructor_name,
   title: d.title, description: d.description, price: d.price, duration: d.duration,
   maxParticipants: d.max_participants, currentParticipants: d.current_participants,
-  status: d.status, startDate: d.start_date, createdAt: d.created_at,
+  status: d.status, imageUrl: d.image_url, startDate: d.start_date, endDate: d.end_date,
+  availableDays: d.available_days || [], availableTimes: d.available_times || [],
+  createdAt: d.created_at,
 });
 const mapBooking = (d: any): Booking => ({
-  id: d.id, courseId: d.course_id, userId: d.user_id, userName: d.user_name,
-  status: d.status, createdAt: d.created_at,
+  id: d.id, courseId: d.course_id, userId: d.user_id, userName: d.user_name, userPhone: d.user_phone,
+  status: d.status, selectedDate: d.selected_date, selectedTime: d.selected_time, participants: d.participants || 1, createdAt: d.created_at,
 });
 const mapReview = (d: any): Review => ({
   id: d.id, workshopId: d.workshop_id, userId: d.user_id, userName: d.user_name,
@@ -128,8 +130,17 @@ export async function getCoursesByWorkshop(workshopId: string): Promise<Course[]
 
 export async function getCoursesByInstructor(instructorId: string): Promise<Course[]> {
   if (!supabase || !isSupabaseConfigured) return demoCourses.filter(c => c.instructorId === instructorId);
-  const { data } = await supabase.from('courses').select('*').eq('instructor_id', instructorId).order('created_at', { ascending: false });
-  return (data || []).map(mapCourse);
+  const { data } = await supabase.from('courses')
+    .select('*, workshops(name)')
+    .eq('instructor_id', instructorId)
+    .order('created_at', { ascending: false });
+  return (data || []).map(d => {
+    const c = mapCourse(d);
+    if (d.workshops) {
+      c.workshopName = d.workshops.name;
+    }
+    return c;
+  });
 }
 
 export async function createCourse(data: Omit<Course, 'id' | 'createdAt' | 'currentParticipants'>): Promise<string> {
@@ -137,7 +148,9 @@ export async function createCourse(data: Omit<Course, 'id' | 'createdAt' | 'curr
   const insertData = {
     workshop_id: data.workshopId, instructor_id: data.instructorId, instructor_name: data.instructorName,
     title: data.title, description: data.description, price: data.price, duration: data.duration,
-    max_participants: data.maxParticipants, status: data.status, start_date: data.startDate,
+    max_participants: data.maxParticipants, status: data.status, image_url: data.imageUrl,
+    start_date: data.startDate, end_date: data.endDate, 
+    available_days: data.availableDays, available_times: data.availableTimes,
   };
   const { data: res, error } = await supabase.from('courses').insert(insertData).select('id').single();
   if (error) throw error;
@@ -151,6 +164,11 @@ export async function updateCourse(id: string, data: Partial<Course>): Promise<v
   if (data.description) updateData.description = data.description;
   if (data.price) updateData.price = data.price;
   if (data.status) updateData.status = data.status;
+  if (data.imageUrl !== undefined) updateData.image_url = data.imageUrl;
+  if (data.startDate) updateData.start_date = data.startDate;
+  if (data.endDate) updateData.end_date = data.endDate;
+  if (data.availableDays) updateData.available_days = data.availableDays;
+  if (data.availableTimes) updateData.available_times = data.availableTimes;
   await supabase.from('courses').update(updateData).eq('id', id);
 }
 
@@ -162,20 +180,16 @@ export async function deleteCourse(id: string): Promise<void> {
 // ==========================================
 // Bookings
 // ==========================================
-export async function createBooking(courseId: string, userId: string, userName: string): Promise<string> {
+export async function createBooking(courseId: string, userId: string, userName: string, selectedDate: string, selectedTime: string, participants: number = 1, userPhone: string = ''): Promise<string> {
   if (!supabase) throw new Error('Supabase not configured');
   const { data: res, error } = await supabase.from('bookings').insert({
-    course_id: courseId, user_id: userId, user_name: userName, status: 'confirmed'
+    course_id: courseId, user_id: userId, user_name: userName, user_phone: userPhone, status: 'confirmed',
+    selected_date: selectedDate, selected_time: selectedTime, participants
   }).select('id').single();
   if (error) throw error;
 
-  // Increment course participants
-  // Note: Supabase doesn't have an atomic increment via simple RPC unless defined. 
-  // For safety, let's read and update or use an RPC. Since we don't have RPC yet:
-  const { data: c } = await supabase.from('courses').select('current_participants').eq('id', courseId).single();
-  if (c) {
-    await supabase.from('courses').update({ current_participants: (c.current_participants || 0) + 1 }).eq('id', courseId);
-  }
+  // Note: We no longer increment the global 'current_participants' on the course.
+  // Bookings limits are calculated dynamically per time slot.
 
   return res.id;
 }
@@ -197,8 +211,40 @@ export async function updateBookingStatus(bookingId: string, status: string): Pr
 
 export async function getBookingsByUser(userId: string): Promise<Booking[]> {
   if (!supabase || !isSupabaseConfigured) return demoBookings;
-  const { data } = await supabase.from('bookings').select('*').eq('user_id', userId).order('created_at', { ascending: false });
-  return (data || []).map(mapBooking);
+  const { data } = await supabase.from('bookings')
+    .select('*, courses(title, workshops(name))')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+    
+  return (data || []).map(d => {
+    const b = mapBooking(d);
+    if (d.courses) {
+      b.courseTitle = d.courses.title;
+      if (d.courses.workshops) {
+        b.workshopName = d.courses.workshops.name;
+      }
+    }
+    return b;
+  });
+}
+
+export async function getBookingsByInstructor(instructorId: string): Promise<Booking[]> {
+  if (!supabase || !isSupabaseConfigured) return [];
+  const { data } = await supabase.from('bookings')
+    .select('*, courses!inner(instructor_id, title, workshops(name))')
+    .eq('courses.instructor_id', instructorId)
+    .order('created_at', { ascending: false });
+    
+  return (data || []).map(d => {
+    const b = mapBooking(d);
+    if (d.courses) {
+      b.courseTitle = d.courses.title;
+      if (d.courses.workshops) {
+        b.workshopName = d.courses.workshops.name;
+      }
+    }
+    return b;
+  });
 }
 
 export async function getBookingsByCourse(courseId: string): Promise<Booking[]> {
@@ -262,9 +308,20 @@ export async function getUserProfileData(id: string): Promise<AppUser | null> {
   const { data } = await supabase.from('users').select('*').eq('id', id).single();
   return data ? mapUser(data) : null;
 }
-// Alias for getUserProfile since I had a naming conflict
 export { getUserProfileData as getUserProfile };
 
+export async function updateUserProfile(id: string, data: { displayName?: string; photoURL?: string; bio?: string }): Promise<void> {
+  if (!supabase) throw new Error('Supabase not configured');
+  const updateData: any = {};
+  if (data.displayName !== undefined) updateData.display_name = data.displayName;
+  if (data.photoURL !== undefined) updateData.photo_url = data.photoURL;
+  if (data.bio !== undefined) updateData.bio = data.bio;
+  
+  if (Object.keys(updateData).length > 0) {
+    const { error } = await supabase.from('users').update(updateData).eq('id', id);
+    if (error) throw error;
+  }
+}
 
 export async function getAllUsers(): Promise<AppUser[]> {
   if (!supabase || !isSupabaseConfigured) return [];
@@ -380,6 +437,23 @@ export async function incrementVendorApplicationClick(id: string): Promise<void>
   if (!supabase) return;
   // We use an RPC call to avoid race conditions when incrementing clicks
   await supabase.rpc('increment_application_clicks', { market_id: id });
+}
+
+export async function getBookedParticipants(courseId: string, date: string, time: string): Promise<number> {
+  if (!supabase) return 0;
+  const { data, error } = await supabase.from('bookings')
+    .select('participants')
+    .eq('course_id', courseId)
+    .eq('selected_date', date)
+    .eq('selected_time', time)
+    .eq('status', 'confirmed');
+    
+  if (error) {
+    console.error('Failed to get booked participants', error);
+    return 0;
+  }
+  
+  return data.reduce((sum, b) => sum + (b.participants || 1), 0);
 }
 
 // ==========================================

@@ -5,6 +5,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
 import { createBooking } from '@/lib/database';
 import type { Course } from '@/types';
+import BookingModal from './BookingModal';
 import styles from './CourseCard.module.css';
 
 interface CourseCardProps {
@@ -16,23 +17,30 @@ export default function CourseCard({ course }: CourseCardProps) {
   const { user, userRole } = useAuth();
   const [applying, setApplying] = useState(false);
   const [applied, setApplied] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
-  const spotsLeft = course.maxParticipants - course.currentParticipants;
-  const isFull = spotsLeft <= 0;
   const canApply = user && (userRole === 'member' || userRole === 'super_admin' || userRole === 'manager');
+  const isOpen = course.status === 'open';
 
-  const handleApply = useCallback(async () => {
+  const handleApplyClick = () => {
     if (!user || !canApply || applying) return;
+    setShowModal(true);
+  };
+
+  const handleConfirmBooking = async (selectedDate: string, selectedTime: string, participants: number, phone: string, name: string) => {
+    setShowModal(false);
     setApplying(true);
     try {
-      await createBooking(course.id, user.id, user.displayName || 'User');
+      await createBooking(course.id, user.id, name, selectedDate, selectedTime, participants, phone);
       setApplied(true);
+      alert('예약이 성공적으로 완료되었습니다!');
     } catch (error) {
       console.error('Booking error:', error);
+      alert('예약 중 오류가 발생했습니다.');
     } finally {
       setApplying(false);
     }
-  }, [user, canApply, applying, course.id]);
+  };
 
   const statusColor = course.status === 'open'
     ? { bg: 'var(--color-success-light)', color: 'var(--color-success)' }
@@ -42,7 +50,33 @@ export default function CourseCard({ course }: CourseCardProps) {
 
   return (
     <div className={styles.card}>
-      <div className={styles.cardHeader}>
+      {course.imageUrl ? (
+        <div style={{
+          width: '100%',
+          height: '160px',
+          backgroundImage: `url(${course.imageUrl})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          borderTopLeftRadius: 'var(--radius-lg)',
+          borderTopRightRadius: 'var(--radius-lg)',
+        }} />
+      ) : (
+        <div style={{
+          width: '100%',
+          height: '160px',
+          backgroundColor: 'var(--color-bg-alt)',
+          borderTopLeftRadius: 'var(--radius-lg)',
+          borderTopRightRadius: 'var(--radius-lg)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'var(--color-text-muted)'
+        }}>
+          No Image
+        </div>
+      )}
+      
+      <div className={styles.cardHeader} style={{ paddingTop: 'var(--space-4)' }}>
         <h4 className={styles.courseTitle}>{course.title[locale]}</h4>
         <span
           className={styles.statusBadge}
@@ -63,17 +97,17 @@ export default function CourseCard({ course }: CourseCardProps) {
         </div>
         <div className={styles.infoItem}>
           <Users size={14} className={styles.infoIcon} />
-          {course.currentParticipants}/{course.maxParticipants}
+          타임당 {course.maxParticipants}명
         </div>
         <div className={styles.infoItem}>
           <Calendar size={14} className={styles.infoIcon} />
-          {new Date(course.startDate).toLocaleDateString()}
+          {course.startDate.split('T')[0]} {course.endDate ? `~ ${course.endDate.split('T')[0]}` : ''}
         </div>
       </div>
 
       <div className={styles.cardFooter}>
-        <span className={`${styles.spots} ${spotsLeft <= 2 ? styles.spotsLow : ''}`}>
-          {isFull ? t('workshop.full') : `${spotsLeft} ${t('workshop.spots_left')}`}
+        <span className={`${styles.spots}`}>
+          최대 정원: {course.maxParticipants}명
         </span>
 
         {applied ? (
@@ -86,14 +120,22 @@ export default function CourseCard({ course }: CourseCardProps) {
           </button>
         ) : (
           <button
-            className={`${styles.applyBtn} ${isFull ? styles.fullBtn : ''}`}
-            onClick={handleApply}
-            disabled={isFull || !canApply || applying}
+            className={`${styles.applyBtn} ${!isOpen ? styles.fullBtn : ''}`}
+            onClick={handleApplyClick}
+            disabled={!isOpen || !canApply || applying}
           >
-            {applying ? '...' : isFull ? t('workshop.full') : t('workshop.apply')}
+            {applying ? '...' : !isOpen ? '마감됨' : t('workshop.apply')}
           </button>
         )}
       </div>
+
+      {showModal && (
+        <BookingModal 
+          course={course} 
+          onClose={() => setShowModal(false)} 
+          onConfirm={handleConfirmBooking} 
+        />
+      )}
     </div>
   );
 }

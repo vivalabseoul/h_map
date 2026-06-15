@@ -54,8 +54,12 @@ CREATE TABLE public.courses (
   max_participants INTEGER NOT NULL,
   current_participants INTEGER DEFAULT 0,
   status TEXT DEFAULT 'open',
-  start_date TIMESTAMPTZ NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  start_date TEXT NOT NULL,
+  end_date TEXT DEFAULT '',
+  available_days INTEGER[] DEFAULT '{}',
+  available_times TEXT[] DEFAULT '{}',
+  image_url TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- 4. Bookings Table
@@ -64,7 +68,11 @@ CREATE TABLE public.bookings (
   course_id UUID REFERENCES public.courses(id) ON DELETE CASCADE,
   user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
   user_name TEXT,
+  user_phone TEXT,
   status TEXT DEFAULT 'confirmed',
+  selected_date TEXT NOT NULL,
+  selected_time TEXT NOT NULL,
+  participants INTEGER DEFAULT 1,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

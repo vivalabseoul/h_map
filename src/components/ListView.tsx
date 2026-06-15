@@ -20,7 +20,7 @@ export default function ListView({ workshops, fleaMarkets, onWorkshopClick, onFl
       {/* 1. 지역 축제 및 플리마켓 섹션 */}
       {fleaMarkets.length > 0 && (
         <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>🎉 추천 플리마켓 및 축제</h2>
+          <h2 className={styles.sectionTitle}>🎉 지역축제 및 플리마켓</h2>
           <div className={styles.grid}>
             {fleaMarkets.map(market => {
               const name = market.name[locale] || market.name.ko || market.name.en || '';

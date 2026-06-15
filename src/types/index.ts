@@ -110,7 +110,11 @@ export interface Course {
   maxParticipants: number;
   currentParticipants: number;
   status: CourseStatus;
+  imageUrl?: string;
   startDate: string;
+  endDate: string;
+  availableDays: number[];
+  availableTimes: string[];
   createdAt: string;
 }
 
@@ -124,7 +128,11 @@ export interface Booking {
   workshopName?: Record<Locale, string>;
   userId: string;
   userName?: string;
+  userPhone?: string;
   status: BookingStatus;
+  selectedDate: string;
+  selectedTime: string;
+  participants: number;
   createdAt: string;
 }
 

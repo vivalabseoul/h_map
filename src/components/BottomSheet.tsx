@@ -110,13 +110,13 @@ export default function BottomSheet({ workshop, allWorkshops, onWorkshopClick, o
         <div className={styles.content}>
           {/* Image Carousel (Only show if images exist) */}
           {workshop.images && workshop.images.length > 0 && (
-            <div className={styles.imageCarousel}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
               {workshop.images.map((img, idx) => (
-                <div key={idx} className={styles.workshopImage} style={{ padding: 0 }}>
+                <div key={idx} style={{ width: '100%', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
                   <img 
                     src={img} 
                     alt={`${workshop.name.ko || workshop.name.en} - image ${idx + 1}`} 
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                    style={{ width: '100%', height: 'auto', display: 'block' }} 
                   />
                 </div>
               ))}
@@ -181,7 +181,7 @@ export default function BottomSheet({ workshop, allWorkshops, onWorkshopClick, o
           <div className={styles.infoGrid}>
             <div className={styles.infoItem}>
               <MapPin size={16} className={styles.infoIcon} />
-              <span>{workshop.address[locale]}</span>
+              <span>{typeof workshop.address === 'string' ? workshop.address : workshop.address?.[locale] || workshop.address?.ko || ''}</span>
             </div>
             <div className={styles.infoItem}>
               <Phone size={16} className={styles.infoIcon} />

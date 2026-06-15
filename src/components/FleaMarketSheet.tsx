@@ -73,8 +73,8 @@ export default function FleaMarketSheet({ market, onClose }: FleaMarketSheetProp
           </div>
 
           <div className={styles.ratingRow}>
-            <span className={styles.categoryBadge} style={{ background: '#e0f2fe', color: '#0284c7' }}>
-              🎪 플리마켓 (Flea Market)
+            <span className={styles.categoryBadge} style={{ background: market.source === 'api' ? '#fef3c7' : '#e0f2fe', color: market.source === 'api' ? '#d97706' : '#0284c7' }}>
+              {market.source === 'api' ? '🎉 지역축제 (Local Festival)' : '🎪 플리마켓 (Flea Market)'}
             </span>
           </div>
 

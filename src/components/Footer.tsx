@@ -14,9 +14,10 @@ export default function Footer() {
           <span className={styles.brandName}>🎨 Art flow map</span>
           <span className={styles.hideMobile}>&copy; {new Date().getFullYear()}</span>
         </div>
-        
+
         <div className={styles.links}>
           <Link href="/about" className={styles.link}>{t('About') || '회사소개'}</Link>
+          <Link href="/faq" className={styles.link}>{t('Faq') || '자주 묻는 질문'}</Link>
           <Link href="/terms" className={styles.link}>{t('Terms') || '이용규정'}</Link>
           <Link href="/privacy" className={styles.link}>{t('Privacy') || '개인정보'}</Link>
           <Link href="/contact" className={styles.link}>{t('Contact') || '문의하기'}</Link>

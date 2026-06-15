@@ -2,9 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { getWorkshopsByOwner, createWorkshop } from '@/lib/database';
+import { getWorkshopsByOwner, updateWorkshop } from '@/lib/database';
 import type { WorkshopCategory, Region, Locale } from '@/types';
 import { CATEGORIES, REGIONS } from '@/types';
+import ImageUpload from '@/components/ImageUpload';
 
 export default function EditStudioPage() {
   const router = useRouter();
@@ -24,6 +25,7 @@ export default function EditStudioPage() {
   const [website, setWebsite] = useState('');
   const [snsInstagram, setSnsInstagram] = useState('');
   const [snsYoutube, setSnsYoutube] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
 
   useEffect(() => {
     if (user && params.id) {
@@ -39,6 +41,9 @@ export default function EditStudioPage() {
           setWebsite(target.website || '');
           setSnsInstagram(target.snsLinks?.instagram || '');
           setSnsYoutube(target.snsLinks?.youtube || '');
+          if (target.images && target.images.length > 0) {
+            setImageUrl(target.images[0]);
+          }
         }
         setInitialLoad(false);
       });
@@ -51,8 +56,17 @@ export default function EditStudioPage() {
     setLoading(true);
 
     try {
-      // In a real app, we would update, not create.
-      // await updateWorkshop(params.id as string, { ... });
+      await updateWorkshop(params.id as string, {
+        name,
+        description,
+        address,
+        category,
+        region,
+        phone,
+        website,
+        images: imageUrl ? [imageUrl] : [],
+        snsLinks: { instagram: snsInstagram, youtube: snsYoutube }
+      });
       router.push('/instructor/workshops');
     } catch (err) {
       console.error(err);
@@ -145,6 +159,16 @@ export default function EditStudioPage() {
           </div>
 
           <hr className="divider" />
+
+          {/* Image Upload */}
+          <div style={{ marginBottom: 'var(--space-4)' }}>
+            <label className="form-label">스튜디오 대표 사진 (Studio Photo)</label>
+            <ImageUpload 
+              initialUrl={imageUrl} 
+              onUpload={setImageUrl} 
+              folder="workshops" 
+            />
+          </div>
 
           {/* Global Config */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>

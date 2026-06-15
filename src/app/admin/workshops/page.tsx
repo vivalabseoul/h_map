@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
-import { getWorkshops } from '@/lib/database';
+import { getWorkshops, deleteWorkshop } from '@/lib/database';
 import type { Workshop } from '@/types';
 import { CATEGORIES } from '@/types';
 
@@ -17,6 +17,18 @@ export default function AdminWorkshopsPage() {
     const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
     if (confirm(`스튜디오를 강제로 ${newStatus === 'active' ? '활성화' : '비활성화'} 하시겠습니까?`)) {
       setWorkshops(prev => prev.map(w => w.id === id ? { ...w, status: newStatus } : w));
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm('정말 삭제하시겠습니까?')) {
+      try {
+        await deleteWorkshop(id);
+        setWorkshops(prev => prev.filter(w => w.id !== id));
+      } catch (err) {
+        console.error(err);
+        alert('삭제 중 오류가 발생했습니다.');
+      }
     }
   };
 

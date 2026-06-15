@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { LayoutDashboard, Users, Store, BookOpen, MessageSquare, Star, Tent, PlusCircle } from 'lucide-react';
+import { LayoutDashboard, Users, Store, BookOpen, MessageSquare, Star, Tent, PlusCircle, Globe } from 'lucide-react';
 import Sidebar, { SidebarItem } from '@/components/Sidebar';
 import RoleGuard from '@/components/RoleGuard';
 import { useLanguage } from '@/context/LanguageContext';
@@ -28,12 +28,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             
             { type: 'divider' },
             { type: 'header', label: '✍️ 직접 등록' },
+            { href: '/admin/collector', label: '구글 맵스 수집기', icon: <Globe size={18} /> },
             { href: '/admin/workshops/new', label: '스튜디오 등록', icon: <PlusCircle size={18} /> },
             { href: '/admin/courses/new', label: '워크샵 개설', icon: <PlusCircle size={18} /> },
             { href: '/admin/flea_markets/new', label: '플리마켓 등록', icon: <PlusCircle size={18} /> },
           ] as SidebarItem[]}
         />
-        <div className="dashboard-content">{children}</div>
+        <div className="dashboard-content">
+          <div className="mobile-warning">
+            <span>⚠️</span>
+            <span><strong>안내:</strong> 슈퍼어드민(관리자) 기능은 원활한 데이터 관리 및 입력을 위해 <strong>데스크톱이나 노트북</strong> 환경에서의 사용을 권장합니다.</span>
+          </div>
+          {children}
+        </div>
       </div>
     </RoleGuard>
   );

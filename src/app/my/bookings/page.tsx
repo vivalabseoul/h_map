@@ -44,39 +44,59 @@ export default function MyBookingsPage() {
           </Link>
         </div>
       ) : (
-        <div className="table-wrapper">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Course</th>
-                <th>Instructor</th>
-                <th>Status</th>
-                <th>Applied Date</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {bookings.map((b) => (
-                <tr key={b.id}>
-                  <td style={{ fontWeight: 500 }}>Course ID: {b.courseId}</td>
-                  <td style={{ color: 'var(--color-text-secondary)' }}>Instructor</td>
-                  <td>
-                    <span className={`badge ${b.status === 'confirmed' ? 'badge-success' : b.status === 'cancelled' ? 'badge-danger' : 'badge-warning'}`}>
-                      {b.status}
-                    </span>
-                  </td>
-                  <td>{new Date(b.createdAt).toLocaleDateString()}</td>
-                  <td>
-                    {b.status !== 'cancelled' && (
-                      <button className="btn btn-sm btn-danger" onClick={() => handleCancel(b.id)}>
-                        Cancel
-                      </button>
-                    )}
-                  </td>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+          <div style={{ padding: 'var(--space-4)', background: 'var(--color-bg-alt)', borderRadius: 'var(--radius-md)', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', borderLeft: '4px solid var(--color-accent)' }}>
+            <strong>안내:</strong> 예약하신 날짜나 시간을 변경하시려면 공방(스튜디오)으로 직접 전화 문의해 주시기 바랍니다.
+          </div>
+
+          <div className="table-wrapper">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Course / Workshop</th>
+                  <th>Schedule</th>
+                  <th>Status</th>
+                  <th>Applied Date</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {bookings.map((b) => (
+                  <tr key={b.id}>
+                    <td>
+                      <div style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                        {b.courseTitle ? (b.courseTitle as any).ko || (b.courseTitle as any).en : `Course ID: ${b.courseId}`}
+                      </div>
+                      {b.workshopName && (
+                        <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
+                          {(b.workshopName as any).ko || (b.workshopName as any).en}
+                        </div>
+                      )}
+                    </td>
+                    <td>
+                      <div style={{ fontSize: 'var(--font-size-sm)' }}>{b.selectedDate.split('T')[0]}</div>
+                      <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>
+                        {b.selectedTime} ({b.participants}명)
+                      </div>
+                    </td>
+                    <td>
+                      <span className={`badge ${b.status === 'confirmed' ? 'badge-success' : b.status === 'cancelled' ? 'badge-danger' : 'badge-warning'}`}>
+                        {b.status === 'confirmed' ? '예약 확정' : b.status === 'cancelled' ? '취소됨' : b.status}
+                      </span>
+                    </td>
+                    <td>{new Date(b.createdAt).toLocaleDateString()}</td>
+                    <td>
+                      {b.status !== 'cancelled' && (
+                        <button className="btn btn-sm btn-danger" onClick={() => handleCancel(b.id)}>
+                          취소
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
