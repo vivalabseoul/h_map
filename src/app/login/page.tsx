@@ -223,6 +223,16 @@ export default function LoginPage() {
           </Link>
         </p>
 
+        <p style={{
+          textAlign: 'center',
+          fontSize: 'var(--font-size-sm)',
+          marginTop: 'var(--space-3)',
+        }}>
+          <Link href="/find-account" style={{ color: 'var(--color-text-muted)', textDecoration: 'underline' }}>
+            {t('auth.find_account') || '아이디/비밀번호 찾기'}
+          </Link>
+        </p>
+
         <div style={{ textAlign: 'center', marginTop: 'var(--space-4)' }}>
           <Link href="/" style={{
             fontSize: 'var(--font-size-xs)',

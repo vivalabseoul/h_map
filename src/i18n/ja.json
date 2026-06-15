@@ -25,7 +25,20 @@
     "sign_up_email": "アカウント作成",
     "no_account": "アカウントをお持ちでない方",
     "has_account": "すでにアカウントをお持ちの方",
-    "or_divider": "または"
+    "or_divider": "または",
+    "find_account": "ID/パスワード探し",
+    "find_id": "ID探し",
+    "forgot_password": "パスワード探し",
+    "reset_password": "パスワード再設定",
+    "send_reset_link": "再設定リンクを送信",
+    "enter_name": "登録した名前を入力してください",
+    "enter_email": "登録したメールアドレスを入力してください",
+    "found_emails": "登録されたメール:",
+    "email_sent": "パスワード再設定リンクがメールに送信されました。",
+    "new_password": "新しいパスワード",
+    "confirm_new_password": "新しいパスワード確認",
+    "update_password": "パスワード変更",
+    "password_updated": "パスワードが正常に変更されました。"
   },
   "filters": {
     "all": "すべて",

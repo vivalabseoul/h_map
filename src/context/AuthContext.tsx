@@ -4,7 +4,7 @@
 // ==========================================
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import type { User } from '@supabase/supabase-js';
-import { onAuthChange, getUserRole, signInWithGoogle, signInWithEmail, registerWithEmail, signOutUser } from '@/lib/auth';
+import { onAuthChange, getUserRole, signInWithGoogle, signInWithEmail, registerWithEmail, signOutUser, resetPasswordForEmail, updateUserPassword, findEmailByName } from '@/lib/auth';
 import type { AppUser, UserRole } from '@/types';
 
 interface AuthContextValue {
@@ -15,6 +15,9 @@ interface AuthContextValue {
   signInEmail: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string, role?: UserRole, file?: File | null) => Promise<void>;
   logout: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
+  updatePassword: (password: string) => Promise<void>;
+  findEmail: (name: string) => Promise<string[]>;
 }
 
 const AuthContext = createContext<AuthContextValue>({
@@ -25,6 +28,9 @@ const AuthContext = createContext<AuthContextValue>({
   signInEmail: async () => {},
   register: async () => {},
   logout: async () => {},
+  resetPassword: async () => {},
+  updatePassword: async () => {},
+  findEmail: async () => [],
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -81,6 +87,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUserRole(null);
   }, []);
 
+  const resetPassword = useCallback(async (email: string) => {
+    await resetPasswordForEmail(email);
+  }, []);
+
+  const updatePassword = useCallback(async (password: string) => {
+    await updateUserPassword(password);
+  }, []);
+
+  const findEmail = useCallback(async (name: string) => {
+    return await findEmailByName(name);
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
@@ -91,6 +109,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signInEmail: signInEmailFn,
         register: registerFn,
         logout,
+        resetPassword,
+        updatePassword,
+        findEmail,
       }}
     >
       {children}

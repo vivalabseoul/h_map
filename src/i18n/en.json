@@ -25,7 +25,20 @@
     "sign_up_email": "Create Account",
     "no_account": "Don't have an account?",
     "has_account": "Already have an account?",
-    "or_divider": "or"
+    "or_divider": "or",
+    "find_account": "Find ID / Password",
+    "find_id": "Find ID",
+    "forgot_password": "Forgot Password",
+    "reset_password": "Reset Password",
+    "send_reset_link": "Send Reset Link",
+    "enter_name": "Enter your registered name",
+    "enter_email": "Enter your registered email",
+    "found_emails": "Registered emails:",
+    "email_sent": "Password reset link has been sent to your email.",
+    "new_password": "New Password",
+    "confirm_new_password": "Confirm New Password",
+    "update_password": "Update Password",
+    "password_updated": "Password has been updated successfully."
   },
   "filters": {
     "all": "All",

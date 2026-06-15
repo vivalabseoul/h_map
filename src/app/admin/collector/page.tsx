@@ -53,10 +53,10 @@ export default function PlacesCollectorPage() {
       const workshopData = {
         ownerId: user.id, // Assigning to the super admin
         ownerName: user.displayName || 'Admin',
-        name: { ko: nameStr, en: nameStr, ja: nameStr },
+        name: { ko: nameStr, en: nameStr, ja: nameStr, zh: nameStr },
         category: targetCategory as any,
-        description: { ko: 'Imported from Google Maps', en: 'Imported from Google Maps', ja: 'Imported from Google Maps' },
-        address: { ko: addressStr, en: addressStr, ja: addressStr },
+        description: { ko: 'Imported from Google Maps', en: 'Imported from Google Maps', ja: 'Imported from Google Maps', zh: 'Imported from Google Maps' },
+        address: { ko: addressStr, en: addressStr, ja: addressStr, zh: addressStr },
         lat: place.location?.latitude || 0,
         lng: place.location?.longitude || 0,
         images: [], // Need separate photo fetching logic if photos are required, or just save place_id for later

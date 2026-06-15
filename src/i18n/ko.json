@@ -25,7 +25,20 @@
     "sign_up_email": "회원가입",
     "no_account": "계정이 없으신가요?",
     "has_account": "이미 계정이 있으신가요?",
-    "or_divider": "또는"
+    "or_divider": "또는",
+    "find_account": "아이디/비밀번호 찾기",
+    "find_id": "아이디 찾기",
+    "forgot_password": "비밀번호 찾기",
+    "reset_password": "비밀번호 재설정",
+    "send_reset_link": "재설정 링크 보내기",
+    "enter_name": "가입하신 이름을 입력해주세요",
+    "enter_email": "가입하신 이메일을 입력해주세요",
+    "found_emails": "등록된 이메일:",
+    "email_sent": "비밀번호 재설정 링크가 이메일로 전송되었습니다.",
+    "new_password": "새 비밀번호",
+    "confirm_new_password": "새 비밀번호 확인",
+    "update_password": "비밀번호 변경하기",
+    "password_updated": "비밀번호가 성공적으로 변경되었습니다."
   },
   "filters": {
     "all": "전체",

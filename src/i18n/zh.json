@@ -25,7 +25,20 @@
     "sign_up_email": "创建账户",
     "no_account": "没有账户？",
     "has_account": "已有账户？",
-    "or_divider": "或"
+    "or_divider": "或",
+    "find_account": "找回帐号/密码",
+    "find_id": "找回帐号",
+    "forgot_password": "忘记密码",
+    "reset_password": "重置密码",
+    "send_reset_link": "发送重置链接",
+    "enter_name": "请输入您注册的名字",
+    "enter_email": "请输入您注册的邮箱",
+    "found_emails": "注册的邮箱:",
+    "email_sent": "密码重置链接已发送到您的邮箱。",
+    "new_password": "新密码",
+    "confirm_new_password": "确认新密码",
+    "update_password": "修改密码",
+    "password_updated": "密码修改成功。"
   },
   "filters": {
     "all": "全部",

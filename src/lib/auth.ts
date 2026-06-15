@@ -237,4 +237,53 @@ export function onAuthChange(callback: (user: User | null) => void): { unsubscri
   return { unsubscribe: () => subscription.unsubscribe() };
 }
 
+/**
+ * Send password reset email
+ */
+export async function resetPasswordForEmail(email: string): Promise<void> {
+  if (!supabase || !isSupabaseConfigured) {
+    throw new Error('Supabase is not configured.');
+  }
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/reset-password`,
+  });
+  if (error) throw error;
+}
+
+/**
+ * Update user password (used after clicking reset link)
+ */
+export async function updateUserPassword(password: string): Promise<void> {
+  if (!supabase || !isSupabaseConfigured) {
+    throw new Error('Supabase is not configured.');
+  }
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) throw error;
+}
+
+/**
+ * Find masked emails by user display name
+ */
+export async function findEmailByName(name: string): Promise<string[]> {
+  if (!supabase || !isSupabaseConfigured) return [];
+  
+  const { data, error } = await supabase
+    .from('users')
+    .select('email')
+    .ilike('display_name', `%${name}%`);
+    
+  if (error || !data) {
+    console.error('Error finding email by name:', error);
+    return [];
+  }
+  
+  return data.map(u => {
+    const email = u.email;
+    if (!email || !email.includes('@')) return email;
+    const [local, domain] = email.split('@');
+    if (local.length <= 2) return `${local[0]}*@${domain}`;
+    return `${local.substring(0, 2)}${'*'.repeat(local.length - 2)}@${domain}`;
+  });
+}
+
 export { isSupabaseConfigured };
