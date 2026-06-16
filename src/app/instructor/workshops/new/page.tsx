@@ -27,6 +27,7 @@ export default function CreateStudioPage() {
   const [snsInstagram, setSnsInstagram] = useState('');
   const [snsYoutube, setSnsYoutube] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [languages, setLanguages] = useState<string[]>(['English']);
 
   const handleAddressSelect = (selectedAddress: string, selectedLat: number, selectedLng: number) => {
     setAddress(prev => ({ ...prev, [activeTab]: selectedAddress }));
@@ -51,6 +52,7 @@ export default function CreateStudioPage() {
         lng: lng ?? (REGIONS.find(r => r.key === region)?.center[1] || 126.988),
         images: imageUrl ? [imageUrl] : [],
         tags: ['Beginner_Friendly'], // Mock default tags
+        languages,
         phone,
         website,
         snsLinks: {
@@ -197,7 +199,7 @@ export default function CreateStudioPage() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-8)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
             <div className="form-group">
               <label className="form-label">인스타그램 (Instagram)</label>
               <input type="url" className="form-input" value={snsInstagram} onChange={(e) => setSnsInstagram(e.target.value)} placeholder="https://instagram.com/..." />
@@ -205,6 +207,28 @@ export default function CreateStudioPage() {
             <div className="form-group">
               <label className="form-label">유튜브 (YouTube)</label>
               <input type="url" className="form-input" value={snsYoutube} onChange={(e) => setSnsYoutube(e.target.value)} placeholder="https://youtube.com/..." />
+            </div>
+          </div>
+
+          <div className="form-group" style={{ marginBottom: 'var(--space-8)' }}>
+            <label className="form-label">가능한 언어 (Available Languages)</label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
+              {['English', 'Korean', 'Japanese', 'Chinese', 'Spanish', 'French'].map(lang => (
+                <label key={lang} style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={languages.includes(lang)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setLanguages(prev => [...prev, lang]);
+                      } else {
+                        setLanguages(prev => prev.filter(l => l !== lang));
+                      }
+                    }}
+                  />
+                  {lang}
+                </label>
+              ))}
             </div>
           </div>
 

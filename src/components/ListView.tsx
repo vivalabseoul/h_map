@@ -13,6 +13,19 @@ interface ListViewProps {
 
 export default function ListView({ workshops, fleaMarkets, onWorkshopClick, onFleaMarketClick }: ListViewProps) {
   const { locale, t } = useLanguage();
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const ITEMS_PER_PAGE = 20;
+
+  // Reset to first page when workshop list changes
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [workshops]);
+
+  const totalPages = Math.ceil(workshops.length / ITEMS_PER_PAGE);
+  const paginatedWorkshops = workshops.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   return (
     <div className={styles.listContainer}>
@@ -61,11 +74,11 @@ export default function ListView({ workshops, fleaMarkets, onWorkshopClick, onFl
       )}
 
       {/* 2. 공방/클래스 섹션 */}
-      {workshops.length > 0 && (
+      {paginatedWorkshops.length > 0 && (
         <div className={styles.section}>
           <h2 className={styles.sectionTitle}>📍 Local Studios & Classes</h2>
           <div className={styles.grid}>
-            {workshops.map(workshop => {
+            {paginatedWorkshops.map(workshop => {
               const name = workshop.name[locale] || workshop.name.ko || workshop.name.en || '';
               const address = workshop.address[locale] || workshop.address.ko || workshop.address.en || '';
               const hasImage = workshop.images && workshop.images.length > 0;
@@ -93,6 +106,35 @@ export default function ListView({ workshops, fleaMarkets, onWorkshopClick, onFl
               );
             })}
           </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className={styles.pagination}>
+              <button 
+                className="btn btn-secondary btn-sm" 
+                onClick={() => {
+                  setCurrentPage(p => Math.max(1, p - 1));
+                  const container = document.querySelector(`.${styles.listContainer}`);
+                  if (container) container.scrollTo({ top: 0, behavior: 'smooth' });
+                }} 
+                disabled={currentPage === 1}
+              >
+                Previous
+              </button>
+              <span className={styles.pageInfo}>{currentPage} / {totalPages}</span>
+              <button 
+                className="btn btn-secondary btn-sm" 
+                onClick={() => {
+                  setCurrentPage(p => Math.min(totalPages, p + 1));
+                  const container = document.querySelector(`.${styles.listContainer}`);
+                  if (container) container.scrollTo({ top: 0, behavior: 'smooth' });
+                }} 
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
       )}
 

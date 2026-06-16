@@ -34,7 +34,7 @@ export default function HomePage() {
   const [workshops, setWorkshops] = useState<Workshop[]>([]);
   const [fleaMarkets, setFleaMarkets] = useState<FleaMarket[]>([]);
   const [activeCategory, setActiveCategory] = useState<WorkshopCategory | 'all'>('all');
-  const [activeTags, setActiveTags] = useState<string[]>([]);
+  const [activeLanguage, setActiveLanguage] = useState<string>('all');
   const [selectedRegion, setSelectedRegion] = useState<Region>('korea');
   const [selectedWorkshop, setSelectedWorkshop] = useState<Workshop | null>(null);
   const [selectedFleaMarket, setSelectedFleaMarket] = useState<FleaMarket | null>(null);
@@ -49,20 +49,14 @@ export default function HomePage() {
       if (w.region !== selectedRegion) return false;
       if (w.status !== 'active') return false;
       if (activeCategory !== 'all' && w.category !== activeCategory) return false;
-      if (activeTags.length > 0 && !activeTags.every((tag) => w.tags.includes(tag))) return false;
+      if (activeLanguage !== 'all' && (!w.languages || !w.languages.includes(activeLanguage))) return false;
       return true;
     });
-  }, [workshops, activeCategory, activeTags, selectedRegion]);
+  }, [workshops, activeCategory, activeLanguage, selectedRegion]);
 
   const filteredFleaMarkets = useMemo(() => {
     return fleaMarkets.filter((m) => m.status !== 'inactive');
   }, [fleaMarkets]);
-
-  const handleTagToggle = useCallback((tag: string) => {
-    setActiveTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-    );
-  }, []);
 
   const handleMarkerClick = useCallback((workshop: Workshop) => {
     setSelectedWorkshop(workshop);
@@ -80,9 +74,9 @@ export default function HomePage() {
         selectedRegion={selectedRegion}
         onRegionChange={setSelectedRegion}
         activeCategory={activeCategory}
-        activeTags={activeTags}
+        activeLanguage={activeLanguage}
         onCategoryChange={setActiveCategory}
-        onTagToggle={handleTagToggle}
+        onLanguageChange={setActiveLanguage}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
       />

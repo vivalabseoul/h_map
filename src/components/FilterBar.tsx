@@ -10,9 +10,9 @@ interface FilterBarProps {
   selectedRegion: Region;
   onRegionChange: (region: Region) => void;
   activeCategory: WorkshopCategory | 'all';
-  activeTags: string[];
+  activeLanguage: string;
   onCategoryChange: (category: WorkshopCategory | 'all') => void;
-  onTagToggle: (tag: string) => void;
+  onLanguageChange: (language: string) => void;
   viewMode?: 'map' | 'list';
   onViewModeChange?: (mode: 'map' | 'list') => void;
 }
@@ -21,14 +21,14 @@ export default function FilterBar({
   selectedRegion,
   onRegionChange,
   activeCategory,
-  activeTags,
+  activeLanguage,
   onCategoryChange,
-  onTagToggle,
+  onLanguageChange,
   viewMode = 'map',
   onViewModeChange = () => {},
 }: FilterBarProps) {
   const { locale, t } = useLanguage();
-  const [openDropdown, setOpenDropdown] = useState<'region' | 'category' | 'tags' | null>(null);
+  const [openDropdown, setOpenDropdown] = useState<'region' | 'category' | 'language' | null>(null);
   const barRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -41,7 +41,7 @@ export default function FilterBar({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const toggleDropdown = (name: 'region' | 'category' | 'tags') => {
+  const toggleDropdown = (name: 'region' | 'category' | 'language') => {
     setOpenDropdown(prev => prev === name ? null : name);
   };
 
@@ -100,22 +100,27 @@ export default function FilterBar({
         )}
       </div>
 
-      {/* 3. Tags Dropdown */}
+      {/* 3. Language Dropdown */}
       <div style={{ position: 'relative' }}>
-        <button className={styles.chip} onClick={() => toggleDropdown('tags')} style={{ background: openDropdown === 'tags' || activeTags.length > 0 ? 'var(--color-accent)' : '#fff', color: openDropdown === 'tags' || activeTags.length > 0 ? '#fff' : 'inherit' }}>
-          # {t('nav.tags') || 'Tags'} {activeTags.length > 0 && `(${activeTags.length})`}
+        <button className={styles.chip} onClick={() => toggleDropdown('language')} style={{ background: openDropdown === 'language' ? 'var(--color-bg-secondary)' : '#fff' }}>
+          {activeLanguage === 'all' ? '🌐 Language' : `🌐 ${activeLanguage}`}
           <ChevronDown size={14} style={{ marginLeft: 4 }} />
         </button>
-        {openDropdown === 'tags' && (
-          <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 4, background: '#fff', borderRadius: 'var(--radius-md)', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', zIndex: 1000, minWidth: '200px', display: 'flex', flexDirection: 'column', padding: 'var(--space-2)', maxHeight: '300px', overflowY: 'auto' }}>
-            {SMART_TAGS.map(tag => (
+        {openDropdown === 'language' && (
+          <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 4, background: '#fff', borderRadius: 'var(--radius-md)', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', zIndex: 1000, minWidth: '150px', display: 'flex', flexDirection: 'column', padding: 'var(--space-2)' }}>
+            <button
+              onClick={() => { onLanguageChange('all'); setOpenDropdown(null); }}
+              style={{ textAlign: 'left', padding: 'var(--space-2)', background: activeLanguage === 'all' ? 'var(--color-bg-secondary)' : 'transparent', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
+            >
+              All Languages
+            </button>
+            {['English', 'Korean', 'Japanese', 'Chinese', 'Spanish', 'French'].map(lang => (
               <button
-                key={tag}
-                onClick={() => onTagToggle(tag)}
-                style={{ textAlign: 'left', padding: 'var(--space-2)', background: activeTags.includes(tag) ? 'var(--color-bg-secondary)' : 'transparent', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+                key={lang}
+                onClick={() => { onLanguageChange(lang); setOpenDropdown(null); }}
+                style={{ textAlign: 'left', padding: 'var(--space-2)', background: activeLanguage === lang ? 'var(--color-bg-secondary)' : 'transparent', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
               >
-                <input type="checkbox" checked={activeTags.includes(tag)} readOnly style={{ accentColor: 'var(--color-accent)' }} />
-                #{t(`filters.${tag}`)}
+                {lang}
               </button>
             ))}
           </div>

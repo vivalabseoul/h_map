@@ -58,6 +58,7 @@ export interface Workshop {
   rating: number;
   reviewCount: number;
   tags: string[];
+  languages?: string[];
   phone: string;
   website?: string;
   snsLinks?: {

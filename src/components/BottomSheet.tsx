@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { X, Navigation, Share2, MapPin, Phone, Globe, Star } from 'lucide-react';
+import { X, Navigation, Share2, MapPin, Phone, Globe, Star, MessageCircle } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { CATEGORIES } from '@/types';
 import type { Workshop, Course, AppUser } from '@/types';
@@ -189,6 +189,12 @@ export default function BottomSheet({ workshop, allWorkshops, onWorkshopClick, o
                 <a href={workshop.website} target="_blank" rel="noopener noreferrer">
                   Website
                 </a>
+              </div>
+            )}
+            {workshop.languages && workshop.languages.length > 0 && (
+              <div className={styles.infoItem}>
+                <MessageCircle size={16} className={styles.infoIcon} />
+                <span>{workshop.languages.join(', ')}</span>
               </div>
             )}
           </div>

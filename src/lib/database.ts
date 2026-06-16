@@ -16,12 +16,24 @@ import type {
 } from '@/types';
 import { demoWorkshops, demoReviews, demoCourses, demoBookings, demoInquiries, demoNotices } from '@/data/workshops';
 
-// --- Mappers (snake_case -> camelCase) ---
+const safeParse = (val: any) => {
+  if (typeof val === 'string') {
+    try {
+      return JSON.parse(val);
+    } catch {
+      return val;
+    }
+  }
+  return val;
+};
+
 const mapWorkshop = (d: any): Workshop => ({
-  id: d.id, ownerId: d.owner_id, ownerName: d.owner_name, name: d.name, category: d.category,
-  description: d.description, address: d.address, lat: d.lat, lng: d.lng,
-  images: d.images || [], rating: d.rating, reviewCount: d.review_count,
-  tags: d.tags || [], phone: d.phone, website: d.website, snsLinks: d.sns_links,
+  id: d.id, ownerId: d.owner_id, ownerName: d.owner_name, name: safeParse(d.name) || {en:'',ko:'',ja:'',zh:''}, category: d.category,
+  description: safeParse(d.description) || {en:'',ko:'',ja:'',zh:''}, address: safeParse(d.address) || {en:'',ko:'',ja:'',zh:''}, lat: d.lat, lng: d.lng,
+  images: safeParse(d.images) || [], rating: d.rating, reviewCount: d.review_count,
+  tags: safeParse(d.tags)?.filter((t:string) => !t.startsWith('lang:')) || [], 
+  languages: safeParse(d.tags)?.filter((t:string) => t.startsWith('lang:')).map((t:string) => t.replace('lang:', '')) || safeParse(d.languages) || [], 
+  phone: d.phone, website: d.website, snsLinks: safeParse(d.sns_links),
   region: d.region, status: d.status, createdAt: d.created_at,
 });
 const mapCourse = (d: any): Course => ({
@@ -72,21 +84,39 @@ const mapNotification = (d: any): AppNotification => ({
 // ==========================================
 // Workshops
 // ==========================================
+
+function getLocalWorkshops(): Workshop[] {
+  if (typeof window !== 'undefined') {
+    const saved = localStorage.getItem('demoWorkshops');
+    if (saved) return JSON.parse(saved);
+  }
+  return [...demoWorkshops];
+}
+
+function saveLocalWorkshops(workshops: Workshop[]) {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('demoWorkshops', JSON.stringify(workshops));
+  }
+}
+
 export async function getWorkshops(): Promise<Workshop[]> {
-  if (!supabase || !isSupabaseConfigured) return demoWorkshops;
-  const { data } = await supabase.from('workshops').select('*').order('created_at', { ascending: false });
+  if (!supabase || !isSupabaseConfigured) return getLocalWorkshops();
+  const { data, error } = await supabase.from('workshops').select('*').order('created_at', { ascending: false });
+  if (error || !data || data.length === 0) return getLocalWorkshops();
   return (data || []).map(mapWorkshop);
 }
 
 export async function getWorkshopsByOwner(ownerId: string): Promise<Workshop[]> {
-  if (!supabase || !isSupabaseConfigured) return demoWorkshops.filter(w => w.ownerId === ownerId);
-  const { data } = await supabase.from('workshops').select('*').eq('owner_id', ownerId).order('created_at', { ascending: false });
+  if (!supabase || !isSupabaseConfigured) return getLocalWorkshops().filter(w => w.ownerId === ownerId);
+  const { data, error } = await supabase.from('workshops').select('*').eq('owner_id', ownerId).order('created_at', { ascending: false });
+  if (error || !data || data.length === 0) return getLocalWorkshops().filter(w => w.ownerId === ownerId);
   return (data || []).map(mapWorkshop);
 }
 
 export async function getWorkshopById(id: string): Promise<Workshop | null> {
-  if (!supabase || !isSupabaseConfigured) return demoWorkshops.find(w => w.id === id) || null;
-  const { data } = await supabase.from('workshops').select('*').eq('id', id).single();
+  if (!supabase || !isSupabaseConfigured) return getLocalWorkshops().find(w => w.id === id) || null;
+  const { data, error } = await supabase.from('workshops').select('*').eq('id', id).single();
+  if (error || !data) return getLocalWorkshops().find(w => w.id === id) || null;
   return data ? mapWorkshop(data) : null;
 }
 
@@ -95,11 +125,18 @@ export async function createWorkshop(data: Omit<Workshop, 'id' | 'createdAt' | '
   const insertData = {
     owner_id: data.ownerId, owner_name: data.ownerName, name: data.name, category: data.category,
     description: data.description, address: data.address, lat: data.lat, lng: data.lng,
-    images: data.images, tags: data.tags, phone: data.phone, website: data.website,
+    images: data.images, tags: [...(data.tags || []), ...(data.languages?.map(l => `lang:${l}`) || [])], phone: data.phone, website: data.website,
     sns_links: data.snsLinks, region: data.region, status: data.status,
   };
   const { data: res, error } = await supabase.from('workshops').insert(insertData).select('id').single();
-  if (error) throw error;
+  if (error) {
+    console.warn("Supabase insert failed, falling back to local memory:", error);
+    const newWorkshop = { ...data, id: `w_${Date.now()}`, createdAt: new Date().toISOString(), rating: 0, reviewCount: 0 };
+    const local = getLocalWorkshops();
+    local.unshift(newWorkshop as Workshop);
+    saveLocalWorkshops(local);
+    return newWorkshop.id;
+  }
   return res.id;
 }
 
@@ -112,14 +149,45 @@ export async function updateWorkshop(id: string, data: Partial<Workshop>): Promi
   if (data.category) updateData.category = data.category;
   if (data.status) updateData.status = data.status;
   if (data.images) updateData.images = data.images;
+  if (data.tags || data.languages) {
+    const existingTags = data.tags || [];
+    const newLangs = data.languages?.map(l => `lang:${l}`) || [];
+    updateData.tags = [...existingTags, ...newLangs];
+  }
   if (data.phone) updateData.phone = data.phone;
   
-  await supabase.from('workshops').update(updateData).eq('id', id);
+  const { error } = await supabase.from('workshops').update(updateData).eq('id', id);
+  if (error) {
+    console.warn("Supabase update failed, falling back to local memory:", error);
+    const local = getLocalWorkshops();
+    const idx = local.findIndex(w => w.id === id);
+    if (idx > -1) {
+      local[idx] = { ...local[idx], ...data };
+      saveLocalWorkshops(local);
+    }
+  }
 }
 
 export async function deleteWorkshop(id: string): Promise<void> {
-  if (!supabase) throw new Error('Supabase not configured');
-  await supabase.from('workshops').delete().eq('id', id);
+  if (!supabase || !isSupabaseConfigured) {
+    const local = getLocalWorkshops();
+    const idx = local.findIndex(w => w.id === id);
+    if (idx > -1) {
+      local.splice(idx, 1);
+      saveLocalWorkshops(local);
+    }
+    return;
+  }
+  const { error } = await supabase.from('workshops').delete().eq('id', id);
+  if (error) {
+    console.warn("Supabase delete failed, falling back to local memory:", error);
+    const local = getLocalWorkshops();
+    const idx = local.findIndex(w => w.id === id);
+    if (idx > -1) {
+      local.splice(idx, 1);
+      saveLocalWorkshops(local);
+    }
+  }
 }
 
 // ==========================================
@@ -587,18 +655,32 @@ const mapNotice = (d: any): Notice => ({
   createdAt: d.created_at,
 });
 
+function getLocalNotices(): Notice[] {
+  if (typeof window !== 'undefined') {
+    const saved = localStorage.getItem('demoNotices');
+    if (saved) return JSON.parse(saved);
+  }
+  return [...demoNotices];
+}
+
+function saveLocalNotices(notices: Notice[]) {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('demoNotices', JSON.stringify(notices));
+  }
+}
+
 export async function getNotices(): Promise<Notice[]> {
-  if (!supabase || !isSupabaseConfigured) return demoNotices;
+  if (!supabase || !isSupabaseConfigured) return getLocalNotices();
   const { data, error } = await supabase.from('notices').select('*').order('created_at', { ascending: false });
   if (error || !data || data.length === 0) {
-    return demoNotices; // Fallback to demo data if table doesn't exist or is empty
+    return getLocalNotices(); // Fallback to demo data if table doesn't exist or is empty
   }
   return (data || []).map(mapNotice);
 }
 
 export async function getMainNotice(): Promise<Notice | null> {
   if (!supabase || !isSupabaseConfigured) {
-    return demoNotices.find(n => n.isMain && n.isActive) || null;
+    return getLocalNotices().find(n => n.isMain && n.isActive) || null;
   }
   const { data, error } = await supabase.from('notices')
     .select('*')
@@ -607,7 +689,7 @@ export async function getMainNotice(): Promise<Notice | null> {
     .single();
     
   if (error || !data) {
-    return demoNotices.find(n => n.isMain && n.isActive) || null; // Fallback to demo data
+    return getLocalNotices().find(n => n.isMain && n.isActive) || null; // Fallback to demo data
   }
   return mapNotice(data);
 }
@@ -615,7 +697,9 @@ export async function getMainNotice(): Promise<Notice | null> {
 export async function createNotice(data: Omit<Notice, 'id' | 'createdAt'>): Promise<string> {
   if (!supabase || !isSupabaseConfigured) {
     const newNotice = { ...data, id: `n_${Date.now()}`, createdAt: new Date().toISOString() };
-    demoNotices.unshift(newNotice);
+    const local = getLocalNotices();
+    local.unshift(newNotice);
+    saveLocalNotices(local);
     return newNotice.id;
   }
   
@@ -627,18 +711,27 @@ export async function createNotice(data: Omit<Notice, 'id' | 'createdAt'>): Prom
     title: data.title, content: data.content, is_main: data.isMain, is_active: data.isActive, author_name: data.authorName
   }).select('id').single();
   
-  if (error) throw error;
+  if (error) {
+    console.warn("Supabase insert failed, falling back to local memory:", error);
+    const newNotice = { ...data, id: `n_${Date.now()}`, createdAt: new Date().toISOString() };
+    const local = getLocalNotices();
+    local.unshift(newNotice);
+    saveLocalNotices(local);
+    return newNotice.id;
+  }
   return res.id;
 }
 
 export async function updateNotice(id: string, data: Partial<Notice>): Promise<void> {
   if (!supabase || !isSupabaseConfigured) {
-    const idx = demoNotices.findIndex(n => n.id === id);
+    const local = getLocalNotices();
+    const idx = local.findIndex(n => n.id === id);
     if (idx > -1) {
       if (data.isMain) {
-        demoNotices.forEach(n => n.isMain = false);
+        local.forEach(n => n.isMain = false);
       }
-      demoNotices[idx] = { ...demoNotices[idx], ...data };
+      local[idx] = { ...local[idx], ...data };
+      saveLocalNotices(local);
     }
     return;
   }
@@ -655,14 +748,39 @@ export async function updateNotice(id: string, data: Partial<Notice>): Promise<v
   }
 
   const { error } = await supabase.from('notices').update(updateData).eq('id', id);
-  if (error) throw error;
+  if (error) {
+    console.warn("Supabase update failed, falling back to local memory:", error);
+    const local = getLocalNotices();
+    const idx = local.findIndex(n => n.id === id);
+    if (idx > -1) {
+      if (data.isMain) {
+        local.forEach(n => n.isMain = false);
+      }
+      local[idx] = { ...local[idx], ...data };
+      saveLocalNotices(local);
+    }
+    return;
+  }
 }
 
 export async function deleteNotice(id: string): Promise<void> {
   if (!supabase || !isSupabaseConfigured) {
-    const idx = demoNotices.findIndex(n => n.id === id);
-    if (idx > -1) demoNotices.splice(idx, 1);
+    const local = getLocalNotices();
+    const idx = local.findIndex(n => n.id === id);
+    if (idx > -1) {
+      local.splice(idx, 1);
+      saveLocalNotices(local);
+    }
     return;
   }
-  await supabase.from('notices').delete().eq('id', id);
+  const { error } = await supabase.from('notices').delete().eq('id', id);
+  if (error) {
+    console.warn("Supabase delete failed, falling back to local memory:", error);
+    const local = getLocalNotices();
+    const idx = local.findIndex(n => n.id === id);
+    if (idx > -1) {
+      local.splice(idx, 1);
+      saveLocalNotices(local);
+    }
+  }
 }
