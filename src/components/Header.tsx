@@ -99,22 +99,9 @@ export default function Header() {
         
         {/* Register Button */}
         <button
+          className={styles.registerButton}
           onClick={() => setShowRegisterModal(true)}
-          style={{
-            background: 'var(--color-accent)',
-            color: 'white',
-            border: 'none',
-            padding: 'var(--space-1) var(--space-3)',
-            borderRadius: 'var(--radius-full)',
-            fontWeight: 600,
-            cursor: 'pointer',
-            fontSize: '0.8rem',
-            boxShadow: 'var(--shadow-sm)',
-            transition: 'transform 0.2s, background 0.2s',
-            whiteSpace: 'nowrap'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+
         >
           📍 내 공방 등록하기
         </button>
