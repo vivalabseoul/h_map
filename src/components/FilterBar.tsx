@@ -195,7 +195,7 @@ export default function FilterBar({
       <button
         className={styles.chip}
         onClick={() => onViewModeChange(viewMode === 'map' ? 'list' : 'map')}
-        style={{ padding: '0 12px', background: 'var(--color-bg-secondary)' }}
+        style={{ padding: 'var(--space-2) var(--space-3)', background: 'var(--color-bg-secondary)' }}
         title={viewMode === 'map' ? 'View List' : 'View Map'}
       >
         {viewMode === 'map' ? '📋 List' : '🗺️ Map'}
