@@ -65,7 +65,7 @@ export default function FilterBar({
   ));
 
   // Determine what to show on the button
-  let buttonLabel = t('filters.all');
+  let buttonLabel: React.ReactNode = t('filters.all');
   if (activeCategory !== 'all') {
     if (selectedCatData) {
       buttonLabel = <><span className={styles.chipEmoji}>{selectedCatData.emoji}</span>{t(`filters.${activeCategory}`)}</>;
