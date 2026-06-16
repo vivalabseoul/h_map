@@ -177,15 +177,6 @@ export default function FilterBar({
           value={searchQuery}
           onChange={(e) => onSearchQueryChange(e.target.value)}
           className={styles.searchInput}
-          style={{
-            padding: 'var(--space-2) var(--space-3)',
-            paddingLeft: 'calc(var(--space-3) + 24px)',
-            borderRadius: 'var(--radius-full)',
-            border: '1px solid var(--color-border)',
-            outline: 'none',
-            fontSize: '0.9rem',
-            minWidth: '150px'
-          }}
         />
       </div>
 

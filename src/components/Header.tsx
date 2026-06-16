@@ -94,16 +94,16 @@ export default function Header() {
           <LanguageSwitcher />
           <AuthButton />
         </div>
-        
+
         <NotificationBell />
-        
+
         {/* Register Button */}
         <button
           className={styles.registerButton}
           onClick={() => setShowRegisterModal(true)}
 
         >
-          📍 내 공방 등록하기
+          내 공방 등록
         </button>
 
         {/* Mobile Hamburger Button */}
@@ -113,7 +113,7 @@ export default function Header() {
       </div>
 
       {/* Mobile Slide Menu */}
-      <div 
+      <div
         className={`${styles.mobileMenuOverlay} ${isMobileMenuOpen ? styles.open : ''}`}
         onClick={toggleMobileMenu}
       />
