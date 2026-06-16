@@ -7,6 +7,7 @@ import type { Workshop, Course, AppUser } from '@/types';
 import { getCoursesByWorkshop, getUserProfile, getWorkshopById } from '@/lib/database';
 import CourseCard from './CourseCard';
 import ReviewSection from './ReviewSection';
+import Sheet from './Sheet';
 import styles from './BottomSheet.module.css';
 
 interface BottomSheetProps {
@@ -63,14 +64,7 @@ export default function BottomSheet({ workshop, allWorkshops, onWorkshopClick, o
       .map((s) => s.workshop);
   }, [allWorkshops, workshop]);
 
-  // Close on escape
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [onClose]);
+  // Close on escape is handled by Sheet component
 
   const handleNavigate = useCallback(() => {
     const url = `https://www.google.com/maps/dir/?api=1&destination=${workshop.lat},${workshop.lng}`;
@@ -110,28 +104,17 @@ export default function BottomSheet({ workshop, allWorkshops, onWorkshopClick, o
   };
 
   return (
-    <>
-      <div className={styles.overlay} onClick={onClose} />
-      <div className={styles.sheet} id="bottom-sheet" role="dialog" aria-modal="true">
-        <div className={styles.handle}>
-          <div className={styles.handleBar} />
-          <button className={styles.closeBtn} onClick={onClose} aria-label="Close">
-            <X size={18} />
-          </button>
-        </div>
-
-        <div className={styles.content}>
+    <Sheet onClose={onClose}>
           {/* Image Carousel (Only show if images exist) */}
           {workshop.images && workshop.images.length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
+            <div className={styles.imageCarousel}>
               {workshop.images.map((img, idx) => (
-                <div key={idx} style={{ width: '100%', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
-                  <img 
-                    src={img} 
-                    alt={`${workshop.name.ko || workshop.name.en} - image ${idx + 1}`} 
-                    style={{ width: '100%', height: 'auto', display: 'block' }} 
-                  />
-                </div>
+                <img 
+                  key={idx}
+                  src={img} 
+                  alt={`${workshop.name.ko || workshop.name.en} - image ${idx + 1}`} 
+                  className={styles.workshopImage}
+                />
               ))}
             </div>
           )}
@@ -239,8 +222,8 @@ export default function BottomSheet({ workshop, allWorkshops, onWorkshopClick, o
             <>
               <h3 className={styles.sectionTitle}>{t('workshop.courses')}</h3>
               <div className={styles.courseList}>
-                {courses.map((course) => (
-                  <CourseCard key={course.id} course={course} />
+                {courses.map(course => (
+                  <CourseCard key={course.id} course={course} region={workshop.region} />
                 ))}
               </div>
             </>
@@ -252,7 +235,7 @@ export default function BottomSheet({ workshop, allWorkshops, onWorkshopClick, o
           {/* Similar Workshops Recommendation */}
           {similarWorkshops.length > 0 && (
             <div style={{ marginTop: 'var(--space-6)', paddingTop: 'var(--space-6)', borderTop: '1px solid var(--color-border)' }}>
-              <h3 className={styles.sectionTitle}>{t('workshop.similar') || '추천 연관 공방 (Similar Workshops)'}</h3>
+              <h3 className={styles.sectionTitle}>{t('workshop.similar') || 'Similar Workshops'}</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', marginTop: 'var(--space-3)' }}>
                 {similarWorkshops.map((sim) => (
                   <div 
@@ -296,8 +279,6 @@ export default function BottomSheet({ workshop, allWorkshops, onWorkshopClick, o
               </div>
             </div>
           )}
-        </div>
-      </div>
-    </>
+    </Sheet>
   );
 }

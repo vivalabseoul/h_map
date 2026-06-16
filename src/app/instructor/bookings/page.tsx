@@ -21,7 +21,7 @@ export default function InstructorBookingsPage() {
   }, [user]);
 
   const handleUpdateStatus = async (bookingId: string, status: string, userId: string, courseTitle: string) => {
-    if (!confirm('Do you want to change the booking status?\n예약 상태를 변경하시겠습니까?')) return;
+    if (!confirm(t('booking.confirm_status_change'))) return;
     try {
       await updateBookingStatus(bookingId, status);
       setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: status as any } : b));
@@ -30,14 +30,14 @@ export default function InstructorBookingsPage() {
       let title = '';
       let message = '';
       if (status === 'confirmed') {
-        title = 'Booking Confirmed (예약 확정 안내)';
-        message = `Your booking for [${courseTitle}] has been confirmed.\n신청하신 [${courseTitle}] 예약이 확정되었습니다.`;
+        title = t('booking.notification_confirmed');
+        message = t('booking.notification_confirmed_desc').replace('{course}', courseTitle);
       } else if (status === 'rejected') {
-        title = 'Booking Rejected (예약 거절 안내)';
-        message = `Your booking for [${courseTitle}] has been rejected.\n신청하신 [${courseTitle}] 예약이 마감 등의 사유로 거절되었습니다.`;
+        title = t('booking.notification_rejected');
+        message = t('booking.notification_rejected_desc').replace('{course}', courseTitle);
       } else if (status === 'cancelled') {
-        title = 'Booking Cancelled (예약 취소 안내)';
-        message = `Your booking for [${courseTitle}] has been cancelled.\n[${courseTitle}] 예약이 취소되었습니다.`;
+        title = t('booking.notification_cancelled');
+        message = t('booking.notification_cancelled_desc').replace('{course}', courseTitle);
       }
 
       if (title && userId) {
@@ -46,7 +46,7 @@ export default function InstructorBookingsPage() {
 
     } catch (err) {
       console.error(err);
-      alert('Failed to change status.\n상태 변경에 실패했습니다.');
+      alert(t('booking.status_change_fail'));
     }
   };
 

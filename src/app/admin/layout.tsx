@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { LayoutDashboard, Users, Store, BookOpen, MessageSquare, Star, Tent, PlusCircle, Globe, User } from 'lucide-react';
+import { LayoutDashboard, Users, Store, BookOpen, MessageSquare, Star, Tent, PlusCircle, Globe, User, Megaphone } from 'lucide-react';
 import Sidebar, { SidebarItem } from '@/components/Sidebar';
 import RoleGuard from '@/components/RoleGuard';
 import { useLanguage } from '@/context/LanguageContext';
@@ -25,6 +25,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             { href: '/admin/flea_markets', label: '플리마켓 관리', icon: <Tent size={18} /> },
             { href: '/admin/reviews', label: '리뷰 관리', icon: <Star size={18} /> },
             { href: '/admin/inquiries', label: '문의 관리', icon: <MessageSquare size={18} /> },
+            { href: '/admin/notices', label: '공지사항 관리', icon: <Megaphone size={18} /> },
             
             { type: 'divider' },
             { type: 'header', label: '✍️ 직접 등록' },

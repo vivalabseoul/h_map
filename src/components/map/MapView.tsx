@@ -29,7 +29,7 @@ interface MapViewProps {
 
 function MapUpdater({ center, zoom }: { center: [number, number]; zoom: number }) {
   const map = useMap();
-  useMemo(() => {
+  React.useEffect(() => {
     map.setView(center, zoom, { animate: true, duration: 0.8 });
   }, [map, center, zoom]);
   return null;

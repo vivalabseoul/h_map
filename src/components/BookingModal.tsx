@@ -57,22 +57,22 @@ export default function BookingModal({ course, onClose, onConfirm }: BookingModa
     setSelectedTime(''); // reset time when date changes
     
     if (val && !isDayValid(val)) {
-      alert('This day is not available. Please choose another date.\n해당 요일은 클래스가 운영되지 않습니다. 다른 날짜를 선택해주세요.');
+      alert(t('booking.alert_day_invalid'));
       setSelectedDate('');
     }
   };
 
   const handleConfirm = () => {
     if (!selectedDate || !selectedTime) {
-      alert('Please select both date and time.\n날짜와 시간을 모두 선택해주세요.');
+      alert(t('booking.alert_select_all'));
       return;
     }
     if (!userName.trim()) {
-      alert('Please enter your name.\n예약자 성함을 입력해주세요.');
+      alert(t('booking.alert_name'));
       return;
     }
     if (!userPhone.trim()) {
-      alert('Please enter your phone number.\n연락처를 입력해주세요.');
+      alert(t('booking.alert_phone'));
       return;
     }
     onConfirm(selectedDate, selectedTime, participants, userPhone, userName);
@@ -106,7 +106,7 @@ export default function BookingModal({ course, onClose, onConfirm }: BookingModa
             {workshop.name[locale] || workshop.name.ko || ''}
           </div>
         )}
-        <h3 style={{ marginBottom: 'var(--space-2)' }}>{course.title[locale] || '클래스 예약'}</h3>
+        <h3 style={{ marginBottom: 'var(--space-2)' }}>{course.title[locale] || t('booking.title_default')}</h3>
         
         {course.description && course.description[locale] && (
           <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-4)', lineHeight: 1.5 }}>
@@ -124,37 +124,36 @@ export default function BookingModal({ course, onClose, onConfirm }: BookingModa
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', background: 'var(--color-bg-alt)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-6)', fontSize: 'var(--font-size-sm)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
             <Calendar size={14} style={{ color: 'var(--color-accent)' }} />
-            <strong>일정:</strong> {course.startDate.split('T')[0]} {course.endDate ? `~ ${course.endDate.split('T')[0]}` : ''}
+            <strong>{t('booking.schedule')}:</strong> {course.startDate.split('T')[0]} {course.endDate ? `~ ${course.endDate.split('T')[0]}` : ''}
           </div>
           {course.availableDays && course.availableDays.length > 0 && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
               <Clock size={14} style={{ color: 'var(--color-accent)' }} />
-              <strong>요일:</strong> {course.availableDays.map(d => daysKo[d]).join(', ')}
+              <strong>{t('booking.day')}:</strong> {course.availableDays.map(d => daysKo[d]).join(', ')}
             </div>
           )}
           {course.availableTimes && course.availableTimes.length > 0 && (
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-2)' }}>
               <Clock size={14} style={{ color: 'var(--color-accent)' }} />
               <div>
-                <strong>시간:</strong> {course.availableTimes.join(', ')}
+                <strong>{t('booking.time')}:</strong> {course.availableTimes.join(', ')}
               </div>
             </div>
           )}
         </div>
 
         <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)', fontSize: 'var(--font-size-sm)' }}>
-          원하시는 날짜와 시간을 선택해주세요.
+          {t('booking.select_date_time')}
         </p>
 
         {!course.autoApprove && (
-          <div style={{ marginBottom: 'var(--space-4)', padding: 'var(--space-3)', background: 'rgba(255, 152, 0, 0.1)', color: '#ed6c02', borderRadius: 'var(--radius-md)', fontSize: 'var(--font-size-sm)' }}>
-            ℹ️ 이 클래스는 승인 후 예약이 확정됩니다.<br />
-            (예약 확정 여부는 상단의 앱 내 알림(🔔)으로 전송됩니다)
+          <div style={{ marginBottom: 'var(--space-4)', padding: 'var(--space-3)', background: 'rgba(255, 152, 0, 0.1)', color: '#ed6c02', borderRadius: 'var(--radius-md)', fontSize: 'var(--font-size-sm)', whiteSpace: 'pre-line' }}>
+            {t('booking.approval_info')}
           </div>
         )}
 
         <div className="form-group" style={{ marginBottom: 'var(--space-6)' }}>
-          <label className="form-label">날짜 선택 (Date)</label>
+          <label className="form-label">{t('booking.date_label')}</label>
           <input 
             type="date" 
             className="form-input" 
@@ -166,7 +165,7 @@ export default function BookingModal({ course, onClose, onConfirm }: BookingModa
         </div>
 
         <div className="form-group" style={{ marginBottom: 'var(--space-8)' }}>
-          <label className="form-label">시간 선택 (Time)</label>
+          <label className="form-label">{t('booking.time_label')}</label>
           {(!course.availableTimes || course.availableTimes.length === 0) ? (
             <input 
               type="time" 
@@ -203,10 +202,10 @@ export default function BookingModal({ course, onClose, onConfirm }: BookingModa
 
         {selectedDate && selectedTime && (
           <div className="form-group" style={{ marginBottom: 'var(--space-8)' }}>
-            <label className="form-label">참여 인원 (Participants)</label>
+            <label className="form-label">{t('booking.participants_label')}</label>
             {loadingSpots ? (
               <div style={{ padding: 'var(--space-2)', color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>
-                남은 자리를 확인 중입니다...
+                {t('booking.checking_spots')}
               </div>
             ) : availableSpots !== null && availableSpots > 0 ? (
               <select 
@@ -215,48 +214,48 @@ export default function BookingModal({ course, onClose, onConfirm }: BookingModa
                 onChange={(e) => setParticipants(parseInt(e.target.value))}
               >
                 {Array.from({ length: availableSpots }, (_, i) => i + 1).map(num => (
-                  <option key={num} value={num}>{num}명 (People)</option>
+                  <option key={num} value={num}>{num} {t('booking.people')}</option>
                 ))}
               </select>
             ) : (
               <div style={{ padding: 'var(--space-3)', background: 'var(--color-danger-light)', color: 'var(--color-danger)', borderRadius: 'var(--radius-md)', fontWeight: 500, textAlign: 'center' }}>
-                해당 타임은 예약이 마감되었습니다.
+                {t('booking.closed_time')}
               </div>
             )}
           </div>
         )}
 
         <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
-          <label className="form-label">예약자 성함 (Name)</label>
+          <label className="form-label">{t('booking.name_label')}</label>
           <input 
             type="text" 
             className="form-input" 
-            placeholder="홍길동"
+            placeholder={t('booking.name_placeholder')}
             value={userName}
             onChange={(e) => setUserName(e.target.value)}
           />
         </div>
 
         <div className="form-group" style={{ marginBottom: 'var(--space-8)' }}>
-          <label className="form-label">연락처 (Phone Number)</label>
+          <label className="form-label">{t('booking.phone_label')}</label>
           <input 
             type="tel" 
             className="form-input" 
-            placeholder="010-0000-0000"
+            placeholder={t('booking.phone_placeholder')}
             value={userPhone}
             onChange={(e) => setUserPhone(e.target.value)}
           />
         </div>
 
         <div style={{ display: 'flex', gap: 'var(--space-4)' }}>
-          <button className="btn btn-secondary" onClick={onClose} style={{ flex: 1 }}>취소</button>
+          <button className="btn btn-secondary" onClick={onClose} style={{ flex: 1 }}>{t('booking.cancel')}</button>
           <button 
             className="btn btn-primary" 
             onClick={handleConfirm} 
             style={{ flex: 2 }} 
             disabled={!selectedDate || !selectedTime || loadingSpots || (availableSpots !== null && availableSpots <= 0)}
           >
-            예약 신청 (Apply)
+            {t('booking.apply')}
           </button>
         </div>
       </div>

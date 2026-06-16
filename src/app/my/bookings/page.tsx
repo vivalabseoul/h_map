@@ -49,7 +49,7 @@ export default function MyBookingsPage() {
             <strong>안내:</strong> 예약하신 날짜나 시간을 변경하시려면 공방(스튜디오)으로 직접 전화 문의해 주시기 바랍니다.
           </div>
 
-          <div className="table-wrapper">
+          <div className="table-wrapper desktop-only">
             <table className="table">
               <thead>
                 <tr>
@@ -103,6 +103,58 @@ export default function MyBookingsPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="mobile-only" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+            {bookings.map((b) => (
+              <div key={b.id} className="card" style={{ padding: 'var(--space-4)', display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <div style={{ fontWeight: 600, color: 'var(--color-text-primary)', fontSize: 'var(--font-size-base)' }}>
+                      {b.courseTitle ? (typeof b.courseTitle === 'string' ? b.courseTitle : (b.courseTitle as any).ko || (b.courseTitle as any).en) : `Course ID: ${b.courseId}`}
+                    </div>
+                    {b.workshopName && (
+                      <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
+                        {typeof b.workshopName === 'string' ? b.workshopName : (b.workshopName as any).ko || (b.workshopName as any).en}
+                      </div>
+                    )}
+                  </div>
+                  <span className={`badge ${
+                    b.status === 'confirmed' ? 'badge-success' : 
+                    b.status === 'pending' ? 'badge-warning' : 
+                    'badge-danger'
+                  }`} style={{ whiteSpace: 'nowrap', marginLeft: 'var(--space-2)' }}>
+                    {b.status === 'confirmed' ? '예약 확정' : 
+                     b.status === 'pending' ? '승인 대기' : 
+                     b.status === 'rejected' ? '거절됨' :
+                     b.status === 'cancelled' ? '취소됨' : b.status}
+                  </span>
+                </div>
+                
+                <div style={{ display: 'flex', gap: 'var(--space-4)', marginTop: 'var(--space-1)', fontSize: 'var(--font-size-sm)' }}>
+                  <div>
+                    <span style={{ color: 'var(--color-text-muted)' }}>Date: </span>
+                    {b.selectedDate.split('T')[0]}
+                  </div>
+                  <div>
+                    <span style={{ color: 'var(--color-text-muted)' }}>Time: </span>
+                    {b.selectedTime} ({b.participants}명)
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'var(--space-2)', paddingTop: 'var(--space-2)', borderTop: '1px solid var(--color-border-light)' }}>
+                  <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>
+                    Applied: {new Date(b.createdAt).toLocaleDateString()}
+                  </div>
+                  {b.status !== 'cancelled' && (
+                    <button className="btn btn-sm btn-danger" onClick={() => handleCancel(b.id)}>
+                      예약 취소 (Cancel)
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

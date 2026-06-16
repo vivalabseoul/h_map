@@ -1,0 +1,110 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: calc(var(--z-bottom-sheet) - 1);
+  animation: fadeIn 0.2s ease;
+}
+
+.sheet {
+  position: fixed;
+  z-index: var(--z-bottom-sheet);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xl);
+  overflow-y: auto;
+}
+
+/* Mobile defaults (Bottom Sheet) */
+@media (max-width: 768px) {
+  .sheet {
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    margin: 0 auto;
+    width: 100%;
+    max-height: 85vh;
+    animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}
+
+/* Desktop defaults (Side Panel) */
+@media (min-width: 769px) {
+  .sheet {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 450px;
+    height: 100vh;
+    border-radius: 0;
+    animation: slideLeft 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  
+  .handleBar {
+    display: none;
+  }
+}
+
+.handle {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-3) 0 var(--space-2);
+  cursor: grab;
+  position: sticky;
+  top: 0;
+  background: var(--color-surface);
+  z-index: 10;
+}
+
+.handleBar {
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-border);
+}
+
+.closeBtn {
+  position: absolute;
+  right: var(--space-4);
+  top: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-alt);
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+  z-index: 2;
+  border: none;
+  cursor: pointer;
+}
+
+.closeBtn:hover {
+  background: var(--color-danger-light);
+  color: var(--color-danger);
+}
+
+.content {
+  padding: 0 var(--space-5) var(--space-6);
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes slideLeft {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

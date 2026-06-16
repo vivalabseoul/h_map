@@ -103,7 +103,7 @@ export default function FilterBar({
       {/* 3. Tags Dropdown */}
       <div style={{ position: 'relative' }}>
         <button className={styles.chip} onClick={() => toggleDropdown('tags')} style={{ background: openDropdown === 'tags' || activeTags.length > 0 ? 'var(--color-accent)' : '#fff', color: openDropdown === 'tags' || activeTags.length > 0 ? '#fff' : 'inherit' }}>
-          # {t('nav.tags') || '태그'} {activeTags.length > 0 && `(${activeTags.length})`}
+          # {t('nav.tags') || 'Tags'} {activeTags.length > 0 && `(${activeTags.length})`}
           <ChevronDown size={14} style={{ marginLeft: 4 }} />
         </button>
         {openDropdown === 'tags' && (
@@ -129,9 +129,9 @@ export default function FilterBar({
         className={styles.chip}
         onClick={() => onViewModeChange(viewMode === 'map' ? 'list' : 'map')}
         style={{ padding: '0 12px', background: 'var(--color-bg-secondary)' }}
-        title={viewMode === 'map' ? '목록 보기' : '지도 보기'}
+        title={viewMode === 'map' ? 'View List' : 'View Map'}
       >
-        {viewMode === 'map' ? '📋 목록' : '🗺️ 지도'}
+        {viewMode === 'map' ? '📋 List' : '🗺️ Map'}
       </button>
 
     </div>

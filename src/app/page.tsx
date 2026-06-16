@@ -8,6 +8,7 @@ import type { Workshop, WorkshopCategory, Region, FleaMarket } from '@/types';
 import { getWorkshops, getFleaMarkets } from '@/lib/database';
 
 import ListView from '@/components/ListView';
+import pageStyles from './page.module.css';
 
 const MapView = dynamic(() => import('@/components/map/MapView'), {
   ssr: false,
@@ -74,7 +75,7 @@ export default function HomePage() {
   }, []);
 
   return (
-    <main style={{ position: 'relative' }}>
+    <main style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
       <FilterBar
         selectedRegion={selectedRegion}
         onRegionChange={setSelectedRegion}
@@ -86,23 +87,27 @@ export default function HomePage() {
         onViewModeChange={setViewMode}
       />
       
-      {viewMode === 'map' ? (
-        <MapView
-          workshops={filteredWorkshops}
-          fleaMarkets={filteredFleaMarkets}
-          selectedRegion={selectedRegion}
-          onRegionChange={setSelectedRegion}
-          onMarkerClick={handleMarkerClick}
-          onFleaMarketClick={handleFleaMarketClick}
-        />
-      ) : (
-        <ListView
-          workshops={filteredWorkshops}
-          fleaMarkets={filteredFleaMarkets}
-          onWorkshopClick={handleMarkerClick}
-          onFleaMarketClick={handleFleaMarketClick}
-        />
-      )}
+      <div className={pageStyles.homeLayout}>
+        <div className={`${pageStyles.mapWrapper} ${viewMode === 'list' ? pageStyles.mapHiddenDesktop : ''} ${viewMode === 'list' ? pageStyles.hideMobile : ''}`}>
+          <MapView
+            workshops={filteredWorkshops}
+            fleaMarkets={filteredFleaMarkets}
+            selectedRegion={selectedRegion}
+            onRegionChange={setSelectedRegion}
+            onMarkerClick={handleMarkerClick}
+            onFleaMarketClick={handleFleaMarketClick}
+          />
+        </div>
+        
+        <div className={`${pageStyles.listWrapper} ${viewMode === 'list' ? pageStyles.listFullWidth : ''} ${viewMode === 'map' ? pageStyles.hideMobile : ''}`}>
+          <ListView
+            workshops={filteredWorkshops}
+            fleaMarkets={filteredFleaMarkets}
+            onWorkshopClick={handleMarkerClick}
+            onFleaMarketClick={handleFleaMarketClick}
+          />
+        </div>
+      </div>
 
       {selectedWorkshop && (
         <BottomSheet

@@ -1,8 +1,8 @@
 .listContainer {
   padding: var(--space-4);
-  padding-top: 160px; /* Leave space for top header and filter bar */
+  padding-top: 80px; /* Leave space for filter bar */
   padding-bottom: 80px; 
-  height: 100vh;
+  height: 100%;
   overflow-y: auto;
   background-color: var(--color-background);
 }

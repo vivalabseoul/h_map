@@ -3,8 +3,10 @@ import { Playfair_Display } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
 import { LanguageProvider } from '@/context/LanguageContext';
+import { FilterProvider } from '@/context/FilterContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import AnnouncementBanner from '@/components/AnnouncementBanner';
 
 const playfair = Playfair_Display({ 
   subsets: ['latin'],
@@ -30,13 +32,16 @@ export default function RootLayout({
       <body>
         <AuthProvider>
           <LanguageProvider>
-            <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-              <Header />
-              <div style={{ flex: 1 }}>
-                {children}
+            <FilterProvider>
+              <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+                <AnnouncementBanner />
+                <Header />
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                  {children}
+                </div>
+                <Footer />
               </div>
-              <Footer />
-            </div>
+            </FilterProvider>
           </LanguageProvider>
         </AuthProvider>
       </body>

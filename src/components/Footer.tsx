@@ -16,11 +16,11 @@ export default function Footer() {
         </div>
 
         <div className={styles.links}>
-          <Link href="/about" className={styles.link}>{t('About') || '회사소개'}</Link>
-          <Link href="/faq" className={styles.link}>{t('Faq') || '자주 묻는 질문'}</Link>
-          <Link href="/terms" className={styles.link}>{t('Terms') || '이용규정'}</Link>
-          <Link href="/privacy" className={styles.link}>{t('Privacy') || '개인정보'}</Link>
-          <Link href="/contact" className={styles.link}>{t('Contact') || '문의하기'}</Link>
+          <Link href="/about" className={styles.link}>{t('About') || 'About'}</Link>
+          <Link href="/faq" className={styles.link}>{t('Faq') || 'FAQ'}</Link>
+          <Link href="/terms" className={styles.link}>{t('Terms') || 'Terms'}</Link>
+          <Link href="/privacy" className={styles.link}>{t('Privacy') || 'Privacy'}</Link>
+          <Link href="/contact" className={styles.link}>{t('Contact') || 'Contact Us'}</Link>
           <a href="mailto:vivalabseoul@gmail.com" className={`${styles.link} ${styles.hideMobile}`}>Email</a>
         </div>
       </div>

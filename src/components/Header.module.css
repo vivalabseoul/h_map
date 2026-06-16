@@ -1,5 +1,5 @@
 .header {
-  position: fixed;
+  position: sticky;
   top: 0;
   left: 0;
   right: 0;
@@ -33,6 +33,12 @@
 
 .logoAccent {
   color: var(--color-accent);
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 .headerRight {
@@ -77,7 +83,7 @@
 }
 
 .menuButton {
-  display: none;
+  display: block;
   background: none;
   border: none;
   color: var(--color-text-primary);
@@ -303,6 +309,6 @@
     display: block;
   }
   .logo {
-    font-size: var(--font-size-base);
+    font-size: 1.5rem;
   }
 }

@@ -1,7 +1,7 @@
 .container {
   max-width: 800px;
   margin: 0 auto;
-  padding: 120px var(--space-4) var(--space-8);
+  padding: 80px var(--space-4) var(--space-8);
   min-height: 70vh;
 }
 

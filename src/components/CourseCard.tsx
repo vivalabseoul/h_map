@@ -4,15 +4,17 @@ import { Clock, DollarSign, Users, Calendar } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
 import { createBooking, createNotification } from '@/lib/database';
+import { formatPrice } from '@/lib/utils';
 import type { Course } from '@/types';
 import BookingModal from './BookingModal';
 import styles from './CourseCard.module.css';
 
 interface CourseCardProps {
   course: Course;
+  region?: string;
 }
 
-export default function CourseCard({ course }: CourseCardProps) {
+export default function CourseCard({ course, region }: CourseCardProps) {
   const { locale, t } = useLanguage();
   const { user, userRole } = useAuth();
   const [applying, setApplying] = useState(false);
@@ -39,17 +41,17 @@ export default function CourseCard({ course }: CourseCardProps) {
       if (status === 'pending') {
         await createNotification(
           course.instructorId,
-          'New Booking Request (새로운 예약 신청)',
-          `${name} has requested a booking for ${course.title['en'] || 'the class'}. Pending approval.\n${name}님이 ${course.title[locale] || '클래스'} 예약을 신청했습니다. 승인 대기 중입니다.`,
+          t('booking.notification_new_booking'),
+          t('booking.notification_new_booking_desc').replace('{name}', name).replace('{course}', typeof course.title === 'string' ? course.title : course.title[locale] || 'the class'),
           '/instructor/bookings'
         );
-        alert('Your booking application is complete. Please wait for the creator\'s approval.\n예약 신청이 완료되었습니다. 크리에이터의 승인을 기다려주세요.');
+        alert(t('booking.alert_booking_complete_pending'));
       } else {
-        alert('Your booking application is complete!\n예약 신청이 완료되었습니다!');
+        alert(t('booking.alert_booking_complete'));
       }
     } catch (error) {
       console.error('Booking error:', error);
-      alert('An error occurred during booking.\n예약 중 오류가 발생했습니다.');
+      alert(t('booking.alert_booking_error'));
     } finally {
       setApplying(false);
     }
@@ -102,7 +104,7 @@ export default function CourseCard({ course }: CourseCardProps) {
       <div className={styles.courseInfo}>
         <div className={styles.infoItem}>
           <DollarSign size={14} className={styles.infoIcon} />
-          {course.price}
+          {formatPrice(course.price, region)}
         </div>
         <div className={styles.infoItem}>
           <Clock size={14} className={styles.infoIcon} />
@@ -110,7 +112,7 @@ export default function CourseCard({ course }: CourseCardProps) {
         </div>
         <div className={styles.infoItem}>
           <Users size={14} className={styles.infoIcon} />
-          타임당 {course.maxParticipants}명
+          {course.maxParticipants} {t('booking.people')}
         </div>
         <div className={styles.infoItem}>
           <Calendar size={14} className={styles.infoIcon} />
@@ -120,7 +122,7 @@ export default function CourseCard({ course }: CourseCardProps) {
 
       <div className={styles.cardFooter}>
         <span className={`${styles.spots}`}>
-          최대 정원: {course.maxParticipants}명
+          {t('workshop.spots_left').replace('spots left', '')} {course.maxParticipants} {t('booking.people')}
         </span>
 
         {applied ? (

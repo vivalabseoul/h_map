@@ -61,7 +61,7 @@ export default function Header() {
           href="/market_coordinator"
           className={`${isMobile ? styles.mobileNavLink : styles.navLink} ${pathname.startsWith('/market_coordinator') ? (isMobile ? styles.mobileNavLinkActive : styles.navLinkActive) : ''}`}
         >
-          🎪 {t('nav.market') || '플리마켓'}
+          🎪 {t('nav.market') || 'Flea Market'}
         </Link>
       )}
 
@@ -83,21 +83,21 @@ export default function Header() {
         <span>Art flow<span className={styles.logoAccent}> map</span></span>
       </Link>
 
-      {/* Desktop Navigation */}
-      <nav className={styles.navLinks}>
-        {navLinks(false)}
-      </nav>
+      {/* Removed Desktop Navigation Links as per user request to keep only sidebar menu */}
 
-      <div className={styles.headerRight}>
+      <div className={styles.headerActions}>
+        <div className={styles.headerRight}>
+          <LanguageSwitcher />
+          <AuthButton />
+        </div>
+        
         <NotificationBell />
-        <LanguageSwitcher />
-        <AuthButton />
+        
+        {/* Mobile Hamburger Button */}
+        <button className={styles.menuButton} onClick={toggleMobileMenu} aria-label="Toggle menu">
+          <Menu size={24} />
+        </button>
       </div>
-
-      {/* Mobile Hamburger Button */}
-      <button className={styles.menuButton} onClick={toggleMobileMenu} aria-label="Toggle menu">
-        <Menu size={24} />
-      </button>
 
       {/* Mobile Slide Menu */}
       <div 
@@ -113,6 +113,8 @@ export default function Header() {
         <nav className={styles.mobileNavLinks}>
           {navLinks(true)}
         </nav>
+
+        {/* Bottom Actions */}
         <div className={styles.mobileBottomActions}>
           <LanguageSwitcher />
           <AuthButton />

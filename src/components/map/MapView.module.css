@@ -1,5 +1,5 @@
 .mapContainer {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   right: 0;
@@ -41,85 +41,4 @@
   line-height: 1;
 }
 
-/* Region selector */
-.regionBar {
-  position: fixed;
-  bottom: calc(44px + 24px);
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: var(--z-filter);
-  display: flex;
-  gap: var(--space-2);
-  padding: var(--space-2);
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-lg);
-  border: 1px solid rgba(232, 224, 216, 0.5);
-}
 
-.regionTab {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-2) var(--space-3);
-  font-size: var(--font-size-xs);
-  font-weight: 500;
-  border-radius: var(--radius-lg);
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  white-space: nowrap;
-  position: relative;
-}
-
-.regionTab:hover {
-  background: var(--color-accent-light);
-  color: var(--color-accent);
-}
-
-.regionTabActive {
-  background: var(--color-accent);
-  color: white;
-  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
-}
-
-.regionTabActive:hover {
-  background: var(--color-accent-hover);
-  color: white;
-}
-
-.regionTabDisabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.regionTabDisabled:hover {
-  background: transparent;
-  color: var(--color-text-secondary);
-}
-
-.comingSoon {
-  position: absolute;
-  top: -8px;
-  right: -4px;
-  font-size: 0.5rem;
-  background: var(--color-clay);
-  color: white;
-  padding: 1px 4px;
-  border-radius: var(--radius-full);
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-
-@media (max-width: 640px) {
-  .regionBar {
-    bottom: calc(44px + 16px);
-    left: 12px;
-    right: 12px;
-    transform: none;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-}

@@ -4,6 +4,7 @@ import { X, Navigation, Share2, MapPin, Phone, Globe, Calendar, Image as ImageIc
 import { useLanguage } from '@/context/LanguageContext';
 import { incrementVendorApplicationClick } from '@/lib/database';
 import type { FleaMarket } from '@/types';
+import Sheet from './Sheet';
 import styles from './BottomSheet.module.css';
 
 interface FleaMarketSheetProps {
@@ -14,14 +15,7 @@ interface FleaMarketSheetProps {
 export default function FleaMarketSheet({ market, onClose }: FleaMarketSheetProps) {
   const { locale } = useLanguage();
 
-  // Close on escape
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [onClose]);
+  // Close on escape is handled by Sheet component
 
   const handleNavigate = useCallback(() => {
     const url = `https://www.google.com/maps/dir/?api=1&destination=${market.lat},${market.lng}`;
@@ -49,17 +43,7 @@ export default function FleaMarketSheet({ market, onClose }: FleaMarketSheetProp
   }, [market, locale]);
 
   return (
-    <>
-      <div className={styles.overlay} onClick={onClose} />
-      <div className={styles.sheet} id="bottom-sheet" role="dialog" aria-modal="true">
-        <div className={styles.handle}>
-          <div className={styles.handleBar} />
-          <button className={styles.closeBtn} onClick={onClose} aria-label="Close">
-            <X size={18} />
-          </button>
-        </div>
-
-        <div className={styles.content}>
+    <Sheet onClose={onClose}>
           {/* Image/Poster (Only show if exists) */}
           {market.posterUrl && (
             <div style={{ width: '100%', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginBottom: 'var(--space-4)' }}>
@@ -74,7 +58,7 @@ export default function FleaMarketSheet({ market, onClose }: FleaMarketSheetProp
 
           <div className={styles.ratingRow}>
             <span className={styles.categoryBadge} style={{ background: market.source === 'api' ? '#fef3c7' : '#e0f2fe', color: market.source === 'api' ? '#d97706' : '#0284c7' }}>
-              {market.source === 'api' ? '🎉 지역축제 (Local Festival)' : '🎪 플리마켓 (Flea Market)'}
+              {market.source === 'api' ? '🎉 Local Festival' : '🎪 Flea Market'}
             </span>
           </div>
 
@@ -94,7 +78,7 @@ export default function FleaMarketSheet({ market, onClose }: FleaMarketSheetProp
             {market.admissionFee && (
               <div className={styles.infoItem}>
                 <ImageIcon size={16} className={styles.infoIcon} />
-                <span>입장권: {market.admissionFee}</span>
+                <span>Admission: {market.admissionFee}</span>
               </div>
             )}
             {market.phone && (
@@ -106,7 +90,7 @@ export default function FleaMarketSheet({ market, onClose }: FleaMarketSheetProp
             {market.website && (
               <div className={styles.infoItem}>
                 <Globe size={16} className={styles.infoIcon} />
-                <a href={market.website} target="_blank" rel="noopener noreferrer">홈페이지</a>
+                <a href={market.website} target="_blank" rel="noopener noreferrer">Website</a>
               </div>
             )}
             {market.instagram && (
@@ -149,13 +133,11 @@ export default function FleaMarketSheet({ market, onClose }: FleaMarketSheetProp
                 style={{ width: '100%', display: 'flex', justifyContent: 'center', backgroundColor: 'var(--color-clay)' }}
                 onClick={() => incrementVendorApplicationClick(market.id).catch(console.error)}
               >
-                🎪 셀러(벤더) 참여 신청하기
+                🎪 Apply as a Vendor
               </a>
             </div>
           )}
 
-        </div>
-      </div>
-    </>
+    </Sheet>
   );
 }

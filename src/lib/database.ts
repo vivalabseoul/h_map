@@ -12,8 +12,9 @@ import type {
   AppUser,
   FleaMarket,
   AppNotification,
+  Notice,
 } from '@/types';
-import { demoWorkshops, demoReviews, demoCourses, demoBookings, demoInquiries } from '@/data/workshops';
+import { demoWorkshops, demoReviews, demoCourses, demoBookings, demoInquiries, demoNotices } from '@/data/workshops';
 
 // --- Mappers (snake_case -> camelCase) ---
 const mapWorkshop = (d: any): Workshop => ({
@@ -571,4 +572,97 @@ export async function uploadImage(file: File, folder = 'uploads'): Promise<strin
 
   const { data: publicData } = supabase.storage.from('images').getPublicUrl(fileName);
   return publicData.publicUrl;
+}
+
+// ==========================================
+// Notices (Announcements)
+// ==========================================
+const mapNotice = (d: any): Notice => ({
+  id: d.id,
+  title: d.title,
+  content: d.content,
+  isMain: d.is_main ?? false,
+  isActive: d.is_active ?? true,
+  authorName: d.author_name,
+  createdAt: d.created_at,
+});
+
+export async function getNotices(): Promise<Notice[]> {
+  if (!supabase || !isSupabaseConfigured) return demoNotices;
+  const { data, error } = await supabase.from('notices').select('*').order('created_at', { ascending: false });
+  if (error || !data || data.length === 0) {
+    return demoNotices; // Fallback to demo data if table doesn't exist or is empty
+  }
+  return (data || []).map(mapNotice);
+}
+
+export async function getMainNotice(): Promise<Notice | null> {
+  if (!supabase || !isSupabaseConfigured) {
+    return demoNotices.find(n => n.isMain && n.isActive) || null;
+  }
+  const { data, error } = await supabase.from('notices')
+    .select('*')
+    .eq('is_main', true)
+    .eq('is_active', true)
+    .single();
+    
+  if (error || !data) {
+    return demoNotices.find(n => n.isMain && n.isActive) || null; // Fallback to demo data
+  }
+  return mapNotice(data);
+}
+
+export async function createNotice(data: Omit<Notice, 'id' | 'createdAt'>): Promise<string> {
+  if (!supabase || !isSupabaseConfigured) {
+    const newNotice = { ...data, id: `n_${Date.now()}`, createdAt: new Date().toISOString() };
+    demoNotices.unshift(newNotice);
+    return newNotice.id;
+  }
+  
+  if (data.isMain) {
+    await supabase.from('notices').update({ is_main: false }).eq('is_main', true);
+  }
+
+  const { data: res, error } = await supabase.from('notices').insert({
+    title: data.title, content: data.content, is_main: data.isMain, is_active: data.isActive, author_name: data.authorName
+  }).select('id').single();
+  
+  if (error) throw error;
+  return res.id;
+}
+
+export async function updateNotice(id: string, data: Partial<Notice>): Promise<void> {
+  if (!supabase || !isSupabaseConfigured) {
+    const idx = demoNotices.findIndex(n => n.id === id);
+    if (idx > -1) {
+      if (data.isMain) {
+        demoNotices.forEach(n => n.isMain = false);
+      }
+      demoNotices[idx] = { ...demoNotices[idx], ...data };
+    }
+    return;
+  }
+  
+  const updateData: any = {};
+  if (data.title !== undefined) updateData.title = data.title;
+  if (data.content !== undefined) updateData.content = data.content;
+  if (data.isActive !== undefined) updateData.is_active = data.isActive;
+  if (data.isMain !== undefined) {
+    updateData.is_main = data.isMain;
+    if (data.isMain) {
+      await supabase.from('notices').update({ is_main: false }).eq('is_main', true);
+    }
+  }
+
+  const { error } = await supabase.from('notices').update(updateData).eq('id', id);
+  if (error) throw error;
+}
+
+export async function deleteNotice(id: string): Promise<void> {
+  if (!supabase || !isSupabaseConfigured) {
+    const idx = demoNotices.findIndex(n => n.id === id);
+    if (idx > -1) demoNotices.splice(idx, 1);
+    return;
+  }
+  await supabase.from('notices').delete().eq('id', id);
 }

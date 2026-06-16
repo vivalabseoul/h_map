@@ -20,7 +20,7 @@ export default function ListView({ workshops, fleaMarkets, onWorkshopClick, onFl
       {/* 1. 지역 축제 및 플리마켓 섹션 */}
       {fleaMarkets.length > 0 && (
         <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>🎉 지역축제 및 플리마켓</h2>
+          <h2 className={styles.sectionTitle}>🎉 Local Festivals & Flea Markets</h2>
           <div className={styles.grid}>
             {fleaMarkets.map(market => {
               const name = market.name[locale] || market.name.ko || market.name.en || '';
@@ -63,7 +63,7 @@ export default function ListView({ workshops, fleaMarkets, onWorkshopClick, onFl
       {/* 2. 공방/클래스 섹션 */}
       {workshops.length > 0 && (
         <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>📍 지역 공방 및 클래스</h2>
+          <h2 className={styles.sectionTitle}>📍 Local Studios & Classes</h2>
           <div className={styles.grid}>
             {workshops.map(workshop => {
               const name = workshop.name[locale] || workshop.name.ko || workshop.name.en || '';
@@ -98,7 +98,7 @@ export default function ListView({ workshops, fleaMarkets, onWorkshopClick, onFl
 
       {fleaMarkets.length === 0 && workshops.length === 0 && (
         <div style={{ textAlign: 'center', padding: '40px', color: '#888' }}>
-          해당 지역에 등록된 정보가 없습니다.
+          No registered information in this region.
         </div>
       )}
       
