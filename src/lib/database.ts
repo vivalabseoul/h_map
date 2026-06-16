@@ -11,6 +11,7 @@ import type {
   Inquiry,
   AppUser,
   FleaMarket,
+  AppNotification,
 } from '@/types';
 import { demoWorkshops, demoReviews, demoCourses, demoBookings, demoInquiries } from '@/data/workshops';
 
@@ -28,6 +29,7 @@ const mapCourse = (d: any): Course => ({
   maxParticipants: d.max_participants, currentParticipants: d.current_participants,
   status: d.status, imageUrl: d.image_url, startDate: d.start_date, endDate: d.end_date,
   availableDays: d.available_days || [], availableTimes: d.available_times || [],
+  autoApprove: d.auto_approve ?? false,
   createdAt: d.created_at,
 });
 const mapBooking = (d: any): Booking => ({
@@ -59,6 +61,11 @@ const mapFleaMarket = (d: any): FleaMarket => ({
   externalId: d.external_id,
   status: d.status || 'active',
   createdAt: d.created_at,
+});
+
+const mapNotification = (d: any): AppNotification => ({
+  id: d.id, userId: d.user_id, title: d.title, message: d.message,
+  linkUrl: d.link_url, isRead: d.is_read, createdAt: d.created_at,
 });
 
 // ==========================================
@@ -152,6 +159,7 @@ export async function createCourse(data: Omit<Course, 'id' | 'createdAt' | 'curr
     max_participants: data.maxParticipants, status: data.status, image_url: data.imageUrl,
     start_date: data.startDate, end_date: data.endDate, 
     available_days: data.availableDays, available_times: data.availableTimes,
+    auto_approve: data.autoApprove ?? false,
   };
   const { data: res, error } = await supabase.from('courses').insert(insertData).select('id').single();
   if (error) throw error;
@@ -170,6 +178,7 @@ export async function updateCourse(id: string, data: Partial<Course>): Promise<v
   if (data.endDate) updateData.end_date = data.endDate;
   if (data.availableDays) updateData.available_days = data.availableDays;
   if (data.availableTimes) updateData.available_times = data.availableTimes;
+  if (data.autoApprove !== undefined) updateData.auto_approve = data.autoApprove;
   await supabase.from('courses').update(updateData).eq('id', id);
 }
 
@@ -181,10 +190,10 @@ export async function deleteCourse(id: string): Promise<void> {
 // ==========================================
 // Bookings
 // ==========================================
-export async function createBooking(courseId: string, userId: string, userName: string, selectedDate: string, selectedTime: string, participants: number = 1, userPhone: string = ''): Promise<string> {
+export async function createBooking(courseId: string, userId: string, userName: string, selectedDate: string, selectedTime: string, participants: number = 1, userPhone: string = '', status: string = 'pending'): Promise<string> {
   if (!supabase) throw new Error('Supabase not configured');
   const { data: res, error } = await supabase.from('bookings').insert({
-    course_id: courseId, user_id: userId, user_name: userName, user_phone: userPhone, status: 'confirmed',
+    course_id: courseId, user_id: userId, user_name: userName, user_phone: userPhone, status,
     selected_date: selectedDate, selected_time: selectedTime, participants
   }).select('id').single();
   if (error) throw error;
@@ -220,9 +229,13 @@ export async function getBookingsByUser(userId: string): Promise<Booking[]> {
   return (data || []).map(d => {
     const b = mapBooking(d);
     if (d.courses) {
-      b.courseTitle = d.courses.title;
-      if (d.courses.workshops) {
-        b.workshopName = d.courses.workshops.name;
+      const cData = Array.isArray(d.courses) ? d.courses[0] : d.courses;
+      if (cData) {
+        b.courseTitle = cData.title;
+        if (cData.workshops) {
+          const wData = Array.isArray(cData.workshops) ? cData.workshops[0] : cData.workshops;
+          b.workshopName = wData?.name;
+        }
       }
     }
     return b;
@@ -239,9 +252,13 @@ export async function getBookingsByInstructor(instructorId: string): Promise<Boo
   return (data || []).map(d => {
     const b = mapBooking(d);
     if (d.courses) {
-      b.courseTitle = d.courses.title;
-      if (d.courses.workshops) {
-        b.workshopName = d.courses.workshops.name;
+      const cData = Array.isArray(d.courses) ? d.courses[0] : d.courses;
+      if (cData) {
+        b.courseTitle = cData.title;
+        if (cData.workshops) {
+          const wData = Array.isArray(cData.workshops) ? cData.workshops[0] : cData.workshops;
+          b.workshopName = wData?.name;
+        }
       }
     }
     return b;
@@ -285,6 +302,17 @@ export async function addReview(data: Omit<Review, 'id' | 'createdAt'>): Promise
 
   await updateWorkshopRating(data.workshopId);
   return res.id;
+}
+
+export async function updateReview(id: string, text: string, rating: number): Promise<void> {
+  if (!supabase) throw new Error('Supabase not configured');
+  const { error } = await supabase.from('reviews').update({ text, rating }).eq('id', id);
+  if (error) throw error;
+  
+  const { data: rev } = await supabase.from('reviews').select('workshop_id').eq('id', id).single();
+  if (rev?.workshop_id) {
+    await updateWorkshopRating(rev.workshop_id);
+  }
 }
 
 export async function deleteReview(id: string): Promise<void> {
@@ -480,6 +508,49 @@ export async function getBookedParticipants(courseId: string, date: string, time
   }
   
   return data.reduce((sum, b) => sum + (b.participants || 1), 0);
+}
+
+// ==========================================
+// Notifications
+// ==========================================
+export async function getNotificationsByUser(userId: string): Promise<AppNotification[]> {
+  if (!supabase || !isSupabaseConfigured) return [];
+  const { data, error } = await supabase.from('notifications')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+  if (error) {
+    console.error('Failed to get notifications', error);
+    return [];
+  }
+  return (data || []).map(mapNotification);
+}
+
+export async function getUnreadNotificationCount(userId: string): Promise<number> {
+  if (!supabase || !isSupabaseConfigured) return 0;
+  const { count, error } = await supabase.from('notifications')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .eq('is_read', false);
+  if (error) return 0;
+  return count || 0;
+}
+
+export async function createNotification(userId: string, title: string, message: string, linkUrl?: string): Promise<void> {
+  if (!supabase) return;
+  await supabase.from('notifications').insert({
+    user_id: userId, title, message, link_url: linkUrl, is_read: false
+  });
+}
+
+export async function markNotificationAsRead(id: string): Promise<void> {
+  if (!supabase) return;
+  await supabase.from('notifications').update({ is_read: true }).eq('id', id);
+}
+
+export async function markAllNotificationsAsRead(userId: string): Promise<void> {
+  if (!supabase) return;
+  await supabase.from('notifications').update({ is_read: true }).eq('user_id', userId).eq('is_read', false);
 }
 
 // ==========================================

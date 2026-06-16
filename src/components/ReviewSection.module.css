@@ -168,3 +168,29 @@
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
 }
+
+.reviewActions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.actionBtn {
+  font-size: var(--font-size-xs);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-alt);
+  color: var(--color-text-secondary);
+  transition: all var(--transition-fast);
+  font-weight: 500;
+}
+
+.actionBtn:hover {
+  background: var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.actionBtn.danger:hover {
+  background: var(--color-danger-light);
+  color: var(--color-danger);
+}

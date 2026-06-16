@@ -8,6 +8,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { isAdmin, isInstructor, isMarketCoordinator } from '@/lib/permissions';
 import AuthButton from './AuthButton';
 import LanguageSwitcher from './LanguageSwitcher';
+import NotificationBell from './NotificationBell';
 import styles from './Header.module.css';
 
 export default function Header() {
@@ -88,6 +89,7 @@ export default function Header() {
       </nav>
 
       <div className={styles.headerRight}>
+        <NotificationBell />
         <LanguageSwitcher />
         <AuthButton />
       </div>

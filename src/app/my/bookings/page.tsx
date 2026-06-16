@@ -65,11 +65,11 @@ export default function MyBookingsPage() {
                   <tr key={b.id}>
                     <td>
                       <div style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>
-                        {b.courseTitle ? (b.courseTitle as any).ko || (b.courseTitle as any).en : `Course ID: ${b.courseId}`}
+                        {b.courseTitle ? (typeof b.courseTitle === 'string' ? b.courseTitle : (b.courseTitle as any).ko || (b.courseTitle as any).en) : `Course ID: ${b.courseId}`}
                       </div>
                       {b.workshopName && (
                         <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
-                          {(b.workshopName as any).ko || (b.workshopName as any).en}
+                          {typeof b.workshopName === 'string' ? b.workshopName : (b.workshopName as any).ko || (b.workshopName as any).en}
                         </div>
                       )}
                     </td>
@@ -80,8 +80,15 @@ export default function MyBookingsPage() {
                       </div>
                     </td>
                     <td>
-                      <span className={`badge ${b.status === 'confirmed' ? 'badge-success' : b.status === 'cancelled' ? 'badge-danger' : 'badge-warning'}`}>
-                        {b.status === 'confirmed' ? '예약 확정' : b.status === 'cancelled' ? '취소됨' : b.status}
+                      <span className={`badge ${
+                        b.status === 'confirmed' ? 'badge-success' : 
+                        b.status === 'pending' ? 'badge-warning' : 
+                        'badge-danger'
+                      }`}>
+                        {b.status === 'confirmed' ? '예약 확정' : 
+                         b.status === 'pending' ? '승인 대기' : 
+                         b.status === 'rejected' ? '거절됨' :
+                         b.status === 'cancelled' ? '취소됨' : b.status}
                       </span>
                     </td>
                     <td>{new Date(b.createdAt).toLocaleDateString()}</td>

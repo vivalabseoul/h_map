@@ -3,7 +3,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Star, Globe } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
-import { getReviews, addReview } from '@/lib/database';
+import { getReviews, addReview, deleteReview, updateReview } from '@/lib/database';
 import type { Review } from '@/types';
 import styles from './ReviewSection.module.css';
 
@@ -20,6 +20,11 @@ export default function ReviewSection({ workshopId, onReviewAdded }: ReviewSecti
   const [newText, setNewText] = useState('');
   const [hoveredStar, setHoveredStar] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editRating, setEditRating] = useState(0);
+  const [editText, setEditText] = useState('');
+  const [editHoveredStar, setEditHoveredStar] = useState(0);
 
   useEffect(() => {
     getReviews(workshopId).then(setReviews);
@@ -50,6 +55,42 @@ export default function ReviewSection({ workshopId, onReviewAdded }: ReviewSecti
       setSubmitting(false);
     }
   }, [user, newRating, newText, submitting, workshopId, locale]);
+
+  const handleDelete = async (id: string) => {
+    if (!confirm(t('common.confirm_delete') || '정말 삭제하시겠습니까?')) return;
+    try {
+      await deleteReview(id);
+      const updated = await getReviews(workshopId);
+      setReviews(updated);
+      if (onReviewAdded) onReviewAdded();
+    } catch (error) {
+      console.error('Delete review error:', error);
+    }
+  };
+
+  const handleEditClick = (review: Review) => {
+    setEditingId(review.id);
+    setEditRating(review.rating);
+    setEditText(review.text);
+    setEditHoveredStar(0);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+  };
+
+  const handleUpdate = async () => {
+    if (!editingId || !editRating || !editText.trim()) return;
+    try {
+      await updateReview(editingId, editText.trim(), editRating);
+      const updated = await getReviews(workshopId);
+      setReviews(updated);
+      setEditingId(null);
+      if (onReviewAdded) onReviewAdded();
+    } catch (error) {
+      console.error('Update review error:', error);
+    }
+  };
 
   const renderStars = (rating: number, size = 14) =>
     Array.from({ length: 5 }, (_, i) => (
@@ -83,12 +124,51 @@ export default function ReviewSection({ workshopId, onReviewAdded }: ReviewSecti
                 </div>
                 <div className={styles.reviewStars}>{renderStars(review.rating)}</div>
               </div>
-              <p className={styles.reviewText}>{review.text}</p>
-              {review.locale !== locale && (
-                <span className={styles.translatedBadge}>
-                  <Globe size={12} />
-                  {t('review.auto_translated')}
-                </span>
+              {editingId === review.id ? (
+                <div className={styles.writeReview} style={{ marginTop: 'var(--space-2)' }}>
+                  <div className={styles.starPicker}>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        className={styles.starBtn}
+                        onMouseEnter={() => setEditHoveredStar(star)}
+                        onMouseLeave={() => setEditHoveredStar(0)}
+                        onClick={() => setEditRating(star)}
+                      >
+                        <Star
+                          size={20}
+                          fill={(editHoveredStar || editRating) >= star ? '#e6a23c' : 'none'}
+                          stroke={(editHoveredStar || editRating) >= star ? '#e6a23c' : '#e8e0d8'}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                  <textarea
+                    className={styles.reviewTextarea}
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
+                  />
+                  <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                    <button className="btn btn-secondary btn-sm" onClick={handleCancelEdit}>취소</button>
+                    <button className="btn btn-primary btn-sm" onClick={handleUpdate} disabled={!editRating || !editText.trim()}>저장</button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <p className={styles.reviewText}>{review.text}</p>
+                  {review.locale !== locale && (
+                    <span className={styles.translatedBadge}>
+                      <Globe size={12} />
+                      {t('review.auto_translated')}
+                    </span>
+                  )}
+                  {user && user.id === review.userId && (
+                    <div className={styles.reviewActions}>
+                      <button className={styles.actionBtn} onClick={() => handleEditClick(review)}>수정</button>
+                      <button className={`${styles.actionBtn} ${styles.danger}`} onClick={() => handleDelete(review.id)}>삭제</button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           ))}

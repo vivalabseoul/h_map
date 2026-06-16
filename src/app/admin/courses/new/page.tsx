@@ -26,6 +26,7 @@ export default function CreateCoursePage() {
   const [availableTimes, setAvailableTimes] = useState<string[]>([]);
   const [newTime, setNewTime] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [autoApprove, setAutoApprove] = useState(false);
 
   const toggleDay = (day: number) => {
     setAvailableDays(prev => 
@@ -79,6 +80,7 @@ export default function CreateCoursePage() {
         endDate: endDate,
         availableDays: availableDays,
         availableTimes: availableTimes,
+        autoApprove: autoApprove,
       });
       router.push('/admin/courses');
     } catch (err) {
@@ -130,6 +132,21 @@ export default function CreateCoursePage() {
                   <option key={w.id} value={w.id}>{w.name.ko} ({w.name.en})</option>
                 ))}
               </select>
+            </div>
+
+            <div className="form-group" style={{ marginBottom: 'var(--space-6)', padding: 'var(--space-4)', background: 'var(--color-bg-alt)', borderRadius: 'var(--radius-md)' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', cursor: 'pointer', fontWeight: 600 }}>
+                <input 
+                  type="checkbox" 
+                  checked={autoApprove} 
+                  onChange={(e) => setAutoApprove(e.target.checked)} 
+                  style={{ width: '18px', height: '18px' }}
+                />
+                자동 예약 확정 (Auto Approve Bookings)
+              </label>
+              <p style={{ marginTop: 'var(--space-1)', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', paddingLeft: '26px' }}>
+                체크 해제 시, 회원이 예약을 신청하면 승인 대기 상태가 되며 강사가 직접 확정해야 합니다.
+              </p>
             </div>
 
             {/* Language Tabs */}

@@ -59,6 +59,7 @@ CREATE TABLE public.courses (
   available_days INTEGER[] DEFAULT '{}',
   available_times TEXT[] DEFAULT '{}',
   image_url TEXT,
+  auto_approve BOOLEAN DEFAULT false,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -69,7 +70,7 @@ CREATE TABLE public.bookings (
   user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
   user_name TEXT,
   user_phone TEXT,
-  status TEXT DEFAULT 'confirmed',
+  status TEXT DEFAULT 'pending',
   selected_date TEXT NOT NULL,
   selected_time TEXT NOT NULL,
   participants INTEGER DEFAULT 1,
@@ -124,6 +125,17 @@ CREATE TABLE public.flea_markets (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 8. Notifications Table
+CREATE TABLE public.notifications (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  message TEXT NOT NULL,
+  link_url TEXT,
+  is_read BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- ==========================================
 -- RLS (Row Level Security) Setup
 -- ==========================================
@@ -135,6 +147,7 @@ ALTER TABLE public.bookings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.inquiries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.flea_markets ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 
 -- Note: For a rapid prototyping environment, we will allow all operations. 
 -- In production, you MUST restrict these policies based on auth.uid() and role.
@@ -145,6 +158,7 @@ CREATE POLICY "Enable all operations for all users" ON public.bookings FOR ALL U
 CREATE POLICY "Enable all operations for all users" ON public.reviews FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Enable all operations for all users" ON public.inquiries FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Enable all operations for all users" ON public.flea_markets FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Enable all operations for all users" ON public.notifications FOR ALL USING (true) WITH CHECK (true);
 
 -- Insert Demo Users
 -- Note: In Supabase, auth.users must be created via the Auth API. 

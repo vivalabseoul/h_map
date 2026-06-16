@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
-import { getBookingsByInstructor, updateBookingStatus } from '@/lib/database';
+import { getBookingsByInstructor, updateBookingStatus, createNotification } from '@/lib/database';
 import type { Booking } from '@/types';
 
 export default function InstructorBookingsPage() {
@@ -20,14 +20,33 @@ export default function InstructorBookingsPage() {
     }
   }, [user]);
 
-  const handleUpdateStatus = async (bookingId: string, status: string) => {
-    if (!confirm('예약 상태를 변경하시겠습니까?')) return;
+  const handleUpdateStatus = async (bookingId: string, status: string, userId: string, courseTitle: string) => {
+    if (!confirm('Do you want to change the booking status?\n예약 상태를 변경하시겠습니까?')) return;
     try {
       await updateBookingStatus(bookingId, status);
       setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: status as any } : b));
+
+      // 알림 전송
+      let title = '';
+      let message = '';
+      if (status === 'confirmed') {
+        title = 'Booking Confirmed (예약 확정 안내)';
+        message = `Your booking for [${courseTitle}] has been confirmed.\n신청하신 [${courseTitle}] 예약이 확정되었습니다.`;
+      } else if (status === 'rejected') {
+        title = 'Booking Rejected (예약 거절 안내)';
+        message = `Your booking for [${courseTitle}] has been rejected.\n신청하신 [${courseTitle}] 예약이 마감 등의 사유로 거절되었습니다.`;
+      } else if (status === 'cancelled') {
+        title = 'Booking Cancelled (예약 취소 안내)';
+        message = `Your booking for [${courseTitle}] has been cancelled.\n[${courseTitle}] 예약이 취소되었습니다.`;
+      }
+
+      if (title && userId) {
+        await createNotification(userId, title, message, '/my/bookings');
+      }
+
     } catch (err) {
       console.error(err);
-      alert('상태 변경에 실패했습니다.');
+      alert('Failed to change status.\n상태 변경에 실패했습니다.');
     }
   };
 
@@ -73,11 +92,11 @@ export default function InstructorBookingsPage() {
                 <tr key={b.id}>
                   <td>
                     <div style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>
-                      {b.courseTitle ? (b.courseTitle as any)[locale] || (b.courseTitle as any).en : `Course ID: ${b.courseId}`}
+                      {b.courseTitle ? (typeof b.courseTitle === 'string' ? b.courseTitle : (b.courseTitle as any)?.[locale] || (b.courseTitle as any)?.ko || (b.courseTitle as any)?.en) : `Course ID: ${b.courseId}`}
                     </div>
                     {b.workshopName && (
                       <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
-                        {(b.workshopName as any)[locale] || (b.workshopName as any).en}
+                        {typeof b.workshopName === 'string' ? b.workshopName : (b.workshopName as any)?.[locale] || (b.workshopName as any)?.ko || (b.workshopName as any)?.en}
                       </div>
                     )}
                   </td>
@@ -97,18 +116,34 @@ export default function InstructorBookingsPage() {
                     </div>
                   </td>
                   <td>
-                    <span className={`badge ${b.status === 'confirmed' ? 'badge-success' : b.status === 'cancelled' ? 'badge-danger' : 'badge-warning'}`}>
-                      {b.status === 'confirmed' ? '예약 확정' : b.status === 'cancelled' ? '취소됨' : b.status}
+                    <span className={`badge ${
+                      b.status === 'confirmed' ? 'badge-success' : 
+                      b.status === 'pending' ? 'badge-warning' : 
+                      'badge-danger'
+                    }`}>
+                      {b.status === 'confirmed' ? '예약 확정' : 
+                       b.status === 'pending' ? '승인 대기' : 
+                       b.status === 'rejected' ? '거절됨' :
+                       b.status === 'cancelled' ? '취소됨' : b.status}
                     </span>
                   </td>
                   <td>
-                    {b.status !== 'cancelled' ? (
-                      <button className="btn btn-sm btn-danger" onClick={() => handleUpdateStatus(b.id, 'cancelled')}>
+                    {b.status === 'pending' ? (
+                      <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                        <button className="btn btn-sm btn-primary" onClick={() => handleUpdateStatus(b.id, 'confirmed', b.userId, typeof b.courseTitle === 'string' ? b.courseTitle : String((b.courseTitle as any)?.[locale] || (b.courseTitle as any)?.ko || (b.courseTitle as any)?.en))}>
+                          승인
+                        </button>
+                        <button className="btn btn-sm btn-danger" onClick={() => handleUpdateStatus(b.id, 'rejected', b.userId, typeof b.courseTitle === 'string' ? b.courseTitle : String((b.courseTitle as any)?.[locale] || (b.courseTitle as any)?.ko || (b.courseTitle as any)?.en))}>
+                          거절
+                        </button>
+                      </div>
+                    ) : b.status === 'confirmed' ? (
+                      <button className="btn btn-sm btn-danger" onClick={() => handleUpdateStatus(b.id, 'cancelled', b.userId, typeof b.courseTitle === 'string' ? b.courseTitle : String((b.courseTitle as any)?.[locale] || (b.courseTitle as any)?.ko || (b.courseTitle as any)?.en))}>
                         예약 취소
                       </button>
                     ) : (
-                      <button className="btn btn-sm btn-secondary" onClick={() => handleUpdateStatus(b.id, 'confirmed')}>
-                        다시 확정
+                      <button className="btn btn-sm btn-secondary" onClick={() => handleUpdateStatus(b.id, 'confirmed', b.userId, typeof b.courseTitle === 'string' ? b.courseTitle : String((b.courseTitle as any)?.[locale] || (b.courseTitle as any)?.ko || (b.courseTitle as any)?.en))}>
+                        다시 승인
                       </button>
                     )}
                   </td>

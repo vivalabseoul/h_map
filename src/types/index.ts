@@ -20,7 +20,7 @@ export type WorkshopStatus = 'active' | 'inactive' | 'pending';
 
 export type CourseStatus = 'open' | 'closed' | 'cancelled';
 
-export type BookingStatus = 'confirmed' | 'cancelled';
+export type BookingStatus = 'pending' | 'confirmed' | 'rejected' | 'cancelled';
 
 // ==========================================
 // User
@@ -116,6 +116,7 @@ export interface Course {
   endDate: string;
   availableDays: number[];
   availableTimes: string[];
+  autoApprove?: boolean;
   createdAt: string;
 }
 
@@ -168,6 +169,19 @@ export interface Inquiry {
   content: string;
   status: InquiryStatus;
   reply?: string;
+  createdAt: string;
+}
+
+// ==========================================
+// Notification
+// ==========================================
+export interface AppNotification {
+  id: string;
+  userId: string;
+  title: string;
+  message: string;
+  linkUrl?: string;
+  isRead: boolean;
   createdAt: string;
 }
 

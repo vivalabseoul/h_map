@@ -3,7 +3,7 @@ import React, { useState, useCallback } from 'react';
 import { Clock, DollarSign, Users, Calendar } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
-import { createBooking } from '@/lib/database';
+import { createBooking, createNotification } from '@/lib/database';
 import type { Course } from '@/types';
 import BookingModal from './BookingModal';
 import styles from './CourseCard.module.css';
@@ -32,12 +32,24 @@ export default function CourseCard({ course }: CourseCardProps) {
     setShowModal(false);
     setApplying(true);
     try {
-      await createBooking(course.id, user.id, name, selectedDate, selectedTime, participants, phone);
+      const status = course.autoApprove ? 'confirmed' : 'pending';
+      await createBooking(course.id, user.id, name, selectedDate, selectedTime, participants, phone, status);
       setApplied(true);
-      alert('예약이 성공적으로 완료되었습니다!');
+      
+      if (status === 'pending') {
+        await createNotification(
+          course.instructorId,
+          'New Booking Request (새로운 예약 신청)',
+          `${name} has requested a booking for ${course.title['en'] || 'the class'}. Pending approval.\n${name}님이 ${course.title[locale] || '클래스'} 예약을 신청했습니다. 승인 대기 중입니다.`,
+          '/instructor/bookings'
+        );
+        alert('Your booking application is complete. Please wait for the creator\'s approval.\n예약 신청이 완료되었습니다. 크리에이터의 승인을 기다려주세요.');
+      } else {
+        alert('Your booking application is complete!\n예약 신청이 완료되었습니다!');
+      }
     } catch (error) {
       console.error('Booking error:', error);
-      alert('예약 중 오류가 발생했습니다.');
+      alert('An error occurred during booking.\n예약 중 오류가 발생했습니다.');
     } finally {
       setApplying(false);
     }

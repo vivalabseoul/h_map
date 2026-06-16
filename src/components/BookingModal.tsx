@@ -57,22 +57,22 @@ export default function BookingModal({ course, onClose, onConfirm }: BookingModa
     setSelectedTime(''); // reset time when date changes
     
     if (val && !isDayValid(val)) {
-      alert('해당 요일은 클래스가 운영되지 않습니다. 다른 날짜를 선택해주세요.\nThis day is not available. Please choose another date.');
+      alert('This day is not available. Please choose another date.\n해당 요일은 클래스가 운영되지 않습니다. 다른 날짜를 선택해주세요.');
       setSelectedDate('');
     }
   };
 
   const handleConfirm = () => {
     if (!selectedDate || !selectedTime) {
-      alert('날짜와 시간을 모두 선택해주세요.');
+      alert('Please select both date and time.\n날짜와 시간을 모두 선택해주세요.');
       return;
     }
     if (!userName.trim()) {
-      alert('예약자 성함을 입력해주세요.');
+      alert('Please enter your name.\n예약자 성함을 입력해주세요.');
       return;
     }
     if (!userPhone.trim()) {
-      alert('연락처를 입력해주세요.');
+      alert('Please enter your phone number.\n연락처를 입력해주세요.');
       return;
     }
     onConfirm(selectedDate, selectedTime, participants, userPhone, userName);
@@ -145,6 +145,13 @@ export default function BookingModal({ course, onClose, onConfirm }: BookingModa
         <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)', fontSize: 'var(--font-size-sm)' }}>
           원하시는 날짜와 시간을 선택해주세요.
         </p>
+
+        {!course.autoApprove && (
+          <div style={{ marginBottom: 'var(--space-4)', padding: 'var(--space-3)', background: 'rgba(255, 152, 0, 0.1)', color: '#ed6c02', borderRadius: 'var(--radius-md)', fontSize: 'var(--font-size-sm)' }}>
+            ℹ️ 이 클래스는 승인 후 예약이 확정됩니다.<br />
+            (예약 확정 여부는 상단의 앱 내 알림(🔔)으로 전송됩니다)
+          </div>
+        )}
 
         <div className="form-group" style={{ marginBottom: 'var(--space-6)' }}>
           <label className="form-label">날짜 선택 (Date)</label>
@@ -249,7 +256,7 @@ export default function BookingModal({ course, onClose, onConfirm }: BookingModa
             style={{ flex: 2 }} 
             disabled={!selectedDate || !selectedTime || loadingSpots || (availableSpots !== null && availableSpots <= 0)}
           >
-            예약 확정 (Confirm)
+            예약 신청 (Apply)
           </button>
         </div>
       </div>
