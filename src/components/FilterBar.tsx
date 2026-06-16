@@ -135,7 +135,7 @@ export default function FilterBar({
       </div>
 
       {/* 3. Language Dropdown */}
-      <div style={{ position: 'relative' }}>
+      <div className={styles.languageFilter} style={{ position: 'relative' }}>
         <button className={styles.chip} onClick={() => toggleDropdown('language')} style={{ background: openDropdown === 'language' ? 'var(--color-bg-secondary)' : '#fff' }}>
           {activeLanguage === 'all' ? '🌐 Language' : `🌐 ${activeLanguage}`}
           <ChevronDown size={14} style={{ marginLeft: 4 }} />
