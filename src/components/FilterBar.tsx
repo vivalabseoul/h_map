@@ -16,7 +16,6 @@ interface FilterBarProps {
   onLanguageChange: (language: string) => void;
   searchQuery: string;
   onSearchQueryChange: (query: string) => void;
-  onRegisterClick?: () => void;
   viewMode?: 'map' | 'list';
   onViewModeChange?: (mode: 'map' | 'list') => void;
 }
@@ -31,7 +30,6 @@ export default function FilterBar({
   onLanguageChange,
   searchQuery,
   onSearchQueryChange,
-  onRegisterClick,
   viewMode = 'map',
   onViewModeChange = () => { },
 }: FilterBarProps) {
@@ -192,33 +190,6 @@ export default function FilterBar({
       </div>
 
       <div style={{ flexGrow: 1 }} />
-
-      {/* Register Button */}
-      {onRegisterClick && (
-        <button
-          onClick={onRegisterClick}
-          style={{
-            background: 'var(--color-accent)',
-            color: 'white',
-            border: 'none',
-            padding: 'var(--space-2) var(--space-4)',
-            borderRadius: 'var(--radius-full)',
-            fontWeight: 600,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            fontSize: '0.9rem',
-            boxShadow: 'var(--shadow-sm)',
-            transition: 'transform 0.2s, background 0.2s',
-            whiteSpace: 'nowrap'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-        >
-          📍 내 공방 등록하기
-        </button>
-      )}
 
       {/* View Mode Toggle */}
       <button

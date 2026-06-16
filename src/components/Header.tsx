@@ -9,6 +9,8 @@ import { isAdmin, isInstructor, isMarketCoordinator } from '@/lib/permissions';
 import AuthButton from './AuthButton';
 import LanguageSwitcher from './LanguageSwitcher';
 import NotificationBell from './NotificationBell';
+import RegisterWorkshopModal from './RegisterWorkshopModal';
+import Toast from './Toast';
 import styles from './Header.module.css';
 
 export default function Header() {
@@ -16,6 +18,8 @@ export default function Header() {
   const { t } = useLanguage();
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [showToast, setShowToast] = useState(false);
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -93,6 +97,28 @@ export default function Header() {
         
         <NotificationBell />
         
+        {/* Register Button */}
+        <button
+          onClick={() => setShowRegisterModal(true)}
+          style={{
+            background: 'var(--color-accent)',
+            color: 'white',
+            border: 'none',
+            padding: 'var(--space-1) var(--space-3)',
+            borderRadius: 'var(--radius-full)',
+            fontWeight: 600,
+            cursor: 'pointer',
+            fontSize: '0.8rem',
+            boxShadow: 'var(--shadow-sm)',
+            transition: 'transform 0.2s, background 0.2s',
+            whiteSpace: 'nowrap'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+        >
+          📍 내 공방 등록하기
+        </button>
+
         {/* Mobile Hamburger Button */}
         <button className={styles.menuButton} onClick={toggleMobileMenu} aria-label="Toggle menu">
           <Menu size={24} />
@@ -120,6 +146,24 @@ export default function Header() {
           <AuthButton />
         </div>
       </div>
+
+      {showRegisterModal && (
+        <RegisterWorkshopModal
+          onClose={() => setShowRegisterModal(false)}
+          onSuccess={() => {
+            setShowRegisterModal(false);
+            setShowToast(true);
+          }}
+        />
+      )}
+
+      {showToast && (
+        <Toast
+          type="success"
+          message="공방 등록 신청이 접수되었습니다! 🎉"
+          onClose={() => setShowToast(false)}
+        />
+      )}
     </header>
   );
 }

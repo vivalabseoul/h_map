@@ -8,8 +8,6 @@ import type { Workshop, WorkshopCategory, Region, FleaMarket } from '@/types';
 import { getWorkshops, getFleaMarkets } from '@/lib/database';
 
 import ListView from '@/components/ListView';
-import RegisterWorkshopModal from '@/components/RegisterWorkshopModal';
-import Toast from '@/components/Toast';
 import pageStyles from './page.module.css';
 
 const MapView = dynamic(() => import('@/components/map/MapView'), {
@@ -42,8 +40,6 @@ export default function HomePage() {
   const [mapBounds, setMapBounds] = useState<{ north: number; south: number; east: number; west: number } | null>(null);
   const [selectedWorkshop, setSelectedWorkshop] = useState<Workshop | null>(null);
   const [selectedFleaMarket, setSelectedFleaMarket] = useState<FleaMarket | null>(null);
-  const [showRegisterModal, setShowRegisterModal] = useState(false);
-  const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
     getWorkshops().then(setWorkshops);
@@ -114,7 +110,6 @@ export default function HomePage() {
         onLanguageChange={setActiveLanguage}
         searchQuery={searchQuery}
         onSearchQueryChange={setSearchQuery}
-        onRegisterClick={() => setShowRegisterModal(true)}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
       />
@@ -157,23 +152,7 @@ export default function HomePage() {
         />
       )}
       
-      {showRegisterModal && (
-        <RegisterWorkshopModal
-          onClose={() => setShowRegisterModal(false)}
-          onSuccess={() => {
-            setShowRegisterModal(false);
-            setShowToast(true);
-          }}
-        />
-      )}
-
-      {showToast && (
-        <Toast
-          type="success"
-          message="공방 등록 신청이 접수되었습니다! 🎉"
-          onClose={() => setShowToast(false)}
-        />
-      )}
+      
     </main>
   );
 }
