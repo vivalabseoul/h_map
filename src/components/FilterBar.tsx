@@ -2,30 +2,38 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { CATEGORIES, SMART_TAGS, REGIONS } from '@/types';
-import type { WorkshopCategory, Region } from '@/types';
-import { ChevronDown } from 'lucide-react';
+import type { WorkshopCategory, Region, Workshop } from '@/types';
+import { ChevronDown, Search } from 'lucide-react';
 import styles from './FilterBar.module.css';
 
 interface FilterBarProps {
+  workshops?: Workshop[];
   selectedRegion: Region;
   onRegionChange: (region: Region) => void;
   activeCategory: WorkshopCategory | 'all';
   activeLanguage: string;
   onCategoryChange: (category: WorkshopCategory | 'all') => void;
   onLanguageChange: (language: string) => void;
+  searchQuery: string;
+  onSearchQueryChange: (query: string) => void;
+  onRegisterClick?: () => void;
   viewMode?: 'map' | 'list';
   onViewModeChange?: (mode: 'map' | 'list') => void;
 }
 
 export default function FilterBar({
+  workshops = [],
   selectedRegion,
   onRegionChange,
   activeCategory,
   activeLanguage,
   onCategoryChange,
   onLanguageChange,
+  searchQuery,
+  onSearchQueryChange,
+  onRegisterClick,
   viewMode = 'map',
-  onViewModeChange = () => {},
+  onViewModeChange = () => { },
 }: FilterBarProps) {
   const { locale, t } = useLanguage();
   const [openDropdown, setOpenDropdown] = useState<'region' | 'category' | 'language' | null>(null);
@@ -48,9 +56,27 @@ export default function FilterBar({
   const selectedRegionData = REGIONS.find(r => r.key === selectedRegion) || REGIONS[0];
   const selectedCatData = CATEGORIES.find(c => c.key === activeCategory);
 
+  // Extract dynamic custom categories
+  const standardCategoryKeys = CATEGORIES.map(c => c.key);
+  const customCategories = Array.from(new Set(
+    workshops
+      .map(w => w.category)
+      .filter(cat => cat && !standardCategoryKeys.includes(cat))
+  ));
+
+  // Determine what to show on the button
+  let buttonLabel = t('filters.all');
+  if (activeCategory !== 'all') {
+    if (selectedCatData) {
+      buttonLabel = <><span className={styles.chipEmoji}>{selectedCatData.emoji}</span>{t(`filters.${activeCategory}`)}</>;
+    } else {
+      buttonLabel = <><span className={styles.chipEmoji}>🏷️</span>{activeCategory}</>;
+    }
+  }
+
   return (
-    <div className={styles.filterBar} id="filter-bar" ref={barRef} style={{ display: 'flex', gap: 'var(--space-2)', padding: 'var(--space-2) var(--space-4)', overflow: 'visible' }}>
-      
+    <div className={styles.filterBar} id="filter-bar" ref={barRef} style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)', padding: 'var(--space-2) var(--space-4)', overflow: 'visible', alignItems: 'center' }}>
+
       {/* 1. Region Dropdown */}
       <div style={{ position: 'relative' }}>
         <button className={styles.chip} onClick={() => toggleDropdown('region')} style={{ background: openDropdown === 'region' ? 'var(--color-bg-secondary)' : '#fff' }}>
@@ -76,7 +102,7 @@ export default function FilterBar({
       {/* 2. Category Dropdown */}
       <div style={{ position: 'relative' }}>
         <button className={styles.chip} onClick={() => toggleDropdown('category')} style={{ background: openDropdown === 'category' ? 'var(--color-bg-secondary)' : '#fff' }}>
-          {activeCategory === 'all' ? t('filters.all') : <><span className={styles.chipEmoji}>{selectedCatData?.emoji}</span>{t(`filters.${activeCategory}`)}</>} 
+          {buttonLabel}
           <ChevronDown size={14} style={{ marginLeft: 4 }} />
         </button>
         {openDropdown === 'category' && (
@@ -93,7 +119,17 @@ export default function FilterBar({
                 onClick={() => { onCategoryChange(cat.key); setOpenDropdown(null); }}
                 style={{ textAlign: 'left', padding: 'var(--space-2)', background: activeCategory === cat.key ? 'var(--color-bg-secondary)' : 'transparent', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
               >
-                {cat.emoji} {t(`filters.${cat.key}`)}
+                {cat.emoji} {t(`${cat.key}`)}
+              </button>
+            ))}
+            {customCategories.length > 0 && <hr style={{ margin: 'var(--space-1) 0', border: 'none', borderTop: '1px solid var(--color-border)' }} />}
+            {customCategories.map(cat => (
+              <button
+                key={cat}
+                onClick={() => { onCategoryChange(cat); setOpenDropdown(null); }}
+                style={{ textAlign: 'left', padding: 'var(--space-2)', background: activeCategory === cat ? 'var(--color-bg-secondary)' : 'transparent', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
+              >
+                🏷️ {cat}
               </button>
             ))}
           </div>
@@ -127,10 +163,65 @@ export default function FilterBar({
         )}
       </div>
 
+      {/* 4. Search Input */}
+      <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+        <Search 
+          size={16} 
+          style={{ 
+            position: 'absolute', 
+            left: 'var(--space-3)', 
+            color: 'var(--color-text-tertiary)' 
+          }} 
+        />
+        <input
+          type="text"
+          placeholder={t('search') || 'Search...'}
+          value={searchQuery}
+          onChange={(e) => onSearchQueryChange(e.target.value)}
+          className={styles.searchInput}
+          style={{
+            padding: 'var(--space-2) var(--space-3)',
+            paddingLeft: 'calc(var(--space-3) + 24px)',
+            borderRadius: 'var(--radius-full)',
+            border: '1px solid var(--color-border)',
+            outline: 'none',
+            fontSize: '0.9rem',
+            minWidth: '150px'
+          }}
+        />
+      </div>
+
       <div style={{ flexGrow: 1 }} />
 
+      {/* Register Button */}
+      {onRegisterClick && (
+        <button
+          onClick={onRegisterClick}
+          style={{
+            background: 'var(--color-accent)',
+            color: 'white',
+            border: 'none',
+            padding: 'var(--space-2) var(--space-4)',
+            borderRadius: 'var(--radius-full)',
+            fontWeight: 600,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            fontSize: '0.9rem',
+            boxShadow: 'var(--shadow-sm)',
+            transition: 'transform 0.2s, background 0.2s',
+            whiteSpace: 'nowrap'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+        >
+          📍 내 공방 등록하기
+        </button>
+      )}
+
       {/* View Mode Toggle */}
-      <button 
+      <button
         className={styles.chip}
         onClick={() => onViewModeChange(viewMode === 'map' ? 'list' : 'map')}
         style={{ padding: '0 12px', background: 'var(--color-bg-secondary)' }}

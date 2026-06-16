@@ -6,16 +6,10 @@ export type Locale = 'en' | 'ja' | 'zh' | 'ko';
 
 export type UserRole = 'super_admin' | 'manager' | 'instructor' | 'market_coordinator' | 'member';
 
-export type WorkshopCategory =
-  | 'pottery'
-  | 'leather'
-  | 'perfume'
-  | 'candle'
-  | 'textile'
-  | 'jewelry';
+export type WorkshopCategory = string;
 
 export type Region = 
-  | 'korea' | 'japan' | 'taiwan' | 'hongkong' | 'china' 
+  | 'all' | 'korea' | 'japan' | 'taiwan' | 'hongkong' | 'china' 
   | 'singapore' | 'thailand' | 'vietnam' | 'indonesia'
   | 'usa' | 'canada' | 'australia' | 'newzealand'
   | 'uk' | 'france' | 'italy' | 'spain';
@@ -234,6 +228,8 @@ export const CATEGORIES: CategoryMeta[] = [
   { key: 'candle', emoji: '🕯️', color: '#E8C07D' },
   { key: 'textile', emoji: '🧶', color: '#7c9a6e' },
   { key: 'jewelry', emoji: '💍', color: '#9B8EC2' },
+  { key: 'cooking', emoji: '🍳', color: '#E57373' },
+  { key: 'baking', emoji: '🧁', color: '#F06292' },
 ];
 
 export const SMART_TAGS = [
@@ -248,6 +244,8 @@ export const SMART_TAGS = [
 export type SmartTag = (typeof SMART_TAGS)[number];
 
 export const REGIONS: { key: Region; label: Record<Locale, string>; emoji: string; available: boolean; center: [number, number]; zoom: number }[] = [
+  // Global
+  { key: 'all', label: { en: 'Global', ja: 'グローバル', zh: '全球', ko: '전체' }, emoji: '🌍', available: true, center: [20, 0], zoom: 2 },
   // Asia
   { key: 'korea', label: { en: 'Korea', ja: '韓国', zh: '韩国', ko: '한국' }, emoji: '🇰🇷', available: true, center: [36.3, 127.8], zoom: 7 },
   { key: 'japan', label: { en: 'Japan', ja: '日本', zh: '日本', ko: '일본' }, emoji: '🇯🇵', available: true, center: [36.2, 138.2], zoom: 5 },

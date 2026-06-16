@@ -7,10 +7,26 @@ interface NominatimResult {
   lat: string;
   lon: string;
   display_name: string;
+  address?: {
+    city?: string;
+    town?: string;
+    province?: string;
+    state?: string;
+    borough?: string;
+    suburb?: string;
+    neighbourhood?: string;
+    quarter?: string;
+  };
+}
+
+export interface AddressComponents {
+  city?: string;
+  district?: string;
+  suburb?: string;
 }
 
 interface AddressSearchProps {
-  onSelect: (address: string, lat: number, lng: number) => void;
+  onSelect: (address: string, lat: number, lng: number, components?: AddressComponents) => void;
   buttonText?: string;
   placeholder?: string;
 }
@@ -51,8 +67,19 @@ export default function AddressSearch({
     const lat = parseFloat(result.lat);
     const lng = parseFloat(result.lon);
     
+    // Extract structured components if available
+    const components: AddressComponents = {};
+    if (result.address) {
+      // Nominatim might return city, town, province, or state for the main level
+      components.city = result.address.city || result.address.town || result.address.province || result.address.state;
+      // Borough usually maps to gu (구) or gun (군)
+      components.district = result.address.borough;
+      // Suburb or neighbourhood maps to dong (동) or eup/myeon
+      components.suburb = result.address.suburb || result.address.neighbourhood || result.address.quarter;
+    }
+
     // We pass it to the parent
-    onSelect(result.display_name, lat, lng);
+    onSelect(result.display_name, lat, lng, components);
     
     // Hide results and clear query
     setShowResults(false);

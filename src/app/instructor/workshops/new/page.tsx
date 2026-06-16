@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { createWorkshop } from '@/lib/database';
 import type { WorkshopCategory, Region, Locale } from '@/types';
 import { CATEGORIES, REGIONS } from '@/types';
+import type { AddressComponents } from '@/components/AddressSearch';
 import AddressSearch from '@/components/AddressSearch';
 import ImageUpload from '@/components/ImageUpload';
 
@@ -19,6 +20,8 @@ export default function CreateStudioPage() {
   const [description, setDescription] = useState<Record<Locale, string>>({ en: '', ja: '', zh: '', ko: '' });
   const [address, setAddress] = useState<Record<Locale, string>>({ en: '', ja: '', zh: '', ko: '' });
   const [category, setCategory] = useState<WorkshopCategory>('pottery');
+  const [isCustomCategory, setIsCustomCategory] = useState(false);
+  const [customCategory, setCustomCategory] = useState('');
   const [region, setRegion] = useState<Region>('korea');
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
@@ -28,11 +31,19 @@ export default function CreateStudioPage() {
   const [snsYoutube, setSnsYoutube] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [languages, setLanguages] = useState<string[]>(['English']);
+  const [addressTags, setAddressTags] = useState<string[]>([]);
 
-  const handleAddressSelect = (selectedAddress: string, selectedLat: number, selectedLng: number) => {
+  const handleAddressSelect = (selectedAddress: string, selectedLat: number, selectedLng: number, components?: AddressComponents) => {
     setAddress(prev => ({ ...prev, [activeTab]: selectedAddress }));
     setLat(selectedLat);
     setLng(selectedLng);
+    if (components) {
+      const newTags: string[] = [];
+      if (components.city) newTags.push(`city:${components.city}`);
+      if (components.district) newTags.push(`district:${components.district}`);
+      if (components.suburb) newTags.push(`suburb:${components.suburb}`);
+      setAddressTags(newTags);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,17 +52,19 @@ export default function CreateStudioPage() {
     setLoading(true);
 
     try {
+      const finalCategory = isCustomCategory && customCategory.trim() !== '' ? customCategory.trim() : category;
+      
       await createWorkshop({
         ownerId: user.id,
         ownerName: user.displayName || 'Instructor',
         name,
-        category,
+        category: finalCategory,
         description,
         address,
         lat: lat ?? (REGIONS.find(r => r.key === region)?.center[0] || 37.576),
         lng: lng ?? (REGIONS.find(r => r.key === region)?.center[1] || 126.988),
         images: imageUrl ? [imageUrl] : [],
-        tags: ['Beginner_Friendly'], // Mock default tags
+        tags: ['Beginner_Friendly', ...addressTags], // Mock default tags
         languages,
         phone,
         website,
@@ -172,11 +185,34 @@ export default function CreateStudioPage() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
             <div className="form-group">
               <label className="form-label">종목 (Category)</label>
-              <select className="form-select" value={category} onChange={(e) => setCategory(e.target.value as WorkshopCategory)}>
+              <select 
+                className="form-select" 
+                value={isCustomCategory ? 'custom' : category} 
+                onChange={(e) => {
+                  if (e.target.value === 'custom') {
+                    setIsCustomCategory(true);
+                  } else {
+                    setIsCustomCategory(false);
+                    setCategory(e.target.value as WorkshopCategory);
+                  }
+                }}
+              >
                 {CATEGORIES.map(c => (
                   <option key={c.key} value={c.key}>{c.emoji} {c.key.toUpperCase()}</option>
                 ))}
+                <option value="custom">✍️ 직접 입력 (Custom)</option>
               </select>
+              {isCustomCategory && (
+                <input
+                  type="text"
+                  className="form-input"
+                  style={{ marginTop: 'var(--space-2)' }}
+                  placeholder="예: 목공예, 캔들"
+                  value={customCategory}
+                  onChange={(e) => setCustomCategory(e.target.value)}
+                  required={isCustomCategory}
+                />
+              )}
             </div>
             <div className="form-group">
               <label className="form-label">지역 (Region)</label>

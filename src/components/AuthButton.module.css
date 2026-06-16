@@ -7,7 +7,7 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-4);
-  background: var(--color-accent);
+  background: #000000;
   color: var(--color-text-inverse);
   border-radius: var(--radius-full);
   font-size: var(--font-size-sm);
@@ -17,7 +17,7 @@
 }
 
 .signInBtn:hover {
-  background: var(--color-accent-hover);
+  background: #333333;
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
 }

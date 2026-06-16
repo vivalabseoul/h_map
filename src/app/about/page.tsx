@@ -20,7 +20,7 @@ export default function AboutPage() {
 
             <h3 style={{ marginBottom: 'var(--space-4)', color: 'var(--color-brown)' }}>Contact Info</h3>
             <ul style={{ listStyle: 'none', padding: 0 }}>
-              <li style={{ marginBottom: 'var(--space-2)' }}><strong>Company:</strong> Vivalab</li>
+              <li style={{ marginBottom: 'var(--space-2)' }}><strong>Company:</strong> Vivalab Seoul</li>
               <li style={{ marginBottom: 'var(--space-2)' }}><strong>Email:</strong> vivalabseoul@gmail.com</li>
               <li style={{ marginBottom: 'var(--space-2)' }}><strong>Location:</strong> Seoul, Republic of Korea</li>
             </ul>

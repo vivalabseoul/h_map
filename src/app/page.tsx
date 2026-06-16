@@ -8,6 +8,8 @@ import type { Workshop, WorkshopCategory, Region, FleaMarket } from '@/types';
 import { getWorkshops, getFleaMarkets } from '@/lib/database';
 
 import ListView from '@/components/ListView';
+import RegisterWorkshopModal from '@/components/RegisterWorkshopModal';
+import Toast from '@/components/Toast';
 import pageStyles from './page.module.css';
 
 const MapView = dynamic(() => import('@/components/map/MapView'), {
@@ -36,27 +38,59 @@ export default function HomePage() {
   const [activeCategory, setActiveCategory] = useState<WorkshopCategory | 'all'>('all');
   const [activeLanguage, setActiveLanguage] = useState<string>('all');
   const [selectedRegion, setSelectedRegion] = useState<Region>('korea');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [mapBounds, setMapBounds] = useState<{ north: number; south: number; east: number; west: number } | null>(null);
   const [selectedWorkshop, setSelectedWorkshop] = useState<Workshop | null>(null);
   const [selectedFleaMarket, setSelectedFleaMarket] = useState<FleaMarket | null>(null);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
     getWorkshops().then(setWorkshops);
     getFleaMarkets().then(setFleaMarkets);
   }, []);
 
-  const filteredWorkshops = useMemo(() => {
+  const globalWorkshops = useMemo(() => {
     return workshops.filter((w) => {
-      if (w.region !== selectedRegion) return false;
       if (w.status !== 'active') return false;
+      if (selectedRegion !== 'all' && w.region !== selectedRegion) return false;
       if (activeCategory !== 'all' && w.category !== activeCategory) return false;
       if (activeLanguage !== 'all' && (!w.languages || !w.languages.includes(activeLanguage))) return false;
+      if (searchQuery.trim() !== '') {
+        const q = searchQuery.toLowerCase();
+        const matchesName = Object.values(w.name).some(n => n?.toLowerCase().includes(q));
+        const matchesAddress = Object.values(w.address).some(a => a?.toLowerCase().includes(q));
+        const matchesTags = w.tags.some(t => t.toLowerCase().includes(q));
+        if (!matchesName && !matchesAddress && !matchesTags) return false;
+      }
       return true;
     });
-  }, [workshops, activeCategory, activeLanguage, selectedRegion]);
+  }, [workshops, activeCategory, activeLanguage, selectedRegion, searchQuery]);
 
-  const filteredFleaMarkets = useMemo(() => {
+  const viewportWorkshops = useMemo(() => {
+    if (searchQuery.trim() !== '') return globalWorkshops;
+    if (mapBounds) {
+      return globalWorkshops.filter(w => {
+        return w.lat <= mapBounds.north && w.lat >= mapBounds.south &&
+               w.lng <= mapBounds.east && w.lng >= mapBounds.west;
+      });
+    }
+    return globalWorkshops;
+  }, [globalWorkshops, mapBounds, searchQuery]);
+
+  const globalFleaMarkets = useMemo(() => {
     return fleaMarkets.filter((m) => m.status !== 'inactive');
   }, [fleaMarkets]);
+
+  const viewportFleaMarkets = useMemo(() => {
+    if (mapBounds) {
+      return globalFleaMarkets.filter(m => {
+        return m.lat <= mapBounds.north && m.lat >= mapBounds.south &&
+               m.lng <= mapBounds.east && m.lng >= mapBounds.west;
+      });
+    }
+    return globalFleaMarkets;
+  }, [globalFleaMarkets, mapBounds]);
 
   const handleMarkerClick = useCallback((workshop: Workshop) => {
     setSelectedWorkshop(workshop);
@@ -71,12 +105,16 @@ export default function HomePage() {
   return (
     <main style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
       <FilterBar
+        workshops={workshops}
         selectedRegion={selectedRegion}
         onRegionChange={setSelectedRegion}
         activeCategory={activeCategory}
         activeLanguage={activeLanguage}
         onCategoryChange={setActiveCategory}
         onLanguageChange={setActiveLanguage}
+        searchQuery={searchQuery}
+        onSearchQueryChange={setSearchQuery}
+        onRegisterClick={() => setShowRegisterModal(true)}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
       />
@@ -84,19 +122,20 @@ export default function HomePage() {
       <div className={pageStyles.homeLayout}>
         <div className={`${pageStyles.mapWrapper} ${viewMode === 'list' ? pageStyles.mapHiddenDesktop : ''} ${viewMode === 'list' ? pageStyles.hideMobile : ''}`}>
           <MapView
-            workshops={filteredWorkshops}
-            fleaMarkets={filteredFleaMarkets}
+            workshops={globalWorkshops}
+            fleaMarkets={globalFleaMarkets}
             selectedRegion={selectedRegion}
             onRegionChange={setSelectedRegion}
             onMarkerClick={handleMarkerClick}
             onFleaMarketClick={handleFleaMarketClick}
+            onBoundsChanged={setMapBounds}
           />
         </div>
         
         <div className={`${pageStyles.listWrapper} ${viewMode === 'list' ? pageStyles.listFullWidth : ''} ${viewMode === 'map' ? pageStyles.hideMobile : ''}`}>
           <ListView
-            workshops={filteredWorkshops}
-            fleaMarkets={filteredFleaMarkets}
+            workshops={viewportWorkshops}
+            fleaMarkets={viewportFleaMarkets}
             onWorkshopClick={handleMarkerClick}
             onFleaMarketClick={handleFleaMarketClick}
           />
@@ -115,6 +154,24 @@ export default function HomePage() {
         <FleaMarketSheet
           market={selectedFleaMarket}
           onClose={() => setSelectedFleaMarket(null)}
+        />
+      )}
+      
+      {showRegisterModal && (
+        <RegisterWorkshopModal
+          onClose={() => setShowRegisterModal(false)}
+          onSuccess={() => {
+            setShowRegisterModal(false);
+            setShowToast(true);
+          }}
+        />
+      )}
+
+      {showToast && (
+        <Toast
+          type="success"
+          message="공방 등록 신청이 접수되었습니다! 🎉"
+          onClose={() => setShowToast(false)}
         />
       )}
     </main>

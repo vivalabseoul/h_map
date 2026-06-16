@@ -826,3 +826,12 @@ select {
   background: var(--color-border-light);
   margin: var(--space-6) 0;
 }
+
+/* Responsive Headings */
+@media (max-width: 600px) {
+  :root {
+    --font-size-2xl: 1.25rem;
+    --font-size-3xl: 1.5rem;
+    --font-size-4xl: 1.75rem;
+  }
+}

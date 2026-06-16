@@ -80,7 +80,7 @@ export default function ListView({ workshops, fleaMarkets, onWorkshopClick, onFl
           <div className={styles.grid}>
             {paginatedWorkshops.map(workshop => {
               const name = workshop.name[locale] || workshop.name.ko || workshop.name.en || '';
-              const address = workshop.address[locale] || workshop.address.ko || workshop.address.en || '';
+              const desc = workshop.description[locale] || workshop.description.ko || workshop.description.en || '';
               const hasImage = workshop.images && workshop.images.length > 0;
 
               return (
@@ -97,8 +97,8 @@ export default function ListView({ workshops, fleaMarkets, onWorkshopClick, onFl
                     
                     <div className={styles.meta}>
                       <div className={styles.metaItem}>
-                        <span className={styles.metaIcon}>📍</span>
-                        <span style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{address}</span>
+                        <span className={styles.metaIcon}>💬</span>
+                        <span style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{desc}</span>
                       </div>
                     </div>
                   </div>

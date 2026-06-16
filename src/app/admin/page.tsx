@@ -1,19 +1,22 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { Users, Store, BookOpen, Calendar } from 'lucide-react';
-import { useLanguage } from '@/context/LanguageContext';
-import { getAllUsers, getWorkshops, getCourses } from '@/lib/database';
+import { getAllUsers, getWorkshops, getCourses, getInquiries } from '@/lib/database';
+import Toast from '@/components/Toast';
 
 export default function AdminDashboard() {
   const { t } = useLanguage();
   const [stats, setStats] = useState({ users: 0, workshops: 0, courses: 0, bookings: 0 });
+  const [pendingRegistrations, setPendingRegistrations] = useState(0);
+  const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
     async function loadStats() {
-      const [users, workshops, courses] = await Promise.all([
+      const [users, workshops, courses, inquiries] = await Promise.all([
         getAllUsers(),
         getWorkshops(),
         getCourses(),
+        getInquiries(),
       ]);
       setStats({
         users: users.length,
@@ -21,6 +24,12 @@ export default function AdminDashboard() {
         courses: courses.length,
         bookings: courses.reduce((acc, c) => acc + c.currentParticipants, 0),
       });
+
+      const pendingReg = inquiries.filter(i => i.status === 'pending' && i.category === 'registration').length;
+      if (pendingReg > 0) {
+        setPendingRegistrations(pendingReg);
+        setShowToast(true);
+      }
     }
     loadStats();
   }, []);
@@ -54,6 +63,14 @@ export default function AdminDashboard() {
           </div>
         ))}
       </div>
+
+      {showToast && (
+        <Toast
+          type="warning"
+          message={`현재 ${pendingRegistrations}건의 새로운 공방 등록 신청이 대기 중입니다! (문의하기 메뉴 확인)`}
+          onClose={() => setShowToast(false)}
+        />
+      )}
     </div>
   );
 }

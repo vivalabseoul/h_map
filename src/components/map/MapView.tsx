@@ -1,6 +1,6 @@
 'use client';
 import React, { useMemo } from 'react';
-import { MapContainer, TileLayer, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import WorkshopMarker from './WorkshopMarker';
@@ -25,6 +25,7 @@ interface MapViewProps {
   onRegionChange: (region: Region) => void;
   onMarkerClick: (workshop: Workshop) => void;
   onFleaMarketClick?: (market: FleaMarket) => void;
+  onBoundsChanged?: (bounds: { north: number; south: number; east: number; west: number }) => void;
 }
 
 function MapUpdater({ center, zoom }: { center: [number, number]; zoom: number }) {
@@ -35,7 +36,48 @@ function MapUpdater({ center, zoom }: { center: [number, number]; zoom: number }
   return null;
 }
 
-function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChange, onMarkerClick, onFleaMarketClick }: MapViewProps) {
+function MapEvents({ onBoundsChanged }: { onBoundsChanged?: (bounds: { north: number; south: number; east: number; west: number }) => void }) {
+  const map = useMapEvents({
+    moveend: () => {
+      if (onBoundsChanged) {
+        const bounds = map.getBounds();
+        onBoundsChanged({
+          north: bounds.getNorth(),
+          south: bounds.getSouth(),
+          east: bounds.getEast(),
+          west: bounds.getWest()
+        });
+      }
+    },
+    zoomend: () => {
+      if (onBoundsChanged) {
+        const bounds = map.getBounds();
+        onBoundsChanged({
+          north: bounds.getNorth(),
+          south: bounds.getSouth(),
+          east: bounds.getEast(),
+          west: bounds.getWest()
+        });
+      }
+    }
+  });
+
+  React.useEffect(() => {
+    if (onBoundsChanged && map) {
+      const bounds = map.getBounds();
+      onBoundsChanged({
+        north: bounds.getNorth(),
+        south: bounds.getSouth(),
+        east: bounds.getEast(),
+        west: bounds.getWest()
+      });
+    }
+  }, [map, onBoundsChanged]);
+
+  return null;
+}
+
+function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChange, onMarkerClick, onFleaMarketClick, onBoundsChanged }: MapViewProps) {
   const { locale, t } = useLanguage();
   const regionData = REGIONS.find((r) => r.key === selectedRegion) || REGIONS[0];
 
@@ -54,6 +96,7 @@ function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChang
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           />
           <MapUpdater center={regionData.center} zoom={regionData.zoom} />
+          <MapEvents onBoundsChanged={onBoundsChanged} />
 
           {workshops.map((workshop) => (
             <WorkshopMarker

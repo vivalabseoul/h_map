@@ -5,6 +5,8 @@ import { useAuth } from '@/context/AuthContext';
 import { getWorkshopsByOwner, updateWorkshop } from '@/lib/database';
 import type { WorkshopCategory, Region, Locale } from '@/types';
 import { CATEGORIES, REGIONS } from '@/types';
+import type { AddressComponents } from '@/components/AddressSearch';
+import AddressSearch from '@/components/AddressSearch';
 import ImageUpload from '@/components/ImageUpload';
 
 export default function EditStudioPage() {
@@ -27,6 +29,24 @@ export default function EditStudioPage() {
   const [snsYoutube, setSnsYoutube] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [languages, setLanguages] = useState<string[]>([]);
+  const [addressTags, setAddressTags] = useState<string[]>([]);
+  const [lat, setLat] = useState<number | null>(null);
+  const [lng, setLng] = useState<number | null>(null);
+  const [isCustomCategory, setIsCustomCategory] = useState(false);
+  const [customCategory, setCustomCategory] = useState('');
+
+  const handleAddressSelect = (selectedAddress: string, selectedLat: number, selectedLng: number, components?: AddressComponents) => {
+    setAddress(prev => ({ ...prev, [activeTab]: selectedAddress }));
+    setLat(selectedLat);
+    setLng(selectedLng);
+    if (components) {
+      const newTags: string[] = [];
+      if (components.city) newTags.push(`city:${components.city}`);
+      if (components.district) newTags.push(`district:${components.district}`);
+      if (components.suburb) newTags.push(`suburb:${components.suburb}`);
+      setAddressTags(newTags);
+    }
+  };
 
   useEffect(() => {
     if (user && params.id) {
@@ -36,7 +56,17 @@ export default function EditStudioPage() {
           setName(target.name);
           setDescription(target.description);
           setAddress(target.address);
-          setCategory(target.category);
+          
+          // Check if category is standard or custom
+          const isStandard = CATEGORIES.some(c => c.key === target.category);
+          if (isStandard) {
+            setCategory(target.category);
+          } else {
+            setCategory('custom');
+            setIsCustomCategory(true);
+            setCustomCategory(target.category);
+          }
+          
           setRegion(target.region);
           setPhone(target.phone || '');
           setWebsite(target.website || '');
@@ -60,17 +90,22 @@ export default function EditStudioPage() {
     setLoading(true);
 
     try {
+      const finalCategory = isCustomCategory && customCategory.trim() !== '' ? customCategory.trim() : category;
+
       await updateWorkshop(params.id as string, {
         name,
         description,
         address,
-        category,
+        category: finalCategory,
         region,
         phone,
         website,
         images: imageUrl ? [imageUrl] : [],
         languages,
-        snsLinks: { instagram: snsInstagram, youtube: snsYoutube }
+        snsLinks: { instagram: snsInstagram, youtube: snsYoutube },
+        // Update tags if a new address was selected
+        ...(addressTags.length > 0 && { tags: ['Beginner_Friendly', ...addressTags] }),
+        ...(lat && lng && { lat, lng })
       });
       router.push('/instructor/workshops');
     } catch (err) {
@@ -152,7 +187,8 @@ export default function EditStudioPage() {
           </div>
 
           <div className="form-group" style={{ marginBottom: 'var(--space-6)' }}>
-            <label className="form-label">주소 (Address) - {activeTab.toUpperCase()}</label>
+            <AddressSearch onSelect={handleAddressSelect} />
+            <label className="form-label">주소 상세 (Address) - {activeTab.toUpperCase()}</label>
             <input
               type="text"
               className="form-input"
@@ -161,6 +197,11 @@ export default function EditStudioPage() {
               placeholder="예: 서울시 종로구 북촌로 123"
               required={activeTab === 'ko'}
             />
+            {lat && lng && (
+              <div style={{ fontSize: '0.8rem', color: 'var(--color-success)', marginTop: 'var(--space-1)' }}>
+                📍 위도: {lat.toFixed(4)}, 경도: {lng.toFixed(4)} (새로운 주소가 선택됨)
+              </div>
+            )}
           </div>
 
           <hr className="divider" />
@@ -179,11 +220,34 @@ export default function EditStudioPage() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
             <div className="form-group">
               <label className="form-label">종목 (Category)</label>
-              <select className="form-select" value={category} onChange={(e) => setCategory(e.target.value as WorkshopCategory)}>
+              <select 
+                className="form-select" 
+                value={isCustomCategory ? 'custom' : category} 
+                onChange={(e) => {
+                  if (e.target.value === 'custom') {
+                    setIsCustomCategory(true);
+                  } else {
+                    setIsCustomCategory(false);
+                    setCategory(e.target.value as WorkshopCategory);
+                  }
+                }}
+              >
                 {CATEGORIES.map(c => (
                   <option key={c.key} value={c.key}>{c.emoji} {c.key.toUpperCase()}</option>
                 ))}
+                <option value="custom">✍️ 직접 입력 (Custom)</option>
               </select>
+              {isCustomCategory && (
+                <input
+                  type="text"
+                  className="form-input"
+                  style={{ marginTop: 'var(--space-2)' }}
+                  placeholder="예: 목공예, 캔들"
+                  value={customCategory}
+                  onChange={(e) => setCustomCategory(e.target.value)}
+                  required={isCustomCategory}
+                />
+              )}
             </div>
             <div className="form-group">
               <label className="form-label">지역 (Region)</label>

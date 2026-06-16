@@ -21,7 +21,6 @@ export default function Footer() {
           <Link href="/terms" className={styles.link}>{t('Terms') || 'Terms'}</Link>
           <Link href="/privacy" className={styles.link}>{t('Privacy') || 'Privacy'}</Link>
           <Link href="/contact" className={styles.link}>{t('Contact') || 'Contact Us'}</Link>
-          <a href="mailto:vivalabseoul@gmail.com" className={`${styles.link} ${styles.hideMobile}`}>Email</a>
         </div>
       </div>
     </footer>

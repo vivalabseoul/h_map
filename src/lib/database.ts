@@ -472,8 +472,9 @@ export async function createInquiry(data: Omit<Inquiry, 'id' | 'createdAt' | 'st
     demoInquiries.unshift(newInq);
     return newInq.id;
   }
+  const dbUserId = data.userId === 'guest' ? null : data.userId;
   const { data: res, error } = await supabase.from('inquiries').insert({
-    user_id: data.userId, user_name: data.userName, user_email: data.userEmail,
+    user_id: dbUserId, user_name: data.userName, user_email: data.userEmail,
     title: data.title, category: data.category, content: data.content, status: 'pending'
   }).select('id').single();
   if (error) throw error;
