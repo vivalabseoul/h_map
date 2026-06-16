@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Users, Store, BookOpen, Calendar } from 'lucide-react';
 import { getAllUsers, getWorkshops, getCourses, getInquiries } from '@/lib/database';
 import Toast from '@/components/Toast';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function AdminDashboard() {
   const { t } = useLanguage();
