@@ -103,9 +103,9 @@
 @media (max-width: 768px) {
   .searchInput {
     min-width: 100px;
-    width: 120px;
-    padding: var(--space-1) var(--space-2);
+    width: 130px;
+    padding: var(--space-2) var(--space-2);
     padding-left: calc(var(--space-2) + 20px);
-    font-size: 0.8rem;
+
   }
 }
