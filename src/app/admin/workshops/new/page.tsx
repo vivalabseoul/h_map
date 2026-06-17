@@ -2,8 +2,8 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { getWorkshops, createWorkshop } from '@/lib/database';
-import type { WorkshopCategory, Region, Locale, Workshop } from '@/types';
+import { getWorkshops, createWorkshop, getAllUsers } from '@/lib/database';
+import type { WorkshopCategory, Region, Locale, Workshop, AppUser } from '@/types';
 import { CATEGORIES, REGIONS } from '@/types';
 import { getDynamicCategories } from '@/lib/categoryUtils';
 import AddressSearch from '@/components/AddressSearch';
@@ -27,12 +27,22 @@ export default function CreateStudioPage() {
   const [languages, setLanguages] = useState<string[]>(['English']);
   const [addressTags, setAddressTags] = useState<string[]>([]);
   const [dynamicCategories, setDynamicCategories] = useState(CATEGORIES);
+  const [users, setUsers] = useState<AppUser[]>([]);
+  const [selectedOwnerId, setSelectedOwnerId] = useState<string>('');
 
   React.useEffect(() => {
+    getAllUsers().then(data => {
+      // Only allow assigning to users with elevated roles
+      setUsers(data.filter(u => ['instructor', 'manager', 'super_admin'].includes(u.role)));
+      if (user) {
+        setSelectedOwnerId(user.id);
+      }
+    }).catch(console.error);
+
     getWorkshops().then(workshops => {
       setDynamicCategories(getDynamicCategories(workshops));
     }).catch(console.error);
-  }, []);
+  }, [user]);
   const [lng, setLng] = useState<number | null>(null);
   const [phone, setPhone] = useState('');
   const [website, setWebsite] = useState('');
@@ -54,10 +64,11 @@ export default function CreateStudioPage() {
 
     try {
       const finalCategory = isCustomCategory && customCategory.trim() !== '' ? customCategory.trim() : category;
+      const owner = users.find(u => u.id === selectedOwnerId) || user;
       
       await createWorkshop({
-        ownerId: user.id,
-        ownerName: user.displayName || 'Instructor',
+        ownerId: owner.id,
+        ownerName: owner.displayName || 'Instructor',
         name,
         category: finalCategory,
         description,
@@ -109,6 +120,25 @@ export default function CreateStudioPage() {
       <div className="card" style={{ maxWidth: '800px' }}>
         <form onSubmit={handleSubmit}>
           
+          {/* Owner Assignment */}
+          <div className="form-group" style={{ marginBottom: 'var(--space-6)', padding: 'var(--space-4)', background: 'var(--color-bg-alt)', borderRadius: 'var(--radius-md)' }}>
+            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              👤 스튜디오 소유자(강사) 지정
+            </label>
+            <select 
+              className="form-select" 
+              value={selectedOwnerId} 
+              onChange={(e) => setSelectedOwnerId(e.target.value)}
+            >
+              {users.map(u => (
+                <option key={u.id} value={u.id}>{u.displayName} ({u.email}) - {u.role}</option>
+              ))}
+            </select>
+            <p style={{ marginTop: 'var(--space-2)', fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>
+              이 스튜디오를 관리할 권한을 가질 강사님을 선택해주세요. (목록에 없다면, 먼저 '회원 관리'에서 일반회원을 강사로 등급업 해주세요)
+            </p>
+          </div>
+
           {/* Language Tabs */}
           <div style={{ display: 'flex', gap: 'var(--space-2)', borderBottom: '1px solid var(--color-border)', marginBottom: 'var(--space-6)' }}>
             {tabs.map((tab) => (

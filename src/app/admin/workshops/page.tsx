@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
-import { getWorkshops, deleteWorkshop } from '@/lib/database';
+import { getWorkshops, deleteWorkshop, updateWorkshop } from '@/lib/database';
 import type { Workshop } from '@/types';
 import { CATEGORIES } from '@/types';
 
@@ -28,6 +28,22 @@ export default function AdminWorkshopsPage() {
       } catch (err) {
         console.error(err);
         alert('삭제 중 오류가 발생했습니다.');
+      }
+    }
+  };
+
+  const handleTransferOwnership = async (id: string, currentOwnerId: string) => {
+    const newOwnerId = prompt('새로운 소유자(강사)의 UID를 입력하세요:', currentOwnerId);
+    if (newOwnerId && newOwnerId !== currentOwnerId) {
+      if (confirm(`정말 이 스튜디오의 소유권을 '${newOwnerId}'님에게 넘기시겠습니까?`)) {
+        try {
+          await updateWorkshop(id, { ownerId: newOwnerId });
+          setWorkshops(prev => prev.map(w => w.id === id ? { ...w, ownerId: newOwnerId } : w));
+          alert('소유권이 성공적으로 변경되었습니다.');
+        } catch (err) {
+          console.error(err);
+          alert('소유권 변경 중 오류가 발생했습니다.');
+        }
       }
     }
   };
@@ -74,12 +90,20 @@ export default function AdminWorkshopsPage() {
                   </td>
                   <td style={{ textTransform: 'capitalize' }}>{w.region.replace('_', ' ')}</td>
                   <td>
-                    <button
-                      className={`btn btn-sm ${w.status === 'active' ? 'btn-danger' : 'btn-success'}`}
-                      onClick={() => handleToggleStatus(w.id, w.status)}
-                    >
-                      {w.status === 'active' ? '강제 비활성화' : '다시 활성화'}
-                    </button>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button
+                        className={`btn btn-sm ${w.status === 'active' ? 'btn-danger' : 'btn-success'}`}
+                        onClick={() => handleToggleStatus(w.id, w.status)}
+                      >
+                        {w.status === 'active' ? '비활성화' : '활성화'}
+                      </button>
+                      <button
+                        className="btn btn-sm btn-secondary"
+                        onClick={() => handleTransferOwnership(w.id, w.ownerId)}
+                      >
+                        권한 이전
+                      </button>
+                    </div>
                   </td>
                 </tr>
               );

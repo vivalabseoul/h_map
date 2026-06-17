@@ -143,6 +143,10 @@ export async function createWorkshop(data: Omit<Workshop, 'id' | 'createdAt' | '
 export async function updateWorkshop(id: string, data: Partial<Workshop>): Promise<void> {
   if (!supabase) throw new Error('Supabase not configured');
   const updateData: any = {};
+  if (data.ownerId) {
+    updateData.owner_id = data.ownerId;
+    if (data.ownerName) updateData.owner_name = data.ownerName;
+  }
   if (data.name) updateData.name = data.name;
   if (data.description) updateData.description = data.description;
   if (data.address) updateData.address = data.address;
