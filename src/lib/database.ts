@@ -432,12 +432,13 @@ export async function getUserProfileData(id: string): Promise<AppUser | null> {
 }
 export { getUserProfileData as getUserProfile };
 
-export async function updateUserProfile(id: string, data: { displayName?: string; photoURL?: string; bio?: string }): Promise<void> {
+export async function updateUserProfile(id: string, data: { displayName?: string; photoURL?: string; bio?: string; email?: string }): Promise<void> {
   if (!supabase) throw new Error('Supabase not configured');
   const updateData: any = {};
   if (data.displayName !== undefined) updateData.display_name = data.displayName;
   if (data.photoURL !== undefined) updateData.photo_url = data.photoURL;
   if (data.bio !== undefined) updateData.bio = data.bio;
+  if (data.email !== undefined) updateData.email = data.email;
   
   if (Object.keys(updateData).length > 0) {
     const { error } = await supabase.from('users').update(updateData).eq('id', id);

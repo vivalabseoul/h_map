@@ -5,14 +5,18 @@ import ImageUpload from '@/components/ImageUpload';
 import { updateUserProfile } from '@/lib/database';
 
 export default function ProfileForm() {
-  const { user } = useAuth();
+  const { user, updatePassword, updateEmail } = useAuth();
+  const [email, setEmail] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [photoURL, setPhotoURL] = useState('');
   const [bio, setBio] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (user) {
+      setEmail(user.email || '');
       setDisplayName(user.displayName || '');
       setPhotoURL(user.photoURL || '');
       setBio((user as any).bio || '');
@@ -23,18 +27,35 @@ export default function ProfileForm() {
     e.preventDefault();
     if (!user) return;
     
+    if (newPassword && newPassword !== confirmPassword) {
+      alert('새 비밀번호가 일치하지 않습니다.');
+      return;
+    }
+
     setSaving(true);
     try {
+      if (email !== user.email) {
+        await updateEmail(email);
+      }
+
       await updateUserProfile(user.id, {
+        email,
         displayName,
         photoURL,
         bio
       });
-      alert('프로필이 성공적으로 저장되었습니다!');
+      
+      if (newPassword) {
+        await updatePassword(newPassword);
+        setNewPassword('');
+        setConfirmPassword('');
+      }
+
+      alert('회원정보가 성공적으로 저장되었습니다!');
       window.location.reload(); // Refresh to update AuthContext state across the app
     } catch (error: any) {
       console.error('Failed to update profile:', error);
-      alert('프로필 저장에 실패했습니다: ' + error.message);
+      alert('회원정보 저장에 실패했습니다: ' + error.message);
     } finally {
       setSaving(false);
     }
@@ -50,6 +71,21 @@ export default function ProfileForm() {
             onUpload={setPhotoURL} 
             folder="profiles" 
           />
+        </div>
+
+        <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
+          <label className="form-label">이메일 계정 (Email)</label>
+          <input
+            type="email"
+            className="form-input"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="이메일을 입력하세요"
+            required
+          />
+          <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', marginTop: 'var(--space-1)' }}>
+            이메일을 변경하면 인증 이메일이 발송될 수 있습니다.
+          </p>
         </div>
 
         <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
@@ -78,8 +114,34 @@ export default function ProfileForm() {
           </p>
         </div>
 
+        <hr style={{ margin: 'var(--space-6) 0', border: 'none', borderTop: '1px solid var(--color-border)' }} />
+        
+        <h3 style={{ marginBottom: 'var(--space-4)', fontSize: 'var(--font-size-lg)' }}>비밀번호 변경 (선택사항)</h3>
+
+        <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
+          <label className="form-label">새 비밀번호 (New Password)</label>
+          <input
+            type="password"
+            className="form-input"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            placeholder="변경할 비밀번호를 입력하세요 (선택)"
+          />
+        </div>
+
+        <div className="form-group" style={{ marginBottom: 'var(--space-6)' }}>
+          <label className="form-label">새 비밀번호 확인 (Confirm New Password)</label>
+          <input
+            type="password"
+            className="form-input"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder="비밀번호를 다시 한번 입력하세요"
+          />
+        </div>
+
         <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={saving}>
-          {saving ? '저장 중...' : '저장하기 (Save Profile)'}
+          {saving ? '저장 중...' : '회원정보 저장하기 (Save Profile)'}
         </button>
       </form>
     </div>

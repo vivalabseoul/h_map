@@ -3,7 +3,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Search, Shield } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
-import { getAllUsers, updateUserRole, toggleUserDisabled } from '@/lib/database';
+import { getAllUsers, updateUserRole, toggleUserDisabled, updateUserProfile } from '@/lib/database';
 import { getAssignableRoles } from '@/lib/permissions';
 import type { AppUser, UserRole } from '@/types';
 
@@ -13,6 +13,11 @@ export default function MembersPage() {
   const [users, setUsers] = useState<AppUser[]>([]);
   const [search, setSearch] = useState('');
   const [filterRole, setFilterRole] = useState<string>('all');
+  
+  // Edit Modal State
+  const [editingUser, setEditingUser] = useState<AppUser | null>(null);
+  const [editForm, setEditForm] = useState({ displayName: '', bio: '', photoURL: '' });
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     getAllUsers().then(setUsers);
@@ -46,6 +51,35 @@ export default function MembersPage() {
       }
     }
   }, []);
+
+  const openEditModal = (user: AppUser) => {
+    setEditingUser(user);
+    setEditForm({
+      displayName: user.displayName || '',
+      bio: user.bio || '',
+      photoURL: user.photoURL || ''
+    });
+  };
+
+  const closeEditModal = () => {
+    setEditingUser(null);
+    setEditForm({ displayName: '', bio: '', photoURL: '' });
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingUser) return;
+    setIsSaving(true);
+    try {
+      await updateUserProfile(editingUser.id, editForm);
+      setUsers((prev) => prev.map((u) => u.id === editingUser.id ? { ...u, ...editForm } : u));
+      closeEditModal();
+    } catch (err) {
+      console.error('Update profile error:', err);
+      alert('회원정보 수정에 실패했습니다.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const assignableRoles = userRole ? getAssignableRoles(userRole) : [];
 
@@ -137,7 +171,15 @@ export default function MembersPage() {
                   </span>
                 </td>
                 <td>
-                  <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center', flexWrap: 'wrap' }}>
+                    {userRole === 'super_admin' && (
+                      <button
+                        className="btn btn-sm"
+                        onClick={() => openEditModal(user)}
+                      >
+                        정보 수정
+                      </button>
+                    )}
                     {assignableRoles.length > 0 && user.role !== 'super_admin' && (
                       <select
                         className="form-select"
@@ -178,6 +220,82 @@ export default function MembersPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Edit User Modal */}
+      {editingUser && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000,
+          display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }} onClick={closeEditModal}>
+          <div style={{
+            backgroundColor: 'var(--color-bg)', padding: 'var(--space-6)',
+            borderRadius: 'var(--radius-lg)', width: '100%', maxWidth: '400px',
+            boxShadow: 'var(--shadow-xl)'
+          }} onClick={(e) => e.stopPropagation()}>
+            <h3 style={{ marginBottom: 'var(--space-4)' }}>회원정보 수정</h3>
+            <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
+              <label className="form-label">User ID (UID)</label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={editingUser.id}
+                  readOnly
+                  style={{ backgroundColor: 'var(--color-bg-secondary)', cursor: 'text', fontSize: 'var(--font-size-sm)' }}
+                />
+                <button 
+                  className="btn btn-sm" 
+                  onClick={() => {
+                    navigator.clipboard.writeText(editingUser.id);
+                    alert('UID가 복사되었습니다!');
+                  }}
+                  type="button"
+                >
+                  복사
+                </button>
+              </div>
+              <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', marginTop: '4px' }}>
+                Supabase 데이터베이스에서 회원을 찾을 때 사용하세요.
+              </p>
+            </div>
+            <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
+              <label className="form-label">이름 / 닉네임</label>
+              <input
+                type="text"
+                className="form-input"
+                value={editForm.displayName}
+                onChange={(e) => setEditForm({ ...editForm, displayName: e.target.value })}
+              />
+            </div>
+            <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
+              <label className="form-label">간단한 소개 (Bio)</label>
+              <textarea
+                className="form-input form-textarea"
+                value={editForm.bio}
+                onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
+                rows={3}
+              />
+            </div>
+            <div className="form-group" style={{ marginBottom: 'var(--space-6)' }}>
+              <label className="form-label">프로필 사진 URL</label>
+              <input
+                type="text"
+                className="form-input"
+                value={editForm.photoURL}
+                onChange={(e) => setEditForm({ ...editForm, photoURL: e.target.value })}
+                placeholder="https://..."
+              />
+            </div>
+            <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
+              <button className="btn" onClick={closeEditModal} disabled={isSaving}>취소</button>
+              <button className="btn btn-primary" onClick={handleSaveEdit} disabled={isSaving}>
+                {isSaving ? '저장 중...' : '저장'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

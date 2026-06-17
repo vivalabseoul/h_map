@@ -3,7 +3,7 @@
 // Auth Context — Provides auth + role state
 // ==========================================
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { onAuthChange, getUserRole, signInWithGoogle, signInWithEmail, registerWithEmail, signOutUser, resetPasswordForEmail, updateUserPassword, findEmailByName } from '@/lib/auth';
+import { onAuthChange, getUserRole, signInWithGoogle, signInWithEmail, registerWithEmail, signOutUser, resetPasswordForEmail, updateUserPassword, updateUserEmail, findEmailByName } from '@/lib/auth';
 import type { User } from '@supabase/supabase-js';
 import type { AppUser, UserRole } from '@/types';
 
@@ -17,6 +17,7 @@ interface AuthContextValue {
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   updatePassword: (password: string) => Promise<void>;
+  updateEmail: (email: string) => Promise<void>;
   findEmail: (name: string) => Promise<string[]>;
 }
 
@@ -30,6 +31,7 @@ const AuthContext = createContext<AuthContextValue>({
   logout: async () => {},
   resetPassword: async () => {},
   updatePassword: async () => {},
+  updateEmail: async () => {},
   findEmail: async () => [],
 });
 
@@ -86,6 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         logout,
         resetPassword: resetPasswordForEmail,
         updatePassword: updateUserPassword,
+        updateEmail: updateUserEmail,
         findEmail: findEmailByName,
       }}
     >

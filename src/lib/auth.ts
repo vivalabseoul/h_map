@@ -230,6 +230,17 @@ export async function updateUserPassword(password: string): Promise<void> {
 }
 
 /**
+ * Update user email address
+ */
+export async function updateUserEmail(email: string): Promise<void> {
+  if (!supabase || !isSupabaseConfigured) {
+    throw new Error('Supabase is not configured.');
+  }
+  const { error } = await supabase.auth.updateUser({ email });
+  if (error) throw error;
+}
+
+/**
  * Find masked emails by user display name
  */
 export async function findEmailByName(name: string): Promise<string[]> {
