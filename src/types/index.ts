@@ -113,7 +113,7 @@ export interface Course {
   instructorId: string;
   instructorName?: string;
   title: Record<Locale, string>;
-  description: Record<Locale, CourseDescription>;
+  description: Record<Locale, CourseDescription | string | any>;
   price: string;
   duration: string;
   maxParticipants: number;

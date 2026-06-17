@@ -668,11 +668,11 @@ export async function listStorageImages(folder = 'uploads', limit = 100): Promis
   const validFiles = data.filter(f => f.name && f.name !== '.emptyFolderPlaceholder' && f.metadata);
 
   return validFiles.map(f => {
-    const { data: publicData } = supabase.storage.from('images').getPublicUrl(`${folder}/${f.name}`);
+    const { data: publicData } = supabase!.storage.from('images').getPublicUrl(`${folder}/${f.name}`);
     return {
       name: f.name,
       url: publicData.publicUrl,
-      created_at: f.created_at,
+      created_at: f.created_at || new Date().toISOString(),
     };
   });
 }

@@ -108,11 +108,17 @@ export default function BookingModal({ course, onClose, onConfirm }: BookingModa
         )}
         <h3 style={{ marginBottom: 'var(--space-2)' }}>{course.title[locale] || t('booking.title_default')}</h3>
         
-        {course.description && course.description[locale] && (
-          <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-4)', lineHeight: 1.5 }}>
-            {course.description[locale]}
-          </p>
-        )}
+        {(() => {
+          const rawDesc = course.description && (course.description as any)[locale];
+          if (!rawDesc) return null;
+          const intro = typeof rawDesc === 'string' ? rawDesc : rawDesc.intro;
+          if (!intro) return null;
+          return (
+            <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-4)', lineHeight: 1.5 }}>
+              {intro}
+            </p>
+          );
+        })()}
         
         {workshop && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-4)' }}>
