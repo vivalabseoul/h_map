@@ -4,6 +4,7 @@ import { X, Navigation, Share2, MapPin, Phone, Globe, Star, MessageCircle, Link 
 import { FaInstagram, FaFacebook, FaYoutube } from 'react-icons/fa';
 import { useLanguage } from '@/context/LanguageContext';
 import { CATEGORIES } from '@/types';
+import { getDynamicCategories } from '@/lib/categoryUtils';
 import type { Workshop, Course, AppUser } from '@/types';
 import { getCoursesByWorkshop, getUserProfile, getWorkshopById } from '@/lib/database';
 import CourseCard from './CourseCard';
@@ -92,7 +93,11 @@ export default function BottomSheet({ workshop, allWorkshops, onWorkshopClick, o
     }
   }, [workshop, locale]);
 
-  const catMeta = CATEGORIES.find((c) => c.key === workshop.category);
+  const dynamicCategories = getDynamicCategories([workshop]);
+  const catMeta = dynamicCategories.find((c) => c.key === workshop.category);
+  const rawCatLabel = t(`filters.${workshop.category}`);
+  const catLabel = rawCatLabel === `filters.${workshop.category}` ? workshop.category : rawCatLabel;
+
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
@@ -137,11 +142,11 @@ export default function BottomSheet({ workshop, allWorkshops, onWorkshopClick, o
             <span
               className={styles.categoryBadge}
               style={{
-                background: `${catMeta?.color}20`,
-                color: catMeta?.color,
+                background: `${catMeta?.color || '#94a3b8'}20`,
+                color: catMeta?.color || '#94a3b8',
               }}
             >
-              {catMeta?.emoji} {t(`filters.${workshop.category}`)}
+              {catMeta?.emoji || '🏷️'} {catLabel}
             </span>
           </div>
 
@@ -189,7 +194,7 @@ export default function BottomSheet({ workshop, allWorkshops, onWorkshopClick, o
             {workshop.website && (
               <div className={styles.infoItem}>
                 <Globe size={16} className={styles.infoIcon} />
-                <a href={workshop.website} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'underline' }}>
+                <a href={workshop.website} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'none' }}>
                   {workshop.website.replace(/^https?:\/\//, '')}
                 </a>
               </div>
@@ -203,7 +208,7 @@ export default function BottomSheet({ workshop, allWorkshops, onWorkshopClick, o
                   href={workshop.snsLinks.instagram.startsWith('http') ? workshop.snsLinks.instagram : `https://instagram.com/${workshop.snsLinks.instagram}`} 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  style={{ color: 'var(--color-primary)', textDecoration: 'underline' }}
+                  style={{ color: 'var(--color-primary)', textDecoration: 'none' }}
                 >
                   @{workshop.snsLinks.instagram.replace(/^https?:\/\/(www\.)?instagram\.com\//, '').replace(/\/$/, '')}
                 </a>
@@ -212,7 +217,7 @@ export default function BottomSheet({ workshop, allWorkshops, onWorkshopClick, o
             {workshop.snsLinks?.facebook && (
               <div className={styles.infoItem}>
                 <FaFacebook size={16} className={styles.infoIcon} />
-                <a href={workshop.snsLinks.facebook} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'underline' }}>
+                <a href={workshop.snsLinks.facebook} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'none' }}>
                   Facebook
                 </a>
               </div>
@@ -224,7 +229,7 @@ export default function BottomSheet({ workshop, allWorkshops, onWorkshopClick, o
                   href={workshop.snsLinks.youtube.startsWith('http') ? workshop.snsLinks.youtube : `https://youtube.com/@${workshop.snsLinks.youtube.replace(/^@/, '')}`} 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  style={{ color: 'var(--color-primary)', textDecoration: 'underline' }}
+                  style={{ color: 'var(--color-primary)', textDecoration: 'none' }}
                 >
                   @{workshop.snsLinks.youtube.replace(/^https?:\/\/(www\.)?youtube\.com\/(@)?/, '').replace(/^@/, '').replace(/\/$/, '')}
                 </a>
@@ -233,7 +238,7 @@ export default function BottomSheet({ workshop, allWorkshops, onWorkshopClick, o
             {workshop.snsLinks?.blog && (
               <div className={styles.infoItem}>
                 <LinkIcon size={16} className={styles.infoIcon} />
-                <a href={workshop.snsLinks.blog} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'underline' }}>
+                <a href={workshop.snsLinks.blog} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'none' }}>
                   Blog
                 </a>
               </div>

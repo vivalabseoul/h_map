@@ -56,11 +56,16 @@ export default function FilterBar({
   const dynamicCategories = getDynamicCategories(workshops);
   const selectedCatData = dynamicCategories.find(c => c.key === activeCategory);
 
+  const getCatLabel = (key: string) => {
+    const raw = t(`filters.${key}`);
+    return raw === `filters.${key}` ? key : raw;
+  };
+
   // Determine what to show on the button
   let buttonLabel: React.ReactNode = t('filters.all');
   if (activeCategory !== 'all') {
     if (selectedCatData) {
-      buttonLabel = <><span className={styles.chipEmoji}>{selectedCatData.emoji}</span>{t(`filters.${activeCategory}`)}</>;
+      buttonLabel = <><span className={styles.chipEmoji}>{selectedCatData.emoji}</span>{getCatLabel(activeCategory)}</>;
     } else {
       buttonLabel = <><span className={styles.chipEmoji}>🏷️</span>{activeCategory}</>;
     }
@@ -111,7 +116,7 @@ export default function FilterBar({
                 onClick={() => { onCategoryChange(cat.key); setOpenDropdown(null); }}
                 style={{ textAlign: 'left', padding: 'var(--space-2)', background: activeCategory === cat.key ? 'var(--color-bg-secondary)' : 'transparent', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
               >
-                {cat.emoji} {t(`${cat.key}`)}
+                {cat.emoji} {getCatLabel(cat.key)}
               </button>
             ))}
           </div>

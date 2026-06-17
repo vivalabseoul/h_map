@@ -10,9 +10,15 @@ function getHashColor(str: string): string {
     hash = str.charCodeAt(i) + ((hash << 5) - hash);
   }
   
-  // Use a softer color palette
-  const hue = Math.abs(hash) % 360;
-  return `hsl(${hue}, 40%, 60%)`;
+  // Convert hash to a 6-digit hex color
+  let color = '#';
+  for (let i = 0; i < 3; i++) {
+    const value = (hash >> (i * 8)) & 0xFF;
+    // ensure contrast by keeping it relatively light/bright
+    const adjusted = Math.min(255, Math.max(100, value));
+    color += ('00' + adjusted.toString(16)).slice(-2);
+  }
+  return color;
 }
 
 /**
