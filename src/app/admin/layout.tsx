@@ -30,8 +30,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             { type: 'divider' },
             { type: 'header', label: '✍️ 직접 등록' },
             { href: '/admin/collector', label: '구글 맵스 수집기', icon: <Globe size={18} /> },
-            { href: '/admin/workshops/new', label: '스튜디오 등록', icon: <PlusCircle size={18} /> },
-            { href: '/admin/courses/new', label: '워크샵 개설', icon: <PlusCircle size={18} /> },
             { href: '/admin/flea_markets/new', label: '플리마켓 등록', icon: <PlusCircle size={18} /> },
             { type: 'divider' },
             { href: '/admin/profile', label: '프로필 설정', icon: <User size={18} /> },

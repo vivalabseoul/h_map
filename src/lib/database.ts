@@ -648,6 +648,31 @@ export async function uploadImage(file: File, folder = 'uploads'): Promise<strin
   return publicData.publicUrl;
 }
 
+export async function listStorageImages(folder = 'uploads', limit = 100): Promise<{ name: string; url: string; created_at: string }[]> {
+  if (!supabase) return [];
+  
+  const { data, error } = await supabase.storage.from('images').list(folder, {
+    limit,
+    sortBy: { column: 'created_at', order: 'desc' }
+  });
+
+  if (error || !data) {
+    console.error('Failed to list images:', error);
+    return [];
+  }
+
+  const validFiles = data.filter(f => f.name && f.name !== '.emptyFolderPlaceholder' && f.metadata);
+
+  return validFiles.map(f => {
+    const { data: publicData } = supabase.storage.from('images').getPublicUrl(`${folder}/${f.name}`);
+    return {
+      name: f.name,
+      url: publicData.publicUrl,
+      created_at: f.created_at,
+    };
+  });
+}
+
 // ==========================================
 // Notices (Announcements)
 // ==========================================

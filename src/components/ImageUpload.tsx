@@ -1,8 +1,10 @@
 'use client';
 import React, { useState, useRef } from 'react';
-import { Upload, Image as ImageIcon, X, Loader2 } from 'lucide-react';
+import { Upload, Image as ImageIcon, X, Loader2, Library } from 'lucide-react';
 import { compressImage } from '@/lib/imageCompression';
 import { uploadImage } from '@/lib/database';
+import { useAuth } from '@/context/AuthContext';
+import ImageGalleryModal from './ImageGalleryModal';
 
 interface ImageUploadProps {
   initialUrl?: string;
@@ -13,7 +15,11 @@ interface ImageUploadProps {
 export default function ImageUpload({ initialUrl = '', onUpload, folder = 'posters' }: ImageUploadProps) {
   const [imageUrl, setImageUrl] = useState<string>(initialUrl);
   const [isUploading, setIsUploading] = useState(false);
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { userRole, user } = useAuth();
+  
+  const isAdmin = userRole === 'super_admin';
 
   React.useEffect(() => {
     if (initialUrl) {
@@ -60,7 +66,31 @@ export default function ImageUpload({ initialUrl = '', onUpload, folder = 'poste
 
   return (
     <div style={{ width: '100%', marginBottom: 'var(--space-4)' }}>
-      <label className="form-label">포스터/대표사진 업로드 (자동 압축)</label>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+        <label className="form-label" style={{ margin: 0 }}>포스터/대표사진 업로드 (자동 압축)</label>
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={() => setIsGalleryOpen(true)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              padding: '4px 12px',
+              fontSize: '0.875rem',
+              background: 'var(--color-primary)',
+              color: 'white',
+              border: 'none',
+              borderRadius: 'var(--radius-sm)',
+              cursor: 'pointer',
+              fontWeight: 500
+            }}
+          >
+            <Library size={16} />
+            기존 이미지 갤러리
+          </button>
+        )}
+      </div>
       
       {!imageUrl ? (
         <div 
@@ -128,6 +158,18 @@ export default function ImageUpload({ initialUrl = '', onUpload, folder = 'poste
         accept="image/*" 
         style={{ display: 'none' }} 
       />
+
+      {isAdmin && (
+        <ImageGalleryModal 
+          isOpen={isGalleryOpen}
+          onClose={() => setIsGalleryOpen(false)}
+          onSelect={(url) => {
+            setImageUrl(url);
+            onUpload(url);
+          }}
+          folder={folder}
+        />
+      )}
     </div>
   );
 }
