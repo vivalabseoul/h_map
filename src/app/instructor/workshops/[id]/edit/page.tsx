@@ -2,9 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { getWorkshopsByOwner, updateWorkshop } from '@/lib/database';
+import { getWorkshopsByOwner, updateWorkshop, getWorkshops } from '@/lib/database';
 import type { WorkshopCategory, Region, Locale } from '@/types';
 import { CATEGORIES, REGIONS } from '@/types';
+import { getDynamicCategories } from '@/lib/categoryUtils';
 import type { AddressComponents } from '@/components/AddressSearch';
 import AddressSearch from '@/components/AddressSearch';
 import ImageUpload from '@/components/ImageUpload';
@@ -30,6 +31,7 @@ export default function EditStudioPage() {
   const [imageUrl, setImageUrl] = useState('');
   const [languages, setLanguages] = useState<string[]>([]);
   const [addressTags, setAddressTags] = useState<string[]>([]);
+  const [dynamicCategories, setDynamicCategories] = useState(CATEGORIES);
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
   const [isCustomCategory, setIsCustomCategory] = useState(false);
@@ -50,15 +52,18 @@ export default function EditStudioPage() {
 
   useEffect(() => {
     if (user && params.id) {
-      getWorkshopsByOwner(user.id).then(data => {
-        const target = data.find(w => w.id === params.id);
+      Promise.all([getWorkshopsByOwner(user.id), getWorkshops()]).then(([ownedData, allData]) => {
+        const fetchedDynamicCategories = getDynamicCategories(allData);
+        setDynamicCategories(fetchedDynamicCategories);
+
+        const target = ownedData.find(w => w.id === params.id);
         if (target) {
           setName(target.name);
           setDescription(target.description);
           setAddress(target.address);
           
           // Check if category is standard or custom
-          const isStandard = CATEGORIES.some(c => c.key === target.category);
+          const isStandard = fetchedDynamicCategories.some(c => c.key === target.category);
           if (isStandard) {
             setCategory(target.category);
           } else {
@@ -208,7 +213,8 @@ export default function EditStudioPage() {
 
           {/* Image Upload */}
           <div style={{ marginBottom: 'var(--space-4)' }}>
-            <label className="form-label">스튜디오 대표 사진 (Studio Photo)</label>
+            <label className="form-label" style={{ marginBottom: 'var(--space-2)' }}>스튜디오 대표 사진 (Studio Photo)</label>
+            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-tertiary)', marginBottom: 'var(--space-3)' }}>📸 대표 사진 1장만 업로드 가능합니다.</p>
             <ImageUpload 
               initialUrl={imageUrl} 
               onUpload={setImageUrl} 
@@ -232,7 +238,7 @@ export default function EditStudioPage() {
                   }
                 }}
               >
-                {CATEGORIES.map(c => (
+                {dynamicCategories.map(c => (
                   <option key={c.key} value={c.key}>{c.emoji} {c.key.toUpperCase()}</option>
                 ))}
                 <option value="custom">✍️ 직접 입력 (Custom)</option>
@@ -273,11 +279,11 @@ export default function EditStudioPage() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
             <div className="form-group">
               <label className="form-label">인스타그램 (Instagram)</label>
-              <input type="url" className="form-input" value={snsInstagram} onChange={(e) => setSnsInstagram(e.target.value)} placeholder="https://instagram.com/..." />
+              <input type="text" className="form-input" value={snsInstagram} onChange={(e) => setSnsInstagram(e.target.value)} placeholder="예: vivalab_official (아이디만 입력)" />
             </div>
             <div className="form-group">
               <label className="form-label">유튜브 (YouTube)</label>
-              <input type="url" className="form-input" value={snsYoutube} onChange={(e) => setSnsYoutube(e.target.value)} placeholder="https://youtube.com/..." />
+              <input type="text" className="form-input" value={snsYoutube} onChange={(e) => setSnsYoutube(e.target.value)} placeholder="예: vivalab_official (핸들만 입력)" />
             </div>
           </div>
 

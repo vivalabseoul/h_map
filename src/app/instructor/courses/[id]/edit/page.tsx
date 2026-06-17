@@ -200,7 +200,8 @@ export default function EditCoursePage() {
           <hr className="divider" />
 
           <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
-            <label className="form-label">클래스 대표 사진 (Class Photo)</label>
+            <label className="form-label" style={{ marginBottom: 'var(--space-2)' }}>클래스 대표 사진 (Class Photo)</label>
+            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-tertiary)', marginBottom: 'var(--space-3)' }}>📸 대표 사진 1장만 업로드 가능합니다.</p>
             <ImageUpload 
               initialUrl={imageUrl} 
               onUpload={setImageUrl} 

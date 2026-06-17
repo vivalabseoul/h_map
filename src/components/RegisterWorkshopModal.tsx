@@ -25,7 +25,7 @@ export default function RegisterWorkshopModal({ onClose, onSuccess }: RegisterWo
       alert(t('error_empty_fields') || '이름과 SNS 주소는 필수입니다.');
       return;
     }
-    
+
     setLoading(true);
     try {
       const content = `
@@ -64,7 +64,7 @@ SNS/인스타: ${formData.sns}
             <Store size={24} color="var(--color-accent)" />
           </div>
           <h2>내 공방 등록하기</h2>
-          <p>아래 3가지 정보만 남겨주시면,<br/>저희가 확인 후 예쁘게 글로벌 지도에 올려드릴게요!</p>
+          <p>아래 3가지 정보만 남겨주시면,<br />저희가 확인 후 예쁘게 글로벌 지도에 올려드릴게요!</p>
         </div>
 
         <form onSubmit={handleSubmit} className={styles.form}>

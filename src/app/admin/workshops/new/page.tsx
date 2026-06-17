@@ -2,9 +2,10 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { createWorkshop } from '@/lib/database';
-import type { WorkshopCategory, Region, Locale } from '@/types';
+import { getWorkshops, createWorkshop } from '@/lib/database';
+import type { WorkshopCategory, Region, Locale, Workshop } from '@/types';
 import { CATEGORIES, REGIONS } from '@/types';
+import { getDynamicCategories } from '@/lib/categoryUtils';
 import AddressSearch from '@/components/AddressSearch';
 import ImageUpload from '@/components/ImageUpload';
 
@@ -19,8 +20,19 @@ export default function CreateStudioPage() {
   const [description, setDescription] = useState<Record<Locale, string>>({ en: '', ja: '', zh: '', ko: '' });
   const [address, setAddress] = useState<Record<Locale, string>>({ en: '', ja: '', zh: '', ko: '' });
   const [category, setCategory] = useState<WorkshopCategory>('pottery');
+  const [isCustomCategory, setIsCustomCategory] = useState(false);
+  const [customCategory, setCustomCategory] = useState('');
   const [region, setRegion] = useState<Region>('korea');
   const [lat, setLat] = useState<number | null>(null);
+  const [languages, setLanguages] = useState<string[]>(['English']);
+  const [addressTags, setAddressTags] = useState<string[]>([]);
+  const [dynamicCategories, setDynamicCategories] = useState(CATEGORIES);
+
+  React.useEffect(() => {
+    getWorkshops().then(workshops => {
+      setDynamicCategories(getDynamicCategories(workshops));
+    }).catch(console.error);
+  }, []);
   const [lng, setLng] = useState<number | null>(null);
   const [phone, setPhone] = useState('');
   const [website, setWebsite] = useState('');
@@ -41,11 +53,13 @@ export default function CreateStudioPage() {
     setLoading(true);
 
     try {
+      const finalCategory = isCustomCategory && customCategory.trim() !== '' ? customCategory.trim() : category;
+      
       await createWorkshop({
         ownerId: user.id,
         ownerName: user.displayName || 'Instructor',
         name,
-        category,
+        category: finalCategory,
         description,
         address,
         lat: lat ?? (REGIONS.find(r => r.key === region)?.center[0] || 37.576),
@@ -160,6 +174,8 @@ export default function CreateStudioPage() {
 
           {/* Image Upload */}
           <div style={{ marginBottom: 'var(--space-4)' }}>
+            <label className="form-label" style={{ marginBottom: 'var(--space-2)' }}>대표 사진 (1장만 등록 가능)</label>
+            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-tertiary)', marginBottom: 'var(--space-3)' }}>📸 대표 사진 1장만 업로드 가능합니다.</p>
             <ImageUpload 
               initialUrl={imageUrl} 
               onUpload={setImageUrl} 
@@ -171,11 +187,34 @@ export default function CreateStudioPage() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
             <div className="form-group">
               <label className="form-label">종목 (Category)</label>
-              <select className="form-select" value={category} onChange={(e) => setCategory(e.target.value as WorkshopCategory)}>
-                {CATEGORIES.map(c => (
+              <select 
+                className="form-select" 
+                value={isCustomCategory ? 'custom' : category} 
+                onChange={(e) => {
+                  if (e.target.value === 'custom') {
+                    setIsCustomCategory(true);
+                  } else {
+                    setIsCustomCategory(false);
+                    setCategory(e.target.value as WorkshopCategory);
+                  }
+                }}
+              >
+                {dynamicCategories.map(c => (
                   <option key={c.key} value={c.key}>{c.emoji} {c.key.toUpperCase()}</option>
                 ))}
+                <option value="custom">✍️ 직접 입력 (Custom)</option>
               </select>
+              {isCustomCategory && (
+                <input
+                  type="text"
+                  className="form-input"
+                  style={{ marginTop: 'var(--space-2)' }}
+                  placeholder="예: 목공예, 캔들"
+                  value={customCategory}
+                  onChange={(e) => setCustomCategory(e.target.value)}
+                  required={isCustomCategory}
+                />
+              )}
             </div>
             <div className="form-group">
               <label className="form-label">지역 (Region)</label>
@@ -201,11 +240,11 @@ export default function CreateStudioPage() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-8)' }}>
             <div className="form-group">
               <label className="form-label">인스타그램 (Instagram)</label>
-              <input type="url" className="form-input" value={snsInstagram} onChange={(e) => setSnsInstagram(e.target.value)} placeholder="https://instagram.com/..." />
+              <input type="text" className="form-input" value={snsInstagram} onChange={(e) => setSnsInstagram(e.target.value)} placeholder="예: vivalab_official (아이디만 입력)" />
             </div>
             <div className="form-group">
               <label className="form-label">유튜브 (YouTube)</label>
-              <input type="url" className="form-input" value={snsYoutube} onChange={(e) => setSnsYoutube(e.target.value)} placeholder="https://youtube.com/..." />
+              <input type="text" className="form-input" value={snsYoutube} onChange={(e) => setSnsYoutube(e.target.value)} placeholder="예: vivalab_official (핸들만 입력)" />
             </div>
           </div>
 

@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { CATEGORIES, SMART_TAGS, REGIONS } from '@/types';
+import { getDynamicCategories } from '@/lib/categoryUtils';
 import type { WorkshopCategory, Region, Workshop } from '@/types';
 import { ChevronDown, Search } from 'lucide-react';
 import styles from './FilterBar.module.css';
@@ -52,15 +53,8 @@ export default function FilterBar({
   };
 
   const selectedRegionData = REGIONS.find(r => r.key === selectedRegion) || REGIONS[0];
-  const selectedCatData = CATEGORIES.find(c => c.key === activeCategory);
-
-  // Extract dynamic custom categories
-  const standardCategoryKeys = CATEGORIES.map(c => c.key);
-  const customCategories = Array.from(new Set(
-    workshops
-      .map(w => w.category)
-      .filter(cat => cat && !standardCategoryKeys.includes(cat))
-  ));
+  const dynamicCategories = getDynamicCategories(workshops);
+  const selectedCatData = dynamicCategories.find(c => c.key === activeCategory);
 
   // Determine what to show on the button
   let buttonLabel: React.ReactNode = t('filters.all');
@@ -111,23 +105,13 @@ export default function FilterBar({
             >
               {t('filters.all')}
             </button>
-            {CATEGORIES.map(cat => (
+            {dynamicCategories.map(cat => (
               <button
                 key={cat.key}
                 onClick={() => { onCategoryChange(cat.key); setOpenDropdown(null); }}
                 style={{ textAlign: 'left', padding: 'var(--space-2)', background: activeCategory === cat.key ? 'var(--color-bg-secondary)' : 'transparent', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
               >
                 {cat.emoji} {t(`${cat.key}`)}
-              </button>
-            ))}
-            {customCategories.length > 0 && <hr style={{ margin: 'var(--space-1) 0', border: 'none', borderTop: '1px solid var(--color-border)' }} />}
-            {customCategories.map(cat => (
-              <button
-                key={cat}
-                onClick={() => { onCategoryChange(cat); setOpenDropdown(null); }}
-                style={{ textAlign: 'left', padding: 'var(--space-2)', background: activeCategory === cat ? 'var(--color-bg-secondary)' : 'transparent', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
-              >
-                🏷️ {cat}
               </button>
             ))}
           </div>

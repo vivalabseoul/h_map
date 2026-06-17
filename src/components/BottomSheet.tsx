@@ -1,6 +1,7 @@
 'use client';
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { X, Navigation, Share2, MapPin, Phone, Globe, Star, MessageCircle } from 'lucide-react';
+import { X, Navigation, Share2, MapPin, Phone, Globe, Star, MessageCircle, Link as LinkIcon } from 'lucide-react';
+import { FaInstagram, FaFacebook, FaYoutube } from 'react-icons/fa';
 import { useLanguage } from '@/context/LanguageContext';
 import { CATEGORIES } from '@/types';
 import type { Workshop, Course, AppUser } from '@/types';
@@ -179,18 +180,65 @@ export default function BottomSheet({ workshop, allWorkshops, onWorkshopClick, o
               <MapPin size={16} className={styles.infoIcon} />
               <span>{typeof workshop.address === 'string' ? workshop.address : workshop.address?.[locale] || workshop.address?.ko || ''}</span>
             </div>
-            <div className={styles.infoItem}>
-              <Phone size={16} className={styles.infoIcon} />
-              <span>{workshop.phone}</span>
-            </div>
+            {workshop.phone && (
+              <div className={styles.infoItem}>
+                <Phone size={16} className={styles.infoIcon} />
+                <span>{workshop.phone}</span>
+              </div>
+            )}
             {workshop.website && (
               <div className={styles.infoItem}>
                 <Globe size={16} className={styles.infoIcon} />
-                <a href={workshop.website} target="_blank" rel="noopener noreferrer">
-                  Website
+                <a href={workshop.website} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'underline' }}>
+                  {workshop.website.replace(/^https?:\/\//, '')}
                 </a>
               </div>
             )}
+            
+            {/* SNS Links */}
+            {workshop.snsLinks?.instagram && (
+              <div className={styles.infoItem}>
+                <FaInstagram size={16} className={styles.infoIcon} />
+                <a 
+                  href={workshop.snsLinks.instagram.startsWith('http') ? workshop.snsLinks.instagram : `https://instagram.com/${workshop.snsLinks.instagram}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  style={{ color: 'var(--color-primary)', textDecoration: 'underline' }}
+                >
+                  @{workshop.snsLinks.instagram.replace(/^https?:\/\/(www\.)?instagram\.com\//, '').replace(/\/$/, '')}
+                </a>
+              </div>
+            )}
+            {workshop.snsLinks?.facebook && (
+              <div className={styles.infoItem}>
+                <FaFacebook size={16} className={styles.infoIcon} />
+                <a href={workshop.snsLinks.facebook} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'underline' }}>
+                  Facebook
+                </a>
+              </div>
+            )}
+            {workshop.snsLinks?.youtube && (
+              <div className={styles.infoItem}>
+                <FaYoutube size={16} className={styles.infoIcon} />
+                <a 
+                  href={workshop.snsLinks.youtube.startsWith('http') ? workshop.snsLinks.youtube : `https://youtube.com/@${workshop.snsLinks.youtube.replace(/^@/, '')}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  style={{ color: 'var(--color-primary)', textDecoration: 'underline' }}
+                >
+                  @{workshop.snsLinks.youtube.replace(/^https?:\/\/(www\.)?youtube\.com\/(@)?/, '').replace(/^@/, '').replace(/\/$/, '')}
+                </a>
+              </div>
+            )}
+            {workshop.snsLinks?.blog && (
+              <div className={styles.infoItem}>
+                <LinkIcon size={16} className={styles.infoIcon} />
+                <a href={workshop.snsLinks.blog} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'underline' }}>
+                  Blog
+                </a>
+              </div>
+            )}
+
             {workshop.languages && workshop.languages.length > 0 && (
               <div className={styles.infoItem}>
                 <MessageCircle size={16} className={styles.infoIcon} />
