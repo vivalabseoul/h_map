@@ -102,14 +102,14 @@ function saveLocalWorkshops(workshops: Workshop[]) {
 export async function getWorkshops(): Promise<Workshop[]> {
   if (!supabase || !isSupabaseConfigured) return getLocalWorkshops();
   const { data, error } = await supabase.from('workshops').select('*').order('created_at', { ascending: false });
-  if (error || !data || data.length === 0) return getLocalWorkshops();
+  if (error || !data) return getLocalWorkshops();
   return (data || []).map(mapWorkshop);
 }
 
 export async function getWorkshopsByOwner(ownerId: string): Promise<Workshop[]> {
   if (!supabase || !isSupabaseConfigured) return getLocalWorkshops().filter(w => w.ownerId === ownerId);
   const { data, error } = await supabase.from('workshops').select('*').eq('owner_id', ownerId).order('created_at', { ascending: false });
-  if (error || !data || data.length === 0) return getLocalWorkshops().filter(w => w.ownerId === ownerId);
+  if (error || !data) return getLocalWorkshops().filter(w => w.ownerId === ownerId);
   return (data || []).map(mapWorkshop);
 }
 
@@ -678,8 +678,8 @@ function saveLocalNotices(notices: Notice[]) {
 export async function getNotices(): Promise<Notice[]> {
   if (!supabase || !isSupabaseConfigured) return getLocalNotices();
   const { data, error } = await supabase.from('notices').select('*').order('created_at', { ascending: false });
-  if (error || !data || data.length === 0) {
-    return getLocalNotices(); // Fallback to demo data if table doesn't exist or is empty
+  if (error || !data) {
+    return getLocalNotices(); // Fallback to demo data if table doesn't exist
   }
   return (data || []).map(mapNotice);
 }

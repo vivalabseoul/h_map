@@ -1,23 +1,7 @@
 'use client';
 import React, { useState } from 'react';
-import { Search, MapPin } from 'lucide-react';
-
-interface NominatimResult {
-  place_id: number;
-  lat: string;
-  lon: string;
-  display_name: string;
-  address?: {
-    city?: string;
-    town?: string;
-    province?: string;
-    state?: string;
-    borough?: string;
-    suburb?: string;
-    neighbourhood?: string;
-    quarter?: string;
-  };
-}
+import { Search, MapPin, X } from 'lucide-react';
+import DaumPostcodeEmbed from 'react-daum-postcode';
 
 export interface AddressComponents {
   city?: string;
@@ -34,56 +18,50 @@ interface AddressSearchProps {
 export default function AddressSearch({ 
   onSelect, 
   buttonText = '주소 검색',
-  placeholder = '검색할 주소를 입력하세요 (예: 종로구 북촌로)'
+  placeholder = '검색할 주소를 입력하세요'
 }: AddressSearchProps) {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<NominatimResult[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
-  const [showResults, setShowResults] = useState(false);
 
-  const handleSearch = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!query.trim()) return;
+  const handleComplete = async (data: any) => {
+    let fullAddress = data.address;
+    let extraAddress = '';
 
+    if (data.addressType === 'R') {
+      if (data.bname !== '') {
+        extraAddress += data.bname;
+      }
+      if (data.buildingName !== '') {
+        extraAddress += extraAddress !== '' ? `, ${data.buildingName}` : data.buildingName;
+      }
+      fullAddress += extraAddress !== '' ? ` (${extraAddress})` : '';
+    }
+
+    setQuery(fullAddress);
+    setIsOpen(false);
     setIsSearching(true);
+
     try {
-      // Use OpenStreetMap Nominatim API
-      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1`);
-      const data: NominatimResult[] = await res.json();
-      setResults(data);
-      setShowResults(true);
+      const res = await fetch(`/api/geocode?address=${encodeURIComponent(data.address)}`);
+      const geocodeData = await res.json();
+      
+      if (res.ok && geocodeData.lat && geocodeData.lng) {
+        const components: AddressComponents = {
+          city: data.sido,
+          district: data.sigungu,
+          suburb: data.bname || data.bname1 || data.bname2,
+        };
+        onSelect(fullAddress, geocodeData.lat, geocodeData.lng, components);
+      } else {
+        alert('주소의 위치 좌표를 찾을 수 없습니다.');
+      }
     } catch (error) {
-      console.error('Failed to search address:', error);
-      alert('주소 검색에 실패했습니다. 다시 시도해주세요.');
+      console.error('Failed to geocode address:', error);
+      alert('주소 좌표 변환 중 오류가 발생했습니다.');
     } finally {
       setIsSearching(false);
     }
-  };
-
-  const handleSelect = (result: NominatimResult) => {
-    // Format the address a bit nicely if needed, or just use display_name
-    // display_name can be very long (e.g. "123, Bukchon-ro, Jongno-gu, Seoul, 03053, South Korea")
-    // But for now, we'll just use it and let the user edit it.
-    const lat = parseFloat(result.lat);
-    const lng = parseFloat(result.lon);
-    
-    // Extract structured components if available
-    const components: AddressComponents = {};
-    if (result.address) {
-      // Nominatim might return city, town, province, or state for the main level
-      components.city = result.address.city || result.address.town || result.address.province || result.address.state;
-      // Borough usually maps to gu (구) or gun (군)
-      components.district = result.address.borough;
-      // Suburb or neighbourhood maps to dong (동) or eup/myeon
-      components.suburb = result.address.suburb || result.address.neighbourhood || result.address.quarter;
-    }
-
-    // We pass it to the parent
-    onSelect(result.display_name, lat, lng, components);
-    
-    // Hide results and clear query
-    setShowResults(false);
-    setQuery('');
   };
 
   return (
@@ -96,65 +74,67 @@ export default function AddressSearch({
           placeholder={placeholder}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              handleSearch();
-            }
-          }}
+          onClick={() => setIsOpen(true)}
+          readOnly
         />
         <button 
           type="button" 
           className="btn btn-primary" 
-          onClick={handleSearch}
+          onClick={() => setIsOpen(true)}
           disabled={isSearching}
           style={{ whiteSpace: 'nowrap' }}
         >
           <Search size={18} style={{ marginRight: '4px' }} />
-          {isSearching ? '검색 중...' : buttonText}
+          {isSearching ? '좌표 변환 중...' : buttonText}
         </button>
       </div>
 
-      {showResults && (
-        <div style={{ 
-          position: 'absolute', 
-          top: '100%', 
-          left: 0, 
-          right: 0, 
-          marginTop: '4px',
-          background: '#fff', 
-          borderRadius: 'var(--radius-md)', 
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)', 
-          zIndex: 1000, 
-          maxHeight: '250px', 
-          overflowY: 'auto',
-          border: '1px solid var(--color-border)'
+      {isOpen && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
         }}>
-          {results.length === 0 ? (
-            <div style={{ padding: 'var(--space-3)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
-              검색 결과가 없습니다.
+          <div style={{
+            background: '#fff',
+            padding: '20px',
+            borderRadius: 'var(--radius-lg)',
+            width: '90%',
+            maxWidth: '500px',
+            position: 'relative',
+            boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
+          }}>
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              style={{
+                position: 'absolute',
+                top: '15px',
+                right: '15px',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 10
+              }}
+            >
+              <X size={24} />
+            </button>
+            <h3 style={{ marginTop: 0, marginBottom: '16px', paddingRight: '30px' }}>주소 검색</h3>
+            <div style={{ height: '400px', width: '100%' }}>
+              <DaumPostcodeEmbed onComplete={handleComplete} style={{ height: '100%' }} />
             </div>
-          ) : (
-            results.map((r) => (
-              <div 
-                key={r.place_id} 
-                onClick={() => handleSelect(r)}
-                style={{ 
-                  padding: 'var(--space-3)', 
-                  borderBottom: '1px solid var(--color-border)', 
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: 'var(--space-2)'
-                }}
-                onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-bg-secondary)'}
-                onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-              >
-                <MapPin size={18} style={{ color: 'var(--color-accent)', flexShrink: 0, marginTop: '2px' }} />
-                <span style={{ fontSize: '0.875rem', lineHeight: 1.4 }}>{r.display_name}</span>
-              </div>
-            ))
-          )}
+          </div>
         </div>
       )}
     </div>

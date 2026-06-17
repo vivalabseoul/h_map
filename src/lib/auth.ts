@@ -63,17 +63,13 @@ export async function signInWithGoogle(): Promise<void> {
     alert('Supabase is not configured. Please set up your .env.local file.');
     return;
   }
-  try {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: window.location.origin,
-      }
-    });
-  } catch (error) {
-    console.error('Google sign-in error:', error);
-    throw error;
-  }
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: window.location.origin,
+    }
+  });
+  if (error) throw error;
 }
 
 /**
@@ -84,14 +80,9 @@ export async function signInWithEmail(email: string, password: string): Promise<
     alert('Supabase is not configured.');
     return null;
   }
-  try {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
-    return data.user;
-  } catch (error) {
-    console.error('Email sign-in error:', error);
-    throw error;
-  }
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) throw error;
+  return data.user;
 }
 
 /**
@@ -108,8 +99,7 @@ export async function registerWithEmail(
     alert('Supabase is not configured.');
     return null;
   }
-  try {
-    const { data, error } = await supabase.auth.signUp({ 
+  const { data, error } = await supabase.auth.signUp({ 
       email, 
       password,
       options: {
@@ -160,10 +150,6 @@ export async function registerWithEmail(
       }
     }
     return data.user;
-  } catch (error) {
-    console.error('Registration error:', error);
-    throw error;
-  }
 }
 
 /**
