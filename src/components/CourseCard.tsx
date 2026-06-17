@@ -6,7 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { createBooking, createNotification } from '@/lib/database';
 import { formatPrice } from '@/lib/utils';
 import type { Course } from '@/types';
-import BookingModal from './BookingModal';
+import CourseDetailModal from './CourseDetailModal';
 import styles from './CourseCard.module.css';
 
 interface CourseCardProps {
@@ -16,46 +16,41 @@ interface CourseCardProps {
 
 export default function CourseCard({ course, region }: CourseCardProps) {
   const { locale, t } = useLanguage();
-  const { user, userRole } = useAuth();
-  const [applying, setApplying] = useState(false);
-  const [applied, setApplied] = useState(false);
   const [showModal, setShowModal] = useState(false);
-
-  const canApply = user && (userRole === 'member' || userRole === 'super_admin' || userRole === 'manager');
   const isOpen = course.status === 'open';
 
-  const handleApplyClick = () => {
-    if (!user || !canApply || applying) return;
+  const handleViewDetails = () => {
     setShowModal(true);
   };
 
-  const handleConfirmBooking = async (selectedDate: string, selectedTime: string, participants: number, phone: string, name: string) => {
-    if (!user) return;
-    setShowModal(false);
-    setApplying(true);
-    try {
-      const status = course.autoApprove ? 'confirmed' : 'pending';
-      await createBooking(course.id, user.id, name, selectedDate, selectedTime, participants, phone, status);
-      setApplied(true);
-      
-      if (status === 'pending') {
-        await createNotification(
-          course.instructorId,
-          t('booking.notification_new_booking'),
-          t('booking.notification_new_booking_desc').replace('{name}', name).replace('{course}', typeof course.title === 'string' ? course.title : course.title[locale] || 'the class'),
-          '/instructor/bookings'
-        );
-        alert(t('booking.alert_booking_complete_pending'));
-      } else {
-        alert(t('booking.alert_booking_complete'));
-      }
-    } catch (error) {
-      console.error('Booking error:', error);
-      alert(t('booking.alert_booking_error'));
-    } finally {
-      setApplying(false);
-    }
+  const isDescEmpty = (d: any) => {
+    if (!d) return true;
+    if (typeof d === 'string') return !d.trim();
+    return !d.intro?.trim() && !d.curriculum?.trim() && !d.included?.trim() && !d.precautions?.trim();
   };
+
+  const getIntroText = () => {
+    if (!course.description) return '';
+    let parsedDesc = course.description;
+    if (typeof course.description === 'string') {
+      try {
+        parsedDesc = JSON.parse(course.description);
+      } catch (e) {
+        return course.description;
+      }
+    }
+    
+    let desc = (parsedDesc as any)[locale];
+    if (isDescEmpty(desc)) desc = (parsedDesc as any).ko;
+    if (isDescEmpty(desc)) desc = (parsedDesc as any).en;
+    if (isDescEmpty(desc)) desc = parsedDesc;
+    
+    if (isDescEmpty(desc)) return '';
+    if (typeof desc === 'string') return desc;
+    
+    return desc.intro?.trim() || '';
+  };
+  const introText = getIntroText();
 
   const statusColor = course.status === 'open'
     ? { bg: 'var(--color-success-light)', color: 'var(--color-success)' }
@@ -92,14 +87,33 @@ export default function CourseCard({ course, region }: CourseCardProps) {
       )}
       
       <div className={styles.cardHeader} style={{ paddingTop: 'var(--space-4)' }}>
-        <h4 className={styles.courseTitle}>{course.title[locale]}</h4>
-        <span
-          className={styles.statusBadge}
-          style={{ background: statusColor.bg, color: statusColor.color }}
-        >
-          {course.status}
-        </span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <h4 className={styles.courseTitle} style={{ margin: 0 }}>{course.title[locale] || course.title.ko || course.title.en}</h4>
+          <span
+            className={styles.statusBadge}
+            style={{ background: statusColor.bg, color: statusColor.color, flexShrink: 0, marginLeft: 'var(--space-2)' }}
+          >
+            {course.status}
+          </span>
+        </div>
       </div>
+      
+      {introText && (
+        <p style={{ 
+          color: 'var(--color-text-secondary)', 
+          fontSize: 'var(--font-size-sm)', 
+          marginTop: '0',
+          marginBottom: 'var(--space-3)',
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          lineHeight: 1.5
+        }}>
+          {introText}
+        </p>
+      )}
 
       <div className={styles.courseInfo}>
         <div className={styles.infoItem}>
@@ -122,33 +136,21 @@ export default function CourseCard({ course, region }: CourseCardProps) {
 
       <div className={styles.cardFooter}>
         <span className={`${styles.spots}`}>
-          {t('workshop.spots_left').replace('spots left', '')} {course.maxParticipants} {t('booking.people')}
+          {t('workshop.spots_left').replace('spots left', '')} {course.maxParticipants}명 정원
         </span>
 
-        {applied ? (
-          <span className={styles.statusBadge} style={{ background: 'var(--color-success-light)', color: 'var(--color-success)' }}>
-            ✓ Applied
-          </span>
-        ) : !user ? (
-          <button className={styles.applyBtn} disabled>
-            {t('workshop.login_to_apply')}
-          </button>
-        ) : (
-          <button
-            className={`${styles.applyBtn} ${!isOpen ? styles.fullBtn : ''}`}
-            onClick={handleApplyClick}
-            disabled={!isOpen || !canApply || applying}
-          >
-            {applying ? '...' : !isOpen ? '마감됨' : t('workshop.apply')}
-          </button>
-        )}
+        <button
+          className={`${styles.applyBtn}`}
+          onClick={handleViewDetails}
+        >
+          {locale === 'ko' ? '상세보기' : 'View Details'}
+        </button>
       </div>
 
       {showModal && (
-        <BookingModal 
+        <CourseDetailModal 
           course={course} 
           onClose={() => setShowModal(false)} 
-          onConfirm={handleConfirmBooking} 
         />
       )}
     </div>

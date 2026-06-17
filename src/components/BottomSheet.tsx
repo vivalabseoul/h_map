@@ -282,7 +282,7 @@ export default function BottomSheet({ workshop, allWorkshops, onWorkshopClick, o
               <h3 className={styles.sectionTitle}>{t('workshop.courses')}</h3>
               <div className={styles.courseList}>
                 {courses.map(course => (
-                  <CourseCard key={course.id} course={course} region={workshop.region} />
+                  <CourseCard key={course.id} course={{ ...course, workshopName: workshop.name }} region={workshop.region} />
                 ))}
               </div>
             </>

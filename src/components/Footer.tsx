@@ -20,7 +20,7 @@ export default function Footer() {
           <Link href="/faq" className={styles.link}>{t('Faq') || 'FAQ'}</Link>
           <Link href="/terms" className={styles.link}>{t('Terms') || 'Terms'}</Link>
           <Link href="/privacy" className={styles.link}>{t('Privacy') || 'Privacy'}</Link>
-          <Link href="/contact" className={styles.link}>{t('Contact') || 'Contact Us'}</Link>
+          <Link href="/contact" className={styles.link}>{t('Contact(문의하기)') || 'Contact Us'}</Link>
         </div>
       </div>
     </footer>

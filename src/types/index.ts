@@ -54,6 +54,7 @@ export interface Workshop {
   tags: string[];
   languages?: string[];
   phone: string;
+  email?: string;
   website?: string;
   snsLinks?: {
     instagram?: string;
@@ -97,6 +98,14 @@ export interface FleaMarket {
 // ==========================================
 // Course
 // ==========================================
+export interface CourseDescription {
+  intro: string;
+  curriculum: string;
+  included: string;
+  precautions: string;
+}
+
+// ==========================================
 export interface Course {
   id: string;
   workshopId: string;
@@ -104,7 +113,7 @@ export interface Course {
   instructorId: string;
   instructorName?: string;
   title: Record<Locale, string>;
-  description: Record<Locale, string>;
+  description: Record<Locale, CourseDescription>;
   price: string;
   duration: string;
   maxParticipants: number;
@@ -115,6 +124,7 @@ export interface Course {
   endDate: string;
   availableDays: number[];
   availableTimes: string[];
+  externalLink?: string;
   autoApprove?: boolean;
   createdAt: string;
 }
@@ -155,7 +165,7 @@ export interface Review {
 // ==========================================
 // Inquiry (Contact Us)
 // ==========================================
-export type InquiryCategory = 'booking' | 'creation' | 'registration' | 'other';
+export type InquiryCategory = 'booking' | 'creation' | 'registration' | 'studio' | 'other';
 export type InquiryStatus = 'pending' | 'resolved';
 
 export interface Inquiry {

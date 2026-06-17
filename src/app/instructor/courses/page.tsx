@@ -72,6 +72,41 @@ export default function InstructorCoursesPage() {
                     <div style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>
                       {c.title[locale] || c.title.ko || c.title.en}
                     </div>
+                    {(() => {
+                      const getIntro = (c: any) => {
+                        const isDescEmpty = (d: any) => {
+                          if (!d) return true;
+                          if (typeof d === 'string') return !d.trim();
+                          return !d.intro?.trim() && !d.curriculum?.trim() && !d.included?.trim() && !d.precautions?.trim();
+                        };
+
+                        if (!c.description) return '';
+                        let parsedDesc = c.description;
+                        if (typeof c.description === 'string') {
+                          try {
+                            parsedDesc = JSON.parse(c.description);
+                          } catch (e) {
+                            return c.description;
+                          }
+                        }
+                        
+                        let desc = (parsedDesc as any)[locale];
+                        if (isDescEmpty(desc)) desc = (parsedDesc as any).ko;
+                        if (isDescEmpty(desc)) desc = (parsedDesc as any).en;
+                        if (isDescEmpty(desc)) desc = parsedDesc;
+
+                        if (isDescEmpty(desc)) return '';
+                        if (typeof desc === 'string') return desc;
+                        
+                        return desc.intro?.trim() || '';
+                      };
+                      const intro = getIntro(c);
+                      return intro ? (
+                        <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', marginTop: '4px', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                          {intro}
+                        </div>
+                      ) : null;
+                    })()}
                     {c.workshopName && (
                       <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
                         {(c.workshopName as any)[locale] || (c.workshopName as any).ko || (c.workshopName as any).en}

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { createCourse, getWorkshopsByOwner } from '@/lib/database';
-import type { Workshop, Locale } from '@/types';
+import type { Workshop, Locale, CourseDescription } from '@/types';
 import ImageUpload from '@/components/ImageUpload';
 
 export default function CreateCoursePage() {
@@ -15,7 +15,12 @@ export default function CreateCoursePage() {
   // Form states
   const [activeTab, setActiveTab] = useState<Locale>('ko');
   const [title, setTitle] = useState<Record<Locale, string>>({ en: '', ja: '', zh: '', ko: '' });
-  const [description, setDescription] = useState<Record<Locale, string>>({ en: '', ja: '', zh: '', ko: '' });
+  const [description, setDescription] = useState<Record<Locale, CourseDescription>>({ 
+    en: { intro: '', curriculum: '', included: '', precautions: '' }, 
+    ja: { intro: '', curriculum: '', included: '', precautions: '' }, 
+    zh: { intro: '', curriculum: '', included: '', precautions: '' }, 
+    ko: { intro: '', curriculum: '', included: '', precautions: '' } 
+  });
   const [workshopId, setWorkshopId] = useState('');
   const [price, setPrice] = useState('');
   const [duration, setDuration] = useState('1 Hour');
@@ -26,6 +31,7 @@ export default function CreateCoursePage() {
   const [availableTimes, setAvailableTimes] = useState<string[]>([]);
   const [newTime, setNewTime] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [externalLink, setExternalLink] = useState('');
   const [autoApprove, setAutoApprove] = useState(false);
 
   const toggleDay = (day: number) => {
@@ -80,6 +86,7 @@ export default function CreateCoursePage() {
         endDate: endDate,
         availableDays: availableDays,
         availableTimes: availableTimes,
+        externalLink: externalLink,
         autoApprove: autoApprove,
       });
       router.push('/instructor/courses');
@@ -91,9 +98,15 @@ export default function CreateCoursePage() {
     }
   };
 
-  const handleLangChange = (field: 'title' | 'description', value: string) => {
-    if (field === 'title') setTitle(prev => ({ ...prev, [activeTab]: value }));
-    if (field === 'description') setDescription(prev => ({ ...prev, [activeTab]: value }));
+  const handleLangChange = (field: 'title' | 'intro' | 'curriculum' | 'included' | 'precautions', value: string) => {
+    if (field === 'title') {
+      setTitle(prev => ({ ...prev, [activeTab]: value }));
+    } else {
+      setDescription(prev => ({ 
+        ...prev, 
+        [activeTab]: { ...prev[activeTab], [field]: value } 
+      }));
+    }
   };
 
   const tabs: { key: Locale; label: string }[] = [
@@ -134,18 +147,17 @@ export default function CreateCoursePage() {
               </select>
             </div>
 
-            <div className="form-group" style={{ marginBottom: 'var(--space-6)', padding: 'var(--space-4)', background: 'var(--color-bg-alt)', borderRadius: 'var(--radius-md)' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', cursor: 'pointer', fontWeight: 600 }}>
-                <input 
-                  type="checkbox" 
-                  checked={autoApprove} 
-                  onChange={(e) => setAutoApprove(e.target.checked)} 
-                  style={{ width: '18px', height: '18px' }}
-                />
-                자동 예약 확정 (Auto Approve Bookings)
-              </label>
-              <p style={{ marginTop: 'var(--space-1)', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', paddingLeft: '26px' }}>
-                체크 해제 시, 회원이 예약을 신청하면 승인 대기 상태가 되며 강사가 직접 확정해야 합니다.
+            <div className="form-group" style={{ marginBottom: 'var(--space-6)' }}>
+              <label className="form-label">외부 예약 링크 (External Booking Link) - 권장</label>
+              <input 
+                type="url" 
+                className="form-input" 
+                value={externalLink} 
+                onChange={(e) => setExternalLink(e.target.value)} 
+                placeholder="예: https://booking.naver.com/... (선택사항)" 
+              />
+              <p style={{ marginTop: 'var(--space-1)', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                이 링크를 입력하면, 자체 예약 시스템 대신 유저가 해당 링크로 바로 이동합니다. (네이버 예약, 인스타그램 등)
               </p>
             </div>
 
@@ -181,14 +193,48 @@ export default function CreateCoursePage() {
               />
             </div>
 
-            <div className="form-group" style={{ marginBottom: 'var(--space-6)' }}>
-              <label className="form-label">워크샵 상세 설명 (Description) - {activeTab.toUpperCase()}</label>
+            <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
+              <label className="form-label">클래스 소개 (Intro) - {activeTab.toUpperCase()}</label>
               <textarea
                 className="form-input form-textarea"
-                value={description[activeTab]}
-                onChange={(e) => handleLangChange('description', e.target.value)}
-                placeholder="워크샵 커리큘럼, 준비물 등을 상세히 적어주세요."
+                style={{ minHeight: '80px' }}
+                value={description[activeTab].intro}
+                onChange={(e) => handleLangChange('intro', e.target.value)}
+                placeholder="클래스에 대한 전반적인 소개를 적어주세요."
                 required={activeTab === 'ko'}
+              />
+            </div>
+
+            <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
+              <label className="form-label">커리큘럼 소개 (Curriculum) - {activeTab.toUpperCase()}</label>
+              <textarea
+                className="form-input form-textarea"
+                style={{ minHeight: '80px' }}
+                value={description[activeTab].curriculum}
+                onChange={(e) => handleLangChange('curriculum', e.target.value)}
+                placeholder="시간대별 혹은 단계별 진행 과정을 적어주세요."
+              />
+            </div>
+
+            <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
+              <label className="form-label">포함 내역 (Included Items) - {activeTab.toUpperCase()}</label>
+              <textarea
+                className="form-input form-textarea"
+                style={{ minHeight: '60px' }}
+                value={description[activeTab].included}
+                onChange={(e) => handleLangChange('included', e.target.value)}
+                placeholder="재료비, 포장비, 다과 등 수강료에 포함된 내역을 적어주세요."
+              />
+            </div>
+
+            <div className="form-group" style={{ marginBottom: 'var(--space-6)' }}>
+              <label className="form-label">주의사항 (Precautions) - {activeTab.toUpperCase()}</label>
+              <textarea
+                className="form-input form-textarea"
+                style={{ minHeight: '60px' }}
+                value={description[activeTab].precautions}
+                onChange={(e) => handleLangChange('precautions', e.target.value)}
+                placeholder="복장 제한, 주차 가능 여부, 지각 시 유의사항 등을 적어주세요."
               />
             </div>
 
@@ -224,12 +270,12 @@ export default function CreateCoursePage() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
               <div className="form-group">
-                <label className="form-label">시작 기간 (Start Date)</label>
-                <input type="date" className="form-input" value={startDate} onChange={(e) => setStartDate(e.target.value)} required />
+                <label className="form-label">시작 기간 (Start Date) - 선택사항</label>
+                <input type="date" className="form-input" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
               </div>
               <div className="form-group">
-                <label className="form-label">종료 기간 (End Date)</label>
-                <input type="date" className="form-input" value={endDate} onChange={(e) => setEndDate(e.target.value)} required />
+                <label className="form-label">종료 기간 (End Date) - 선택사항</label>
+                <input type="date" className="form-input" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
               </div>
             </div>
 

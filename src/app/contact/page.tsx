@@ -16,6 +16,7 @@ export default function ContactPage() {
     booking: '강의예약 (Workshop Booking)',
     creation: '강의개설 (Workshop Creation)',
     registration: '회원가입 (Registration)',
+    studio: '공방관련 (Studio)',
     other: '기타 (Other)',
   };
 

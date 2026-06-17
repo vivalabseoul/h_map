@@ -27,6 +27,7 @@ export default function CreateStudioPage() {
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
   const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [website, setWebsite] = useState('');
   const [snsInstagram, setSnsInstagram] = useState('');
   const [snsYoutube, setSnsYoutube] = useState('');
@@ -75,6 +76,7 @@ export default function CreateStudioPage() {
         tags: ['Beginner_Friendly', ...addressTags], // Mock default tags
         languages,
         phone,
+        email,
         website,
         snsLinks: {
           instagram: snsInstagram,
@@ -240,9 +242,14 @@ export default function CreateStudioPage() {
               <input type="text" className="form-input" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="010-1234-5678" />
             </div>
             <div className="form-group">
-              <label className="form-label">홈페이지 (Website)</label>
-              <input type="url" className="form-input" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://" />
+              <label className="form-label">이메일 (Email)</label>
+              <input type="email" className="form-input" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="hello@example.com" />
             </div>
+          </div>
+
+          <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
+            <label className="form-label">홈페이지 (Website)</label>
+            <input type="url" className="form-input" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://" />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>

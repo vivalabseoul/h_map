@@ -109,8 +109,8 @@ const faqData: FAQ[] = [
       en: 'How do I apply to become a creator (instructor)?',
     },
     answer: {
-      ko: '일반 회원으로 가입하신 후, 서비스 관리자 이메일(vivalabseoul@gmail.com)로 크리에이터 권한 변경을 요청해 주시면 내부 검토 후 승인해 드립니다.',
-      en: 'After registering as a general member, please email the administrator (vivalabseoul@gmail.com) to request creator permissions. We will approve it after a brief review.',
+      ko: '회원가입 시 회원 타입을 "크리에이터"로 선택하여 가입해 주시면 됩니다. 이후 관리자의 확인 절차를 거쳐 권한이 승인됩니다.',
+      en: 'Please select "Creator" as your member type when signing up for an account. Your permissions will be approved after an admin review.',
     }
   },
   {

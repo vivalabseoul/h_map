@@ -34,6 +34,7 @@ CREATE TABLE public.workshops (
   review_count INTEGER DEFAULT 0,
   tags TEXT[] DEFAULT '{}',
   phone TEXT NOT NULL,
+  email TEXT,
   website TEXT,
   sns_links JSONB,
   region TEXT NOT NULL,
@@ -59,6 +60,7 @@ CREATE TABLE public.courses (
   available_days INTEGER[] DEFAULT '{}',
   available_times TEXT[] DEFAULT '{}',
   image_url TEXT,
+  external_link TEXT,
   auto_approve BOOLEAN DEFAULT false,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

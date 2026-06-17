@@ -30,6 +30,7 @@ export default function AdminInquiriesPage() {
       booking: '강의예약',
       creation: '강의개설',
       registration: '회원가입',
+      studio: '공방관련',
       other: '기타'
     };
     return map[cat] || cat;

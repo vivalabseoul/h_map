@@ -33,7 +33,7 @@ const mapWorkshop = (d: any): Workshop => ({
   images: safeParse(d.images) || [], rating: d.rating, reviewCount: d.review_count,
   tags: safeParse(d.tags)?.filter((t:string) => !t.startsWith('lang:')) || [], 
   languages: safeParse(d.tags)?.filter((t:string) => t.startsWith('lang:')).map((t:string) => t.replace('lang:', '')) || safeParse(d.languages) || [], 
-  phone: d.phone, website: d.website, snsLinks: safeParse(d.sns_links),
+  phone: d.phone, email: d.email, website: d.website, snsLinks: safeParse(d.sns_links),
   region: d.region, status: d.status, createdAt: d.created_at,
 });
 const mapCourse = (d: any): Course => ({
@@ -42,6 +42,7 @@ const mapCourse = (d: any): Course => ({
   maxParticipants: d.max_participants, currentParticipants: d.current_participants,
   status: d.status, imageUrl: d.image_url, startDate: d.start_date, endDate: d.end_date,
   availableDays: d.available_days || [], availableTimes: d.available_times || [],
+  externalLink: d.external_link,
   autoApprove: d.auto_approve ?? false,
   createdAt: d.created_at,
 });
@@ -125,7 +126,7 @@ export async function createWorkshop(data: Omit<Workshop, 'id' | 'createdAt' | '
   const insertData = {
     owner_id: data.ownerId, owner_name: data.ownerName, name: data.name, category: data.category,
     description: data.description, address: data.address, lat: data.lat, lng: data.lng,
-    images: data.images, tags: [...(data.tags || []), ...(data.languages?.map(l => `lang:${l}`) || [])], phone: data.phone, website: data.website,
+    images: data.images, tags: [...(data.tags || []), ...(data.languages?.map(l => `lang:${l}`) || [])], phone: data.phone, email: data.email, website: data.website,
     sns_links: data.snsLinks, region: data.region, status: data.status,
   };
   const { data: res, error } = await supabase.from('workshops').insert(insertData).select('id').single();
@@ -159,6 +160,7 @@ export async function updateWorkshop(id: string, data: Partial<Workshop>): Promi
     updateData.tags = [...existingTags, ...newLangs];
   }
   if (data.phone) updateData.phone = data.phone;
+  if (data.email !== undefined) updateData.email = data.email;
   
   const { error } = await supabase.from('workshops').update(updateData).eq('id', id);
   if (error) {
@@ -232,6 +234,7 @@ export async function createCourse(data: Omit<Course, 'id' | 'createdAt' | 'curr
     max_participants: data.maxParticipants, status: data.status, image_url: data.imageUrl,
     start_date: data.startDate, end_date: data.endDate, 
     available_days: data.availableDays, available_times: data.availableTimes,
+    external_link: data.externalLink,
     auto_approve: data.autoApprove ?? false,
   };
   const { data: res, error } = await supabase.from('courses').insert(insertData).select('id').single();
@@ -251,6 +254,7 @@ export async function updateCourse(id: string, data: Partial<Course>): Promise<v
   if (data.endDate) updateData.end_date = data.endDate;
   if (data.availableDays) updateData.available_days = data.availableDays;
   if (data.availableTimes) updateData.available_times = data.availableTimes;
+  if (data.externalLink !== undefined) updateData.external_link = data.externalLink;
   if (data.autoApprove !== undefined) updateData.auto_approve = data.autoApprove;
   await supabase.from('courses').update(updateData).eq('id', id);
 }
