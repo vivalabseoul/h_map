@@ -122,7 +122,13 @@ export async function getWorkshopById(id: string): Promise<Workshop | null> {
 }
 
 export async function createWorkshop(data: Omit<Workshop, 'id' | 'createdAt' | 'rating' | 'reviewCount'>): Promise<string> {
-  if (!supabase) throw new Error('Supabase not configured');
+  if (!supabase || !isSupabaseConfigured) {
+    const newWorkshop = { ...data, id: `w_${Date.now()}`, createdAt: new Date().toISOString(), rating: 0, reviewCount: 0 };
+    const local = getLocalWorkshops();
+    local.unshift(newWorkshop as Workshop);
+    saveLocalWorkshops(local);
+    return newWorkshop.id;
+  }
   const insertData = {
     owner_id: data.ownerId, owner_name: data.ownerName, name: data.name, category: data.category,
     description: data.description, address: data.address, lat: data.lat, lng: data.lng,
@@ -142,7 +148,15 @@ export async function createWorkshop(data: Omit<Workshop, 'id' | 'createdAt' | '
 }
 
 export async function updateWorkshop(id: string, data: Partial<Workshop>): Promise<void> {
-  if (!supabase) throw new Error('Supabase not configured');
+  if (!supabase || !isSupabaseConfigured) {
+    const local = getLocalWorkshops();
+    const idx = local.findIndex(w => w.id === id);
+    if (idx > -1) {
+      local[idx] = { ...local[idx], ...data };
+      saveLocalWorkshops(local);
+    }
+    return;
+  }
   const updateData: any = {};
   if (data.ownerId) {
     updateData.owner_id = data.ownerId;
@@ -161,6 +175,11 @@ export async function updateWorkshop(id: string, data: Partial<Workshop>): Promi
   }
   if (data.phone) updateData.phone = data.phone;
   if (data.email !== undefined) updateData.email = data.email;
+  if (data.website !== undefined) updateData.website = data.website;
+  if (data.snsLinks !== undefined) updateData.sns_links = data.snsLinks;
+  if (data.region) updateData.region = data.region;
+  if (data.lat !== undefined) updateData.lat = data.lat;
+  if (data.lng !== undefined) updateData.lng = data.lng;
   
   const { error } = await supabase.from('workshops').update(updateData).eq('id', id);
   if (error) {
