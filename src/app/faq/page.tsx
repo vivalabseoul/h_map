@@ -47,6 +47,34 @@ const faqData: FAQ[] = [
     }
   },
   {
+    id: 'm3_new',
+    role: 'member',
+    category: 'booking',
+    question: {
+      ko: '클래스 예약은 어떻게 하나요?',
+      en: 'How do I book a class?',
+    },
+    answer: {
+      ko: '저희 플랫폼에서는 공방의 클래스 정보와 일정 등을 안내해 드리고 있습니다. 다만 직접적인 예약 및 결제 서비스는 아직 제공하지 않으므로, 클래스 상세 페이지에 안내된 외부 예약 링크나 공방 연락처를 통해 직접 예약해 주셔야 합니다.',
+      en: 'We provide detailed class information and schedules. However, direct booking and payment services are not yet supported on our platform. Please book directly through the external links or contact info provided on the class page.',
+    }
+  },
+  {
+    id: 'm4_new',
+    role: 'member',
+    category: 'cancellation',
+    question: {
+      ko: '예약 확인 및 변경/취소는 어떻게 하나요?',
+      en: 'How can I check, change, or cancel my booking?',
+    },
+    answer: {
+      ko: '저희 플랫폼에서는 예약 진행 서비스를 제공하지 않으므로, 예약 조회나 변경, 취소 및 환불 처리는 예약을 진행하신 공방 측에 직접 문의하셔야 합니다.',
+      en: 'Since we do not process bookings directly, please contact the studio directly to check, change, or cancel your reservation.',
+    }
+  },
+  /*
+  // --- 기존 FAQ 내용 (현재 사용 안함 - 외부 링크 방식으로 변경됨) ---
+  {
     id: 'm3',
     role: 'member',
     category: 'booking',
@@ -98,6 +126,7 @@ const faqData: FAQ[] = [
       en: 'Unfortunately, direct rescheduling is not supported yet. Please cancel and rebook, or call the studio directly to adjust your schedule.',
     }
   },
+  */
 
   // --- Creators ---
   {
@@ -126,6 +155,34 @@ const faqData: FAQ[] = [
       en: 'Yes, absolutely! You can manage multiple branches by clicking "Create Workshop" in the [My Studios] menu of the creator dashboard.',
     }
   },
+  {
+    id: 'c3_new',
+    role: 'creator',
+    category: 'creation',
+    question: {
+      ko: '클래스의 예약 인원 제한이나 상세 일정은 어떻게 관리하나요?',
+      en: 'How do I manage the participant limit or schedule for a class?',
+    },
+    answer: {
+      ko: '저희 플랫폼을 통해 회원들에게 클래스의 상세 정보와 일정 등을 안내해 드릴 수 있습니다. 다만 실시간 예약 결제 및 인원 관리 서비스는 아직 제공되지 않으므로, 안내해 주신 외부 링크나 공방 자체 채널을 통해 예약을 접수하고 일정을 관리해 주셔야 합니다.',
+      en: 'You can display detailed class info and schedules on our platform. However, since we do not yet provide real-time booking and participant management services, please manage your bookings directly via your external links or own channels.',
+    }
+  },
+  {
+    id: 'c4_new',
+    role: 'creator',
+    category: 'management',
+    question: {
+      ko: '예약된 수강생 목록 확인 및 예약 관리는 어떻게 하나요?',
+      en: 'How do I check booked students and manage reservations?',
+    },
+    answer: {
+      ko: '플랫폼 내에서 자체적인 예약 진행 시스템을 아직 제공하지 않고 있습니다. 수강생 명단 확인, 예약 승인 및 취소 처리는 선생님께서 직접 운영하시는 외부 예약 채널을 통해 관리해 주시기 바랍니다.',
+      en: 'We do not yet provide an internal booking system. Please check your student lists and manage cancellations directly through your own external booking channels.',
+    }
+  }
+  /*
+  // --- 기존 관리 기능 FAQ (현재 사용 안함 - 외부 링크 방식으로 변경됨) ---
   {
     id: 'c3',
     role: 'creator',
@@ -165,6 +222,7 @@ const faqData: FAQ[] = [
       en: 'Yes. By clicking the "Cancel" button on the right side of the [Bookings] page, the reservation is immediately cancelled. (We recommend contacting the student beforehand.)',
     }
   }
+  */
 ];
 
 const categoryLabels: Record<Category, Record<string, string>> = {
