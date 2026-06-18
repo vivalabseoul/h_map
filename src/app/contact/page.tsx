@@ -89,10 +89,17 @@ export default function ContactPage() {
             </div>
 
             <div className="form-group" style={{ marginBottom: 'var(--space-6)' }}>
-              <label className="form-label">내용 (Content)</label>
+              <label className="form-label">
+                내용 (Content)
+                {category === 'studio' && (
+                  <span style={{ color: 'var(--color-primary)', fontSize: '0.85rem', marginLeft: '8px', fontWeight: 'normal' }}>
+                    * 공방 관련 문의 시 <strong>공방명</strong>을 기입해 주세요.
+                  </span>
+                )}
+              </label>
               <textarea
                 className="form-input form-textarea"
-                placeholder="상세한 문의 내용을 입력해주세요"
+                placeholder={category === 'studio' ? "상세한 문의 내용과 함께 '공방명'을 꼭 입력해주세요." : "상세한 문의 내용을 입력해주세요"}
                 style={{ minHeight: '150px' }}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}

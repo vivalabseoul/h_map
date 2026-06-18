@@ -30,14 +30,16 @@ export default function RegisterWorkshopModal({ onClose, onSuccess }: RegisterWo
     try {
       const content = `
 공방/신청자 이름: ${formData.name}
-연락처: ${formData.contact}
+연락처(전화번호 등): ${formData.contact || '미입력'}
 SNS/인스타: ${formData.sns}
       `.trim();
 
       await createInquiry({
         userId: 'guest',
         userName: formData.name,
-        userEmail: formData.contact || 'guest@example.com',
+        // 사용자가 이메일을 입력하지 않으므로 기본 이메일을 관리자 메일로 설정합니다.
+        // 메일 발송 트리거가 동작하더라도 유효한 메일이므로 반송되지 않으며, 관리자에게 알림이 가는 효과도 있습니다.
+        userEmail: 'vivalabseoul@gmail.com', 
         title: '[간편 등록 신청] 새로운 공방 등록 요청',
         category: 'registration',
         content,
@@ -83,7 +85,7 @@ SNS/인스타: ${formData.sns}
             <label><Phone size={16} /> 연락처 (선택)</label>
             <input
               type="text"
-              placeholder="이메일 또는 전화번호"
+              placeholder="전화번호나 이메일 편하신 걸로 적어주세요"
               value={formData.contact}
               onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
             />

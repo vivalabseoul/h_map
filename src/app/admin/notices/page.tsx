@@ -184,9 +184,13 @@ export default function AdminNoticesPage() {
                   style={styles.input} 
                   value={title} 
                   onChange={e => setTitle(e.target.value)} 
+                  maxLength={100}
                   required 
                   placeholder="공지사항 제목"
                 />
+                <div style={{ textAlign: 'right', fontSize: '12px', color: title.length >= 100 ? '#ef4444' : '#6b7280', marginTop: '4px' }}>
+                  {title.length} / 100자
+                </div>
               </div>
               <div style={styles.formGroup}>
                 <label style={styles.label}>내용</label>
@@ -194,9 +198,13 @@ export default function AdminNoticesPage() {
                   style={styles.textarea} 
                   value={content} 
                   onChange={e => setContent(e.target.value)} 
+                  maxLength={2000}
                   required 
-                  placeholder="공지사항 내용"
+                  placeholder="공지사항 내용 (최대 2000자)"
                 />
+                <div style={{ textAlign: 'right', fontSize: '12px', color: content.length >= 2000 ? '#ef4444' : '#6b7280', marginTop: '4px' }}>
+                  {content.length} / 2000자
+                </div>
               </div>
               
               <div style={{ display: 'flex', gap: '20px', marginBottom: '20px' }}>
