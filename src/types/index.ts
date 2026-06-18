@@ -257,7 +257,7 @@ export const REGIONS: { key: Region; label: Record<Locale, string>; emoji: strin
   // Global
   { key: 'all', label: { en: 'Global', ja: 'グローバル', zh: '全球', ko: '전체' }, emoji: '🌍', available: true, center: [20, 0], zoom: 2 },
   // Asia
-  { key: 'korea', label: { en: 'Korea', ja: '韓国', zh: '韩国', ko: '한국' }, emoji: '🇰🇷', available: true, center: [36.3, 127.8], zoom: 7 },
+  { key: 'korea', label: { en: 'Korea', ja: '韓国', zh: '韩国', ko: '한국' }, emoji: '🇰🇷', available: true, center: [35.9, 127.8], zoom: 7.5 },
   { key: 'japan', label: { en: 'Japan', ja: '日本', zh: '日本', ko: '일본' }, emoji: '🇯🇵', available: true, center: [36.2, 138.2], zoom: 5 },
   { key: 'taiwan', label: { en: 'Taiwan', ja: '台湾', zh: '台湾', ko: '대만' }, emoji: '🇹🇼', available: true, center: [23.6, 120.9], zoom: 7 },
   { key: 'hongkong', label: { en: 'Hong Kong', ja: '香港', zh: '香港', ko: '홍콩' }, emoji: '🇭🇰', available: true, center: [22.3, 114.1], zoom: 10 },

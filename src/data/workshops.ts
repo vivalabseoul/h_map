@@ -743,23 +743,4 @@ export const demoInquiries: import('@/types').Inquiry[] = [
   }
 ];
 
-export const demoNotices: import('@/types').Notice[] = [
-  {
-    id: 'n1',
-    title: '[안내] 새로운 도자기 공방이 오픈했습니다!',
-    content: '익선동에 새로운 클래스가 많이 추가되었습니다. 지금 확인해보세요.',
-    isMain: true,
-    isActive: true,
-    authorName: '관리자',
-    createdAt: '2026-06-15T10:00:00Z',
-  },
-  {
-    id: 'n2',
-    title: '[이벤트] 여름맞이 리뷰 작성 이벤트',
-    content: '체험 리뷰를 남겨주시면 추첨을 통해 10% 할인 쿠폰을 드립니다.',
-    isMain: false,
-    isActive: true,
-    authorName: '관리자',
-    createdAt: '2026-06-10T09:00:00Z',
-  }
-];
+export const demoNotices: import('@/types').Notice[] = [];

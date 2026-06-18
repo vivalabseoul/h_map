@@ -11,6 +11,17 @@ export default function ContactPage() {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState<InquiryCategory>('booking');
   const [content, setContent] = useState('');
+  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+
+  React.useEffect(() => {
+    if (user?.email) {
+      setEmail(user.email);
+    }
+    if (user?.displayName) {
+      setName(user.displayName);
+    }
+  }, [user?.email, user?.displayName]);
 
   const categoryLabels: Record<InquiryCategory, string> = {
     booking: '강의예약 (Workshop Booking)',
@@ -28,8 +39,8 @@ export default function ContactPage() {
       // 1. Save to Mock DB so Admin can reply
       await createInquiry({
         userId: user?.id || 'guest',
-        userName: user?.displayName || user?.email?.split('@')[0] || '비회원',
-        userEmail: user?.email || 'guest@example.com',
+        userName: name || user?.displayName || user?.email?.split('@')[0] || email.split('@')[0] || '비회원',
+        userEmail: email,
         title,
         category,
         content,
@@ -63,6 +74,30 @@ export default function ContactPage() {
           </p>
 
           <form onSubmit={handleSubmit}>
+            <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
+              <label className="form-label">이름 (Name)</label>
+              <input
+                type="text"
+                className="form-input"
+                placeholder="문의자 성함을 입력해주세요"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
+              <label className="form-label">이메일 (Email)</label>
+              <input
+                type="email"
+                className="form-input"
+                placeholder="답변 받으실 이메일 주소를 입력해주세요"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+
             <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
               <label className="form-label">항목 (Category)</label>
               <select 
