@@ -61,9 +61,9 @@ export default function FilterBar({
   let buttonLabel: React.ReactNode = t('filters.all');
   if (activeCategory !== 'all') {
     if (selectedCatData) {
-      buttonLabel = <><span className={styles.chipEmoji}>{selectedCatData.emoji}</span>{getCatLabel(activeCategory)}</>;
+      buttonLabel = <>{getCatLabel(activeCategory)}</>;
     } else {
-      buttonLabel = <><span className={styles.chipEmoji}>🏷️</span>{activeCategory}</>;
+      buttonLabel = <>{activeCategory}</>;
     }
   }
 
@@ -112,7 +112,7 @@ export default function FilterBar({
                 onClick={() => { onCategoryChange(cat.key); setOpenDropdown(null); }}
                 style={{ textAlign: 'left', padding: 'var(--space-2)', background: activeCategory === cat.key ? 'var(--color-bg-secondary)' : 'transparent', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
               >
-                {cat.emoji} {getCatLabel(cat.key)}
+                {getCatLabel(cat.key)}
               </button>
             ))}
           </div>
@@ -122,7 +122,7 @@ export default function FilterBar({
       {/* 3. Language Dropdown */}
       <div className={styles.languageFilter} style={{ position: 'relative' }}>
         <button className={styles.chip} onClick={() => toggleDropdown('language')} style={{ background: openDropdown === 'language' ? 'var(--color-bg-secondary)' : '#fff' }}>
-          {activeLanguage === 'all' ? '🌐 Language' : `🌐 ${activeLanguage}`}
+          {activeLanguage === 'all' ? '🌐 All' : `🌐 ${activeLanguage}`}
           <ChevronDown size={14} style={{ marginLeft: 4 }} />
         </button>
         {openDropdown === 'language' && (
