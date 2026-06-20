@@ -2,12 +2,14 @@
 import React, { useEffect, useState } from 'react';
 import { Users, Store, BookOpen, Calendar } from 'lucide-react';
 import { getAllUsers, getWorkshops, getCourses, getInquiries } from '@/lib/database';
+import type { Workshop } from '@/types';
 import Toast from '@/components/Toast';
 import { useLanguage } from '@/context/LanguageContext';
 
 export default function AdminDashboard() {
-  const { t } = useLanguage();
+  const { locale, t } = useLanguage();
   const [stats, setStats] = useState({ users: 0, workshops: 0, courses: 0, bookings: 0 });
+  const [allWorkshops, setAllWorkshops] = useState<Workshop[]>([]);
   const [pendingRegistrations, setPendingRegistrations] = useState(0);
   const [showToast, setShowToast] = useState(false);
 
@@ -25,6 +27,7 @@ export default function AdminDashboard() {
         courses: courses.length,
         bookings: courses.reduce((acc, c) => acc + c.currentParticipants, 0),
       });
+      setAllWorkshops(workshops);
 
       const pendingReg = inquiries.filter(i => i.status === 'pending' && i.category === 'registration').length;
       if (pendingReg > 0) {
@@ -72,6 +75,56 @@ export default function AdminDashboard() {
           onClose={() => setShowToast(false)}
         />
       )}
+
+      {/* Ranking Section */}
+      <div style={{ marginTop: 'var(--space-8)' }}>
+        <h2 style={{ fontSize: '1.25rem', marginBottom: 'var(--space-4)', color: 'var(--color-text-primary)' }}>
+          🔥 인기 공방 (외부 링크 클릭 수 랭킹)
+        </h2>
+        <div className="table-wrapper">
+          <table className="table">
+            <thead>
+              <tr>
+                <th style={{ width: '60px', textAlign: 'center' }}>순위</th>
+                <th>공방명</th>
+                <th>지역</th>
+                <th style={{ textAlign: 'right' }}>조회 수(클릭)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {allWorkshops
+                .sort((a, b) => (b.totalClicks || 0) - (a.totalClicks || 0))
+                .slice(0, 10)
+                .map((w, index) => (
+                  <tr key={w.id}>
+                    <td style={{ textAlign: 'center', fontWeight: 'bold', color: index < 3 ? 'var(--color-accent)' : 'inherit' }}>
+                      {index + 1}
+                    </td>
+                    <td style={{ fontWeight: 500 }}>{w.name[locale] || w.name.ko || w.name.en}</td>
+                    <td style={{ textTransform: 'capitalize', color: 'var(--color-text-secondary)' }}>{w.region.replace('_', ' ')}</td>
+                    <td style={{ textAlign: 'right' }}>
+                      <div style={{ fontWeight: 600, color: 'var(--color-primary)' }}>
+                        {(w.totalClicks || 0).toLocaleString()} 회
+                      </div>
+                      <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '4px', display: 'flex', justifyContent: 'flex-end', gap: '6px', flexWrap: 'wrap' }}>
+                        <span>길찾기:{w.navClicks || 0}</span>
+                        <span>인스타:{w.instagramClicks || 0}</span>
+                        <span>웹:{w.websiteClicks || 0}</span>
+                        <span>유튜브:{w.youtubeClicks || 0}</span>
+                        <span>공유:{w.shareClicks || 0}</span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              {allWorkshops.length === 0 && (
+                <tr>
+                  <td colSpan={4} style={{ textAlign: 'center', padding: 'var(--space-4)' }}>데이터가 없습니다.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }

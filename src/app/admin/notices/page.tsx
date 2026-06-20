@@ -123,28 +123,31 @@ export default function AdminNoticesPage() {
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h1 style={styles.title}>공지사항 관리</h1>
-        <button style={styles.button} onClick={() => openModal()}>
+    <div className="container">
+      <div className="page-header">
+        <div>
+          <h1>공지사항 관리</h1>
+        </div>
+        <button className="btn btn-primary" onClick={() => openModal()}>
           <Plus size={16} /> 새 공지사항 등록
         </button>
       </div>
 
-      <table style={styles.table}>
-        <thead>
-          <tr>
-            <th style={styles.th}>메인 노출</th>
-            <th style={styles.th}>상태</th>
-            <th style={styles.th}>제목</th>
-            <th style={styles.th}>작성일</th>
-            <th style={styles.th}>관리</th>
-          </tr>
-        </thead>
+      <div className="table-wrapper">
+        <table className="table">
+          <thead>
+            <tr>
+              <th>메인 노출</th>
+              <th>상태</th>
+              <th>제목</th>
+              <th>작성일</th>
+              <th>관리</th>
+            </tr>
+          </thead>
         <tbody>
           {notices.map((notice) => (
             <tr key={notice.id}>
-              <td style={styles.td}>
+              <td>
                 <button 
                   onClick={() => toggleMain(notice)}
                   style={{...styles.badge, ...(notice.isMain ? styles.badgeMain : styles.badgeInactive), border: 'none', cursor: 'pointer'}}
@@ -152,7 +155,7 @@ export default function AdminNoticesPage() {
                   {notice.isMain ? '메인 배너' : '일반'}
                 </button>
               </td>
-              <td style={styles.td}>
+              <td>
                 <button 
                   onClick={() => toggleActive(notice)}
                   style={{...styles.badge, ...(notice.isActive ? styles.badgeActive : styles.badgeInactive), border: 'none', cursor: 'pointer'}}
@@ -160,18 +163,19 @@ export default function AdminNoticesPage() {
                   {notice.isActive ? '활성 (표시됨)' : '비활성 (숨김)'}
                 </button>
               </td>
-              <td style={styles.td}>{notice.title}</td>
-              <td style={styles.td}>{new Date(notice.createdAt).toLocaleDateString()}</td>
-              <td style={styles.td}>
+              <td style={{ fontWeight: 500 }}>{notice.title}</td>
+              <td>{new Date(notice.createdAt).toLocaleDateString()}</td>
+              <td>
                 <div style={{ display: 'flex', gap: '8px' }}>
-                  <button style={styles.editButton} onClick={() => openModal(notice)}><Edit2 size={14} /></button>
-                  <button style={styles.dangerButton} onClick={() => handleDelete(notice.id)}><Trash2 size={14} /></button>
+                  <button className="btn btn-sm btn-secondary" onClick={() => openModal(notice)}><Edit2 size={14} /></button>
+                  <button className="btn btn-sm" style={{ color: 'var(--color-danger)' }} onClick={() => handleDelete(notice.id)}><Trash2 size={14} /></button>
                 </div>
               </td>
             </tr>
           ))}
         </tbody>
-      </table>
+        </table>
+      </div>
 
       {isModalOpen && (
         <div style={styles.modal}>

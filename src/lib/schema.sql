@@ -39,6 +39,12 @@ CREATE TABLE public.workshops (
   sns_links JSONB,
   region TEXT NOT NULL,
   status TEXT DEFAULT 'pending',
+  total_clicks INTEGER DEFAULT 0,
+  website_clicks INTEGER DEFAULT 0,
+  instagram_clicks INTEGER DEFAULT 0,
+  youtube_clicks INTEGER DEFAULT 0,
+  share_clicks INTEGER DEFAULT 0,
+  nav_clicks INTEGER DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -200,3 +206,44 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
+-- ==========================================
+-- 10. Workshop Clicks Table (Analytics)
+-- ==========================================
+CREATE TABLE public.workshop_clicks (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  workshop_id UUID REFERENCES public.workshops(id) ON DELETE CASCADE,
+  link_type TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.workshop_clicks ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Enable all operations for all users" ON public.workshop_clicks FOR ALL USING (true) WITH CHECK (true);
+
+-- RPC for incrementing link clicks
+CREATE OR REPLACE FUNCTION increment_workshop_click(p_workshop_id UUID, p_link_type TEXT)
+RETURNS void AS $$
+BEGIN
+  -- Insert the click event
+  INSERT INTO public.workshop_clicks (workshop_id, link_type)
+  VALUES (p_workshop_id, p_link_type);
+
+  -- Update the total count on workshops table
+  UPDATE public.workshops
+  SET total_clicks = COALESCE(total_clicks, 0) + 1
+  WHERE id = p_workshop_id;
+
+  -- Update specific columns based on p_link_type
+  IF p_link_type = 'website' THEN
+    UPDATE public.workshops SET website_clicks = COALESCE(website_clicks, 0) + 1 WHERE id = p_workshop_id;
+  ELSIF p_link_type = 'instagram' THEN
+    UPDATE public.workshops SET instagram_clicks = COALESCE(instagram_clicks, 0) + 1 WHERE id = p_workshop_id;
+  ELSIF p_link_type = 'youtube' THEN
+    UPDATE public.workshops SET youtube_clicks = COALESCE(youtube_clicks, 0) + 1 WHERE id = p_workshop_id;
+  ELSIF p_link_type = 'share' THEN
+    UPDATE public.workshops SET share_clicks = COALESCE(share_clicks, 0) + 1 WHERE id = p_workshop_id;
+  ELSIF p_link_type = 'nav' THEN
+    UPDATE public.workshops SET nav_clicks = COALESCE(nav_clicks, 0) + 1 WHERE id = p_workshop_id;
+  END IF;
+END;
+$$ LANGUAGE plpgsql;

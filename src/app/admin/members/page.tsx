@@ -13,6 +13,12 @@ export default function MembersPage() {
   const [users, setUsers] = useState<AppUser[]>([]);
   const [search, setSearch] = useState('');
   const [filterRole, setFilterRole] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, filterRole]);
   
   // Edit Modal State
   const [editingUser, setEditingUser] = useState<AppUser | null>(null);
@@ -90,6 +96,9 @@ export default function MembersPage() {
     return matchSearch && matchRole;
   });
 
+  const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
+  const paginatedUsers = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   const roleLabel = (role: string) => {
     const map: Record<string, string> = {
       super_admin: t('admin.super_admin'),
@@ -153,7 +162,7 @@ export default function MembersPage() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((user) => (
+            {paginatedUsers.map((user) => (
               <tr key={user.id}>
                 <td style={{ fontWeight: 500 }}>{user.displayName || '—'}</td>
                 <td style={{ color: 'var(--color-text-secondary)' }}>{user.email}</td>
@@ -219,6 +228,26 @@ export default function MembersPage() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 'var(--space-4)', marginTop: 'var(--space-6)' }}>
+        <button 
+          className="btn btn-secondary" 
+          disabled={currentPage === 1}
+          onClick={() => setCurrentPage(p => p - 1)}
+        >
+          이전
+        </button>
+        <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: 500 }}>
+          {currentPage} / {totalPages}
+        </span>
+        <button 
+          className="btn btn-secondary" 
+          disabled={currentPage >= totalPages}
+          onClick={() => setCurrentPage(p => p + 1)}
+        >
+          다음
+        </button>
       </div>
 
       {/* Edit User Modal */}

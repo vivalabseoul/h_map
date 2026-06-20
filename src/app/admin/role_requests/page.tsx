@@ -5,6 +5,7 @@ import { updateUserRole } from '@/lib/database';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import type { UserRole } from '@/types';
+import { Search } from 'lucide-react';
 import styles from './RoleRequests.module.css';
 
 interface RoleRequest {
@@ -27,6 +28,15 @@ export default function RoleRequestsAdminPage() {
   const [requests, setRequests] = useState<RoleRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filterStatus]);
 
   useEffect(() => {
     if (!authLoading && userRole !== 'super_admin' && userRole !== 'manager') {
@@ -182,17 +192,51 @@ export default function RoleRequestsAdminPage() {
 
   if (authLoading || loading) return <div style={{ padding: '20px' }}>Loading...</div>;
 
-  return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>가입 등급 승인 관리</h1>
+  const filteredRequests = requests.filter((req) => {
+    const matchSearch = !searchQuery || 
+      req.users?.display_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      req.users?.email?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchStatus = filterStatus === 'all' || req.status === filterStatus;
+    return matchSearch && matchStatus;
+  });
 
-      {requests.length === 0 ? (
-        <div className={styles.emptyState}>
+  const totalPages = Math.ceil(filteredRequests.length / itemsPerPage) || 1;
+  const paginatedRequests = filteredRequests.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  return (
+    <div className="container">
+      <div className="page-header">
+        <div>
+          <h1>가입 등급 승인 관리</h1>
+          <p>{filteredRequests.length} requests found</p>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: 'var(--space-3)', marginBottom: 'var(--space-6)', flexWrap: 'wrap' }}>
+        <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
+          <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
+          <input
+            type="text" className="form-input"
+            style={{ paddingLeft: '36px', width: '100%' }}
+            placeholder="이름 또는 이메일 검색..."
+            value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        <select className="form-select" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+          <option value="all">모든 상태</option>
+          <option value="pending">대기 중</option>
+          <option value="approved">승인됨</option>
+          <option value="rejected">반려됨</option>
+        </select>
+      </div>
+
+      {filteredRequests.length === 0 ? (
+        <div style={{ textAlign: 'center', color: 'var(--color-text-secondary)', padding: 'var(--space-8)' }}>
           등록된 등급 승인 요청이 없습니다.
         </div>
       ) : (
-        <div className={styles.tableContainer}>
-          <table className={styles.table}>
+        <div className="table-wrapper">
+          <table className="table">
             <thead>
               <tr>
                 <th>요청일</th>
@@ -204,12 +248,12 @@ export default function RoleRequestsAdminPage() {
               </tr>
             </thead>
             <tbody>
-              {requests.map((req) => (
+              {paginatedRequests.map((req) => (
                 <tr key={req.id}>
                   <td data-label="요청일">{new Date(req.created_at).toLocaleDateString()}</td>
                   <td data-label="이름 (이메일)" style={{ textAlign: 'left' }}>
-                    <div style={{ textAlign: 'right' }}>
-                      {req.users?.display_name || '(이름 없음)'} <br/>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontWeight: 500 }}>{req.users?.display_name || '(이름 없음)'}</span>
                       <span style={{ fontSize: '0.85rem', color: '#666' }}>({req.users?.email || req.user_id})</span>
                     </div>
                   </td>
@@ -245,12 +289,12 @@ export default function RoleRequestsAdminPage() {
                     {req.status === 'approved' && <span style={{ color: '#10b981' }}>승인됨</span>}
                     {req.status === 'rejected' && <span style={{ color: '#ef4444' }}>반려됨</span>}
                   </td>
-                  <td data-label="관리" className={styles.actions}>
+                  <td data-label="관리">
                     {req.status === 'pending' ? (
-                      <>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         <button onClick={() => handleApprove(req)} style={{ background: '#10b981', color: '#fff', border: 'none', padding: '6px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}>승인</button>
                         <button onClick={() => handleReject(req)} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '6px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}>반려</button>
-                      </>
+                      </div>
                     ) : (
                       <span style={{ fontSize: '0.85rem', color: '#666' }}>처리 완료</span>
                     )}
@@ -259,6 +303,28 @@ export default function RoleRequestsAdminPage() {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {filteredRequests.length > 0 && (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 'var(--space-4)', marginTop: 'var(--space-6)' }}>
+          <button 
+            className="btn btn-secondary" 
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(p => p - 1)}
+          >
+            이전
+          </button>
+          <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: 500 }}>
+            {currentPage} / {totalPages}
+          </span>
+          <button 
+            className="btn btn-secondary" 
+            disabled={currentPage >= totalPages}
+            onClick={() => setCurrentPage(p => p + 1)}
+          >
+            다음
+          </button>
         </div>
       )}
 

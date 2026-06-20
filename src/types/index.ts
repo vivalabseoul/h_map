@@ -64,6 +64,12 @@ export interface Workshop {
   };
   region: Region;
   status: WorkshopStatus;
+  totalClicks?: number;
+  websiteClicks?: number;
+  instagramClicks?: number;
+  youtubeClicks?: number;
+  shareClicks?: number;
+  navClicks?: number;
   createdAt: string;
 }
 

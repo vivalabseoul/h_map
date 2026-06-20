@@ -43,7 +43,14 @@ const mapWorkshop = (d: any): Workshop => ({
   tags: safeParse(d.tags)?.filter((t:string) => !t.startsWith('lang:')) || [], 
   languages: safeParse(d.tags)?.filter((t:string) => t.startsWith('lang:')).map((t:string) => t.replace('lang:', '')) || safeParse(d.languages) || [], 
   phone: d.phone, email: d.email, website: d.website, snsLinks: safeParse(d.sns_links),
-  region: d.region, status: d.status, createdAt: d.created_at,
+  region: d.region, status: d.status, 
+  totalClicks: d.total_clicks || 0,
+  websiteClicks: d.website_clicks || 0,
+  instagramClicks: d.instagram_clicks || 0,
+  youtubeClicks: d.youtube_clicks || 0,
+  shareClicks: d.share_clicks || 0,
+  navClicks: d.nav_clicks || 0,
+  createdAt: d.created_at,
 });
 const mapCourse = (d: any): Course => ({
   id: d.id, workshopId: d.workshop_id, instructorId: d.instructor_id, instructorName: d.instructor_name,
@@ -226,6 +233,24 @@ export async function deleteWorkshop(id: string): Promise<void> {
       saveLocalWorkshops(local);
     }
   }
+}
+
+export async function incrementWorkshopLinkClick(workshopId: string, linkType: string): Promise<void> {
+  if (!supabase) {
+    const local = getLocalWorkshops();
+    const idx = local.findIndex(w => w.id === workshopId);
+    if (idx > -1) {
+      local[idx].totalClicks = (local[idx].totalClicks || 0) + 1;
+      if (linkType === 'website') local[idx].websiteClicks = (local[idx].websiteClicks || 0) + 1;
+      else if (linkType === 'instagram') local[idx].instagramClicks = (local[idx].instagramClicks || 0) + 1;
+      else if (linkType === 'youtube') local[idx].youtubeClicks = (local[idx].youtubeClicks || 0) + 1;
+      else if (linkType === 'share') local[idx].shareClicks = (local[idx].shareClicks || 0) + 1;
+      else if (linkType === 'nav') local[idx].navClicks = (local[idx].navClicks || 0) + 1;
+      saveLocalWorkshops(local);
+    }
+    return;
+  }
+  await supabase.rpc('increment_workshop_click', { p_workshop_id: workshopId, p_link_type: linkType });
 }
 
 // ==========================================

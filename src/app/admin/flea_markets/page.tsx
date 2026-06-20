@@ -159,42 +159,42 @@ export default function AdminFleaMarketsPage() {
         </div>
       </div>
 
-      <div className="card">
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+      <div className="table-wrapper">
+        <table className="table">
           <thead>
-            <tr style={{ borderBottom: '2px solid var(--color-border)' }}>
-              <th style={{ padding: 'var(--space-3)', width: '40px' }}>
+            <tr>
+              <th style={{ width: '40px' }}>
                 <input 
                   type="checkbox" 
                   checked={filteredMarkets.length > 0 && selectedMarkets.size === filteredMarkets.length}
                   onChange={toggleSelectAll}
                 />
               </th>
-              <th style={{ padding: 'var(--space-3)' }}>플리마켓명</th>
-              <th style={{ padding: 'var(--space-3)' }}>일자</th>
-              <th style={{ padding: 'var(--space-3)' }}>등록자</th>
-              <th style={{ padding: 'var(--space-3)' }}>상태</th>
-              <th style={{ padding: 'var(--space-3)' }}>신청 클릭수</th>
-              <th style={{ padding: 'var(--space-3)' }}>관리</th>
+              <th>플리마켓명</th>
+              <th>일자</th>
+              <th>등록자</th>
+              <th>상태</th>
+              <th>신청 클릭수</th>
+              <th>관리</th>
             </tr>
           </thead>
           <tbody>
             {filteredMarkets.map((m) => (
-              <tr key={m.id} style={{ borderBottom: '1px solid var(--color-border)', background: selectedMarkets.has(m.id) ? 'var(--color-surface-hover)' : 'transparent' }}>
-                <td style={{ padding: 'var(--space-3)' }}>
+              <tr key={m.id} style={{ background: selectedMarkets.has(m.id) ? 'var(--color-surface-hover)' : 'transparent' }}>
+                <td>
                   <input 
                     type="checkbox" 
                     checked={selectedMarkets.has(m.id)}
                     onChange={() => toggleSelect(m.id)}
                   />
                 </td>
-                <td style={{ padding: 'var(--space-3)', fontWeight: 'bold' }}>
+                <td style={{ fontWeight: 'bold' }}>
                   {m.status === 'inactive' ? '🚫 ' : '🎪 '} 
                   {m.name.ko || m.name.en}
                 </td>
-                <td style={{ padding: 'var(--space-3)' }}>{m.date}</td>
-                <td style={{ padding: 'var(--space-3)' }}>{m.creatorName}</td>
-                <td style={{ padding: 'var(--space-3)' }}>
+                <td>{m.date}</td>
+                <td>{m.creatorName}</td>
+                <td>
                   <span style={{ 
                     padding: '2px 8px', 
                     borderRadius: '12px', 
@@ -205,14 +205,14 @@ export default function AdminFleaMarketsPage() {
                     {m.status === 'inactive' ? '비활성' : '활성'}
                   </span>
                 </td>
-                <td style={{ padding: 'var(--space-3)' }}>
+                <td>
                   {m.vendorApplicationLink ? (
                     <span style={{ color: 'var(--color-primary)', fontWeight: 'bold' }}>{m.applicationClicks || 0}회</span>
                   ) : (
                     <span style={{ color: 'var(--color-text-secondary)' }}>-</span>
                   )}
                 </td>
-                <td style={{ padding: 'var(--space-3)' }}>
+                <td>
                   <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                     <Link href={`/admin/flea_markets/${m.id}/edit`} style={{ color: 'var(--color-primary)', border: 'none', background: 'none', cursor: 'pointer', padding: '4px' }}>
                       <Pencil size={18} />
@@ -226,7 +226,7 @@ export default function AdminFleaMarketsPage() {
             ))}
             {filteredMarkets.length === 0 && (
               <tr>
-                <td colSpan={7} style={{ padding: 'var(--space-4)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
+                <td colSpan={7} style={{ textAlign: 'center', color: 'var(--color-text-secondary)' }}>
                   검색 결과가 없습니다.
                 </td>
               </tr>

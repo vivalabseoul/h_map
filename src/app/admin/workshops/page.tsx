@@ -15,6 +15,15 @@ export default function AdminWorkshopsPage() {
   const [transferModal, setTransferModal] = useState<{ isOpen: boolean; workshopId: string; currentOwnerId: string } | null>(null);
   const [selectedInstructorId, setSelectedInstructorId] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // Sorting & Pagination State
+  const [sortBy, setSortBy] = useState<'createdAt' | 'clicksDesc' | 'clicksAsc'>('createdAt');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, sortBy]);
 
   useEffect(() => {
     getWorkshops().then(setWorkshops);
@@ -79,6 +88,20 @@ export default function AdminWorkshopsPage() {
     return nameMatch || descMatch || catMatch || ownerMatch;
   });
 
+  const sortedWorkshops = [...filteredWorkshops].sort((a, b) => {
+    if (sortBy === 'clicksDesc') {
+      return (b.totalClicks || 0) - (a.totalClicks || 0);
+    }
+    if (sortBy === 'clicksAsc') {
+      return (a.totalClicks || 0) - (b.totalClicks || 0);
+    }
+    // Default to created at (newest first)
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
+  const totalPages = Math.ceil(sortedWorkshops.length / itemsPerPage) || 1;
+  const paginatedWorkshops = sortedWorkshops.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   return (
     <div>
       <div className="page-header">
@@ -98,6 +121,16 @@ export default function AdminWorkshopsPage() {
             value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
+        <select 
+          className="form-select"
+          style={{ width: '200px' }}
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value as any)}
+        >
+          <option value="createdAt">최신 등록순</option>
+          <option value="clicksDesc">조회수 높은 순 (랭킹)</option>
+          <option value="clicksAsc">조회수 낮은 순</option>
+        </select>
       </div>
 
       <div className="table-wrapper">
@@ -110,11 +143,12 @@ export default function AdminWorkshopsPage() {
               <th>Rating</th>
               <th>Status</th>
               <th>Region</th>
+              <th>조회수(클릭)</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filteredWorkshops.map((w) => {
+            {paginatedWorkshops.map((w) => {
               const cat = CATEGORIES.find((c) => c.key === w.category);
               return (
                 <tr key={w.id}>
@@ -133,7 +167,17 @@ export default function AdminWorkshopsPage() {
                   </td>
                   <td style={{ textTransform: 'capitalize' }}>{w.region.replace('_', ' ')}</td>
                   <td>
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                    <div style={{ fontWeight: 600, color: 'var(--color-primary)' }}>{(w.totalClicks || 0).toLocaleString()} 회</div>
+                    <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <span>길찾기: {w.navClicks || 0}</span>
+                      <span>인스타: {w.instagramClicks || 0}</span>
+                      <span>웹: {w.websiteClicks || 0}</span>
+                      <span>유튜브: {w.youtubeClicks || 0}</span>
+                      <span>공유: {w.shareClicks || 0}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       <button
                         className={`btn btn-sm ${w.status === 'active' ? 'btn-danger' : 'btn-success'}`}
                         onClick={() => handleToggleStatus(w.id, w.status)}
@@ -153,6 +197,26 @@ export default function AdminWorkshopsPage() {
             })}
           </tbody>
         </table>
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 'var(--space-4)', marginTop: 'var(--space-6)' }}>
+        <button 
+          className="btn btn-secondary" 
+          disabled={currentPage === 1}
+          onClick={() => setCurrentPage(p => p - 1)}
+        >
+          이전
+        </button>
+        <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: 500 }}>
+          {currentPage} / {totalPages}
+        </span>
+        <button 
+          className="btn btn-secondary" 
+          disabled={currentPage >= totalPages}
+          onClick={() => setCurrentPage(p => p + 1)}
+        >
+          다음
+        </button>
       </div>
 
       {/* Transfer Ownership Modal */}

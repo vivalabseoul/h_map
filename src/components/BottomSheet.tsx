@@ -6,7 +6,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { CATEGORIES } from '@/types';
 import { getDynamicCategories } from '@/lib/categoryUtils';
 import type { Workshop, Course, AppUser } from '@/types';
-import { getCoursesByWorkshop, getUserProfile, getWorkshopById } from '@/lib/database';
+import { getCoursesByWorkshop, getUserProfile, getWorkshopById, incrementWorkshopLinkClick } from '@/lib/database';
 import CourseCard from './CourseCard';
 import ReviewSection from './ReviewSection';
 import Sheet from './Sheet';
@@ -69,17 +69,20 @@ export default function BottomSheet({ workshop, allWorkshops, onWorkshopClick, o
   // Close on escape is handled by Sheet component
 
   const handleNavigate = useCallback(() => {
+    incrementWorkshopLinkClick(workshop.id, 'nav').catch(console.error);
     const url = `https://www.google.com/maps/dir/?api=1&destination=${workshop.lat},${workshop.lng}`;
     window.open(url, '_blank', 'noopener,noreferrer');
-  }, [workshop.lat, workshop.lng]);
+  }, [workshop.lat, workshop.lng, workshop.id]);
 
   const handleNavigateNaver = useCallback(() => {
+    incrementWorkshopLinkClick(workshop.id, 'nav').catch(console.error);
     const name = encodeURIComponent(workshop.name[locale] || '');
     const url = `https://map.naver.com/p/directions/-/${workshop.lng},${workshop.lat},${name}/-/transit`;
     window.open(url, '_blank', 'noopener,noreferrer');
-  }, [workshop.lat, workshop.lng, workshop.name, locale]);
+  }, [workshop.lat, workshop.lng, workshop.name, locale, workshop.id]);
 
   const handleShare = useCallback(async () => {
+    incrementWorkshopLinkClick(workshop.id, 'share').catch(console.error);
     if (navigator.share) {
       try {
         await navigator.share({
@@ -191,7 +194,7 @@ export default function BottomSheet({ workshop, allWorkshops, onWorkshopClick, o
         {workshop.website && (
           <div className={styles.infoItem}>
             <Globe size={16} className={styles.infoIcon} />
-            <a href={workshop.website} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'none' }}>
+            <a href={workshop.website} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'none' }} onClick={() => incrementWorkshopLinkClick(workshop.id, 'website').catch(console.error)}>
               {workshop.website.replace(/^https?:\/\//, '')}
             </a>
           </div>
@@ -206,6 +209,7 @@ export default function BottomSheet({ workshop, allWorkshops, onWorkshopClick, o
               target="_blank"
               rel="noopener noreferrer"
               style={{ color: 'var(--color-primary)', textDecoration: 'none' }}
+              onClick={() => incrementWorkshopLinkClick(workshop.id, 'instagram').catch(console.error)}
             >
               @{workshop.snsLinks.instagram.replace(/^https?:\/\/(www\.)?instagram\.com\//, '').replace(/\/$/, '')}
             </a>
@@ -227,6 +231,7 @@ export default function BottomSheet({ workshop, allWorkshops, onWorkshopClick, o
               target="_blank"
               rel="noopener noreferrer"
               style={{ color: 'var(--color-primary)', textDecoration: 'none' }}
+              onClick={() => incrementWorkshopLinkClick(workshop.id, 'youtube').catch(console.error)}
             >
               @{workshop.snsLinks.youtube.replace(/^https?:\/\/(www\.)?youtube\.com\/(@)?/, '').replace(/^@/, '').replace(/\/$/, '')}
             </a>

@@ -63,25 +63,25 @@ export default function AdminReviewsPage() {
         </div>
       </div>
 
-      <div className="card">
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+      <div className="table-wrapper">
+        <table className="table">
           <thead>
-            <tr style={{ borderBottom: '2px solid var(--color-border)' }}>
-              <th style={{ padding: 'var(--space-3)' }}>작성자</th>
-              <th style={{ padding: 'var(--space-3)' }}>리뷰 내용</th>
-              <th style={{ padding: 'var(--space-3)' }}>평점</th>
-              <th style={{ padding: 'var(--space-3)' }}>작성일</th>
-              <th style={{ padding: 'var(--space-3)', width: '80px' }}>관리</th>
+            <tr>
+              <th>작성자</th>
+              <th>리뷰 내용</th>
+              <th>평점</th>
+              <th>작성일</th>
+              <th style={{ width: '80px' }}>관리</th>
             </tr>
           </thead>
           <tbody>
             {filteredReviews.map((r) => (
-              <tr key={r.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                <td style={{ padding: 'var(--space-3)' }}>{r.userName}</td>
-                <td style={{ padding: 'var(--space-3)' }}>{r.text}</td>
-                <td style={{ padding: 'var(--space-3)' }}>⭐ {r.rating}</td>
-                <td style={{ padding: 'var(--space-3)' }}>{new Date(r.createdAt).toLocaleDateString()}</td>
-                <td style={{ padding: 'var(--space-3)' }}>
+              <tr key={r.id}>
+                <td>{r.userName}</td>
+                <td>{r.text}</td>
+                <td>⭐ {r.rating}</td>
+                <td>{new Date(r.createdAt).toLocaleDateString()}</td>
+                <td>
                   <button onClick={() => handleDelete(r.id)} style={{ color: 'var(--color-danger)', border: 'none', background: 'none', cursor: 'pointer' }}>
                     <Trash2 size={18} />
                   </button>
@@ -90,7 +90,7 @@ export default function AdminReviewsPage() {
             ))}
             {filteredReviews.length === 0 && (
               <tr>
-                <td colSpan={5} style={{ padding: 'var(--space-4)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
+                <td colSpan={5} style={{ textAlign: 'center', color: 'var(--color-text-secondary)' }}>
                   검색 결과가 없습니다.
                 </td>
               </tr>
