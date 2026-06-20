@@ -149,6 +149,8 @@ export default function HomePage() {
             fleaMarkets={viewportFleaMarkets}
             onWorkshopClick={handleMarkerClick}
             onFleaMarketClick={handleFleaMarketClick}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
           />
         </div>
       </div>

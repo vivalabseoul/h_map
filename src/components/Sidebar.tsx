@@ -19,18 +19,23 @@ export const instructorMenuItems = [
 interface SidebarProps {
   title: string;
   subtitle?: string;
-  emoji?: string;
+  emoji?: React.ReactNode;
   items: SidebarItem[];
 }
 
-export default function Sidebar({ title, subtitle, emoji = '🧶', items }: SidebarProps) {
+export default function Sidebar({ title, subtitle, emoji, items }: SidebarProps) {
   const pathname = usePathname();
 
   return (
     <aside className={styles.sidebar}>
       <div className={styles.sidebarHeader}>
         <div className={styles.sidebarTitle}>
-          <span>{emoji}</span>
+          {emoji ? (
+            <span>{emoji}</span>
+          ) : (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img src="/logo.png" alt="Logo" style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
+          )}
           {title}
         </div>
         {subtitle && <div className={styles.sidebarSubtitle}>{subtitle}</div>}

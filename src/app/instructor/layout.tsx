@@ -13,7 +13,6 @@ export default function InstructorLayout({ children }: { children: React.ReactNo
       <div className="dashboard-layout">
         <Sidebar
           title={t('instructor.dashboard')}
-          emoji="🎨"
           subtitle="Manage your workshops"
           items={[
             { href: '/instructor', label: t('instructor.dashboard'), icon: <LayoutDashboard size={18} /> },

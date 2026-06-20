@@ -11,7 +11,11 @@ export default function Footer() {
     <footer className={styles.footer}>
       <div className={styles.container}>
         <div className={styles.left}>
-          <span className={styles.brandName}>🎨 Art flow map</span>
+          <span className={styles.brandName} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="Logo" style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
+            Art flow map
+          </span>
           <span className={styles.hideMobile}>&copy; {new Date().getFullYear()}</span>
         </div>
 

@@ -1,5 +1,6 @@
 'use client';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { ChevronUp, ChevronDown } from 'lucide-react';
 import type { Workshop, FleaMarket } from '@/types';
 import { useLanguage } from '@/context/LanguageContext';
 import styles from './ListView.module.css';
@@ -9,9 +10,18 @@ interface ListViewProps {
   fleaMarkets: FleaMarket[];
   onWorkshopClick: (workshop: Workshop) => void;
   onFleaMarketClick: (market: FleaMarket) => void;
+  viewMode?: 'map' | 'list';
+  onViewModeChange?: (mode: 'map' | 'list') => void;
 }
 
-export default function ListView({ workshops, fleaMarkets, onWorkshopClick, onFleaMarketClick }: ListViewProps) {
+export default function ListView({
+  workshops,
+  fleaMarkets,
+  onWorkshopClick,
+  onFleaMarketClick,
+  viewMode,
+  onViewModeChange
+}: ListViewProps) {
   const { locale, t } = useLanguage();
   const [currentPage, setCurrentPage] = React.useState(1);
   const ITEMS_PER_PAGE = 20;
@@ -29,11 +39,21 @@ export default function ListView({ workshops, fleaMarkets, onWorkshopClick, onFl
 
   return (
     <div className={styles.listContainer}>
-      
+      {/* Mobile Bottom Sheet Handle */}
+      <div
+        className={styles.mobileHandle}
+        onClick={(e) => {
+          e.stopPropagation();
+          onViewModeChange && onViewModeChange(viewMode === 'map' ? 'list' : 'map');
+        }}
+      >
+        <div className={styles.handleBar} />
+      </div>
+
       {/* 1. 지역 축제 및 플리마켓 섹션 */}
       {fleaMarkets.length > 0 && (
         <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>🎉 Local Festivals & Flea Markets</h2>
+          <h2 className={styles.sectionTitle}>Local Festivals & Flea Markets</h2>
           <div className={styles.grid}>
             {fleaMarkets.map(market => {
               const name = market.name[locale] || market.name.ko || market.name.en || '';
@@ -52,7 +72,7 @@ export default function ListView({ workshops, fleaMarkets, onWorkshopClick, onFl
                   <div className={styles.contentArea}>
                     <h3 className={styles.title}>{name}</h3>
                     <div className={styles.subtitle}>{market.date}</div>
-                    
+
                     <div className={styles.meta}>
                       <div className={styles.metaItem}>
                         <span className={styles.metaIcon}>💬</span>
@@ -70,7 +90,7 @@ export default function ListView({ workshops, fleaMarkets, onWorkshopClick, onFl
       {/* 2. 공방/클래스 섹션 */}
       {paginatedWorkshops.length > 0 && (
         <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>📍 Local Studios & Classes</h2>
+          {/*<h2 className={styles.sectionTitle}>Local Studios & Classes</h2>*/}
           <div className={styles.grid}>
             {paginatedWorkshops.map(workshop => {
               const name = workshop.name[locale] || workshop.name.ko || workshop.name.en || '';
@@ -88,7 +108,7 @@ export default function ListView({ workshops, fleaMarkets, onWorkshopClick, onFl
                   <div className={styles.contentArea}>
                     <h3 className={styles.title}>{name}</h3>
                     <div className={styles.subtitle} style={{ color: '#ff6b35' }}>⭐ {workshop.rating} ({workshop.reviewCount})</div>
-                    
+
                     <div className={styles.meta}>
                       <div className={styles.metaItem}>
                         <span className={styles.metaIcon}>💬</span>
@@ -104,25 +124,25 @@ export default function ListView({ workshops, fleaMarkets, onWorkshopClick, onFl
           {/* Pagination Controls */}
           {totalPages > 1 && (
             <div className={styles.pagination}>
-              <button 
-                className="btn btn-secondary btn-sm" 
+              <button
+                className="btn btn-secondary btn-sm"
                 onClick={() => {
                   setCurrentPage(p => Math.max(1, p - 1));
                   const container = document.querySelector(`.${styles.listContainer}`);
                   if (container) container.scrollTo({ top: 0, behavior: 'smooth' });
-                }} 
+                }}
                 disabled={currentPage === 1}
               >
                 Previous
               </button>
               <span className={styles.pageInfo}>{currentPage} / {totalPages}</span>
-              <button 
-                className="btn btn-secondary btn-sm" 
+              <button
+                className="btn btn-secondary btn-sm"
                 onClick={() => {
                   setCurrentPage(p => Math.min(totalPages, p + 1));
                   const container = document.querySelector(`.${styles.listContainer}`);
                   if (container) container.scrollTo({ top: 0, behavior: 'smooth' });
-                }} 
+                }}
                 disabled={currentPage === totalPages}
               >
                 Next
@@ -137,7 +157,7 @@ export default function ListView({ workshops, fleaMarkets, onWorkshopClick, onFl
           No registered information in this region.
         </div>
       )}
-      
+
     </div>
   );
 }

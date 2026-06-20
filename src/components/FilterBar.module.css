@@ -111,4 +111,16 @@
   .languageFilter {
     display: none;
   }
+
+  .viewModeToggle {
+    display: none;
+  }
+}
+
+.viewModeToggle {
+  display: flex;
+  gap: 4px;
+  background: var(--color-bg-secondary);
+  padding: 4px;
+  border-radius: var(--radius-full);
 }

@@ -184,7 +184,11 @@ export default function Header() {
 
       {isMobile && (
         <div style={{ padding: '20px 0 10px 0', fontSize: '0.8rem', color: 'var(--color-text-muted)', textAlign: 'left', lineHeight: '1.6' }}>
-          <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, color: 'var(--color-text-primary)' }}>🎨 Art flow map</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontFamily: 'var(--font-heading)', fontWeight: 700, color: 'var(--color-text-primary)' }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="Logo" style={{ width: '18px', height: '18px', objectFit: 'contain' }} />
+            Art flow map
+          </span>
           <br />
           &copy; {new Date().getFullYear()} All rights reserved.
         </div>
@@ -196,7 +200,8 @@ export default function Header() {
     <header className={styles.header} id="main-header">
       {pathname === '/' ? (
         <div className={styles.headerSearchContainer}>
-          <Search className={styles.headerSearchIcon} size={18} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="Art Flow Map Logo" className={styles.headerSearchIcon} style={{ width: '22px', height: '22px', objectFit: 'contain', borderRadius: '4px' }} />
           <input 
             type="text"
             className={styles.headerSearchInput}

@@ -12,7 +12,7 @@
     "register": "회원가입"
   },
   "search": {
-    "placeholder_short": "Art Flow Map",
+    "placeholder_short": "원하는 공방 찾기",
     "placeholder_long": "Art Flow Map - 원하는 공방 찾기"
   },
   "auth": {

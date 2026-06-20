@@ -149,7 +149,7 @@ export default function FilterBar({
       <div style={{ flexGrow: 1 }} />
 
       {/* View Mode Toggle */}
-      <div style={{ display: 'flex', gap: '4px', background: 'var(--color-bg-secondary)', padding: '4px', borderRadius: 'var(--radius-full)' }}>
+      <div className={styles.viewModeToggle}>
         <button
           onClick={() => onViewModeChange?.('list')}
           style={{
