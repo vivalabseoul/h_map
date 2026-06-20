@@ -13,6 +13,7 @@ import type {
   FleaMarket,
   AppNotification,
   Notice,
+  Locale,
 } from '@/types';
 import { demoWorkshops, demoReviews, demoCourses, demoBookings, demoInquiries, demoNotices } from '@/data/workshops';
 
