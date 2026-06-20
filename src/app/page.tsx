@@ -128,21 +128,19 @@ export default function HomePage() {
       />
       
       <div className={pageStyles.homeLayout}>
-        <div className={`${pageStyles.mapWrapper} ${viewMode === 'list' ? pageStyles.mapHiddenDesktop : ''} ${viewMode === 'list' ? pageStyles.hideMobile : ''}`}>
-          {viewMode === 'map' && (
-            <MapView
-              workshops={globalWorkshops}
-              fleaMarkets={globalFleaMarkets}
-              selectedRegion={selectedRegion}
-              onRegionChange={setSelectedRegion}
-              onMarkerClick={handleMarkerClick}
-              onFleaMarketClick={handleFleaMarketClick}
-              onBoundsChanged={setMapBounds}
-            />
-          )}
+        <div className={pageStyles.mapWrapper}>
+          <MapView
+            workshops={globalWorkshops}
+            fleaMarkets={globalFleaMarkets}
+            selectedRegion={selectedRegion}
+            onRegionChange={setSelectedRegion}
+            onMarkerClick={handleMarkerClick}
+            onFleaMarketClick={handleFleaMarketClick}
+            onBoundsChanged={setMapBounds}
+          />
         </div>
         
-        <div className={`${pageStyles.listWrapper} ${viewMode === 'list' ? pageStyles.listFullWidth : ''} ${viewMode === 'map' ? pageStyles.hideMobile : ''}`}>
+        <div className={`${pageStyles.listWrapper} ${viewMode === 'map' ? pageStyles.listHidden : ''}`}>
           <ListView
             workshops={viewportWorkshops}
             fleaMarkets={viewportFleaMarkets}
