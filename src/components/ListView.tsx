@@ -39,15 +39,21 @@ export default function ListView({
 
   return (
     <div className={styles.listContainer}>
-      {/* Mobile Bottom Sheet Handle */}
-      <div
-        className={styles.mobileHandle}
-        onClick={(e) => {
-          e.stopPropagation();
-          onViewModeChange && onViewModeChange(viewMode === 'map' ? 'list' : 'map');
-        }}
-      >
-        <div className={styles.handleBar} />
+      {/* Mobile Bottom Sheet Toggle Button */}
+      <div className={styles.mobileToggleWrapper}>
+        <button 
+          className={styles.mobileToggleButton}
+          onClick={(e) => {
+            e.stopPropagation();
+            onViewModeChange && onViewModeChange(viewMode === 'map' ? 'list' : 'map');
+          }}
+        >
+          {viewMode === 'map' ? (
+            <ChevronUp size={24} />
+          ) : (
+            <ChevronDown size={24} />
+          )}
+        </button>
       </div>
 
       {/* 1. 지역 축제 및 플리마켓 섹션 */}
