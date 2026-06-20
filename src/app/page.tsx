@@ -30,7 +30,7 @@ const MapView = dynamic(() => import('@/components/map/MapView'), {
 });
 
 export default function HomePage() {
-  const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
+  const [viewMode, setViewMode] = useState<'map' | 'list'>('list');
   const [workshops, setWorkshops] = useState<Workshop[]>([]);
   const [fleaMarkets, setFleaMarkets] = useState<FleaMarket[]>([]);
   const [activeCategory, setActiveCategory] = useState<WorkshopCategory | 'all'>('all');
@@ -66,6 +66,7 @@ export default function HomePage() {
 
   const viewportWorkshops = useMemo(() => {
     if (searchQuery.trim() !== '') return globalWorkshops;
+    if (viewMode === 'list') return globalWorkshops;
     if (mapBounds) {
       return globalWorkshops.filter(w => {
         return w.lat <= mapBounds.north && w.lat >= mapBounds.south &&
@@ -73,7 +74,7 @@ export default function HomePage() {
       });
     }
     return globalWorkshops;
-  }, [globalWorkshops, mapBounds, searchQuery]);
+  }, [globalWorkshops, mapBounds, searchQuery, viewMode]);
 
   const globalFleaMarkets = useMemo(() => {
     return fleaMarkets.filter((m) => {
@@ -90,6 +91,7 @@ export default function HomePage() {
   }, [fleaMarkets, searchQuery]);
 
   const viewportFleaMarkets = useMemo(() => {
+    if (viewMode === 'list') return globalFleaMarkets;
     if (mapBounds) {
       return globalFleaMarkets.filter(m => {
         return m.lat <= mapBounds.north && m.lat >= mapBounds.south &&
@@ -97,7 +99,7 @@ export default function HomePage() {
       });
     }
     return globalFleaMarkets;
-  }, [globalFleaMarkets, mapBounds]);
+  }, [globalFleaMarkets, mapBounds, viewMode]);
 
   const handleMarkerClick = useCallback((workshop: Workshop) => {
     setSelectedWorkshop(workshop);
@@ -127,15 +129,17 @@ export default function HomePage() {
       
       <div className={pageStyles.homeLayout}>
         <div className={`${pageStyles.mapWrapper} ${viewMode === 'list' ? pageStyles.mapHiddenDesktop : ''} ${viewMode === 'list' ? pageStyles.hideMobile : ''}`}>
-          <MapView
-            workshops={globalWorkshops}
-            fleaMarkets={globalFleaMarkets}
-            selectedRegion={selectedRegion}
-            onRegionChange={setSelectedRegion}
-            onMarkerClick={handleMarkerClick}
-            onFleaMarketClick={handleFleaMarketClick}
-            onBoundsChanged={setMapBounds}
-          />
+          {viewMode === 'map' && (
+            <MapView
+              workshops={globalWorkshops}
+              fleaMarkets={globalFleaMarkets}
+              selectedRegion={selectedRegion}
+              onRegionChange={setSelectedRegion}
+              onMarkerClick={handleMarkerClick}
+              onFleaMarketClick={handleFleaMarketClick}
+              onBoundsChanged={setMapBounds}
+            />
+          )}
         </div>
         
         <div className={`${pageStyles.listWrapper} ${viewMode === 'list' ? pageStyles.listFullWidth : ''} ${viewMode === 'map' ? pageStyles.hideMobile : ''}`}>

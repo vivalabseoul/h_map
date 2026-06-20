@@ -172,14 +172,46 @@ export default function FilterBar({
       <div style={{ flexGrow: 1 }} />
 
       {/* View Mode Toggle */}
-      <button
-        className={styles.chip}
-        onClick={() => onViewModeChange(viewMode === 'map' ? 'list' : 'map')}
-        style={{ padding: 'var(--space-2) var(--space-3)', background: 'var(--color-bg-secondary)' }}
-        title={viewMode === 'map' ? 'View List' : 'View Map'}
-      >
-        {viewMode === 'map' ? '📋 List' : '🗺️ Map'}
-      </button>
+      <div style={{ display: 'flex', gap: '4px', background: 'var(--color-bg-secondary)', padding: '4px', borderRadius: 'var(--radius-full)' }}>
+        <button
+          onClick={() => onViewModeChange('list')}
+          style={{
+            padding: '5px 13px', // padding reduced by 1px to offset 1px border and avoid height jump
+            border: viewMode === 'list' ? '1px solid var(--color-text-primary)' : '1px solid var(--color-border)',
+            borderRadius: 'var(--radius-full)',
+            background: viewMode === 'list' ? 'var(--color-text-primary)' : 'transparent',
+            boxShadow: viewMode === 'list' ? '0 2px 4px rgba(0, 0, 0, 0.2)' : 'none',
+            color: viewMode === 'list' ? '#ffffff' : 'var(--color-text-secondary)',
+            fontWeight: viewMode === 'list' ? 600 : 500,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            transition: 'all 0.2s'
+          }}
+        >
+          📋 List
+        </button>
+        <button
+          onClick={() => onViewModeChange('map')}
+          style={{
+            padding: '5px 13px', // padding reduced by 1px to offset 1px border and avoid height jump
+            border: viewMode === 'map' ? '1px solid var(--color-text-primary)' : '1px solid var(--color-border)',
+            borderRadius: 'var(--radius-full)',
+            background: viewMode === 'map' ? 'var(--color-text-primary)' : 'transparent',
+            boxShadow: viewMode === 'map' ? '0 2px 4px rgba(0, 0, 0, 0.2)' : 'none',
+            color: viewMode === 'map' ? '#ffffff' : 'var(--color-text-secondary)',
+            fontWeight: viewMode === 'map' ? 600 : 500,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            transition: 'all 0.2s'
+          }}
+        >
+          🗺️ Map
+        </button>
+      </div>
 
     </div>
   );
