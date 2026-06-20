@@ -42,6 +42,11 @@ export default function HomePage() {
   const [selectedFleaMarket, setSelectedFleaMarket] = useState<FleaMarket | null>(null);
 
   useEffect(() => {
+    // 반응형 기본 화면 설정: 모바일(768px 이하)이면 지도 먼저, 데스크탑이면 리스트 먼저
+    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+      setViewMode('map');
+    }
+    
     getWorkshops().then(setWorkshops);
     getFleaMarkets().then(setFleaMarkets);
   }, []);
