@@ -138,6 +138,17 @@ CREATE TABLE public.notifications (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 9. Notices Table
+CREATE TABLE public.notices (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  title TEXT NOT NULL,
+  content TEXT NOT NULL,
+  is_main BOOLEAN DEFAULT false,
+  is_active BOOLEAN DEFAULT true,
+  author_name TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- ==========================================
 -- RLS (Row Level Security) Setup
 -- ==========================================
@@ -150,6 +161,7 @@ ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.inquiries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.flea_markets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.notices ENABLE ROW LEVEL SECURITY;
 
 -- Note: For a rapid prototyping environment, we will allow all operations. 
 -- In production, you MUST restrict these policies based on auth.uid() and role.
@@ -161,6 +173,7 @@ CREATE POLICY "Enable all operations for all users" ON public.reviews FOR ALL US
 CREATE POLICY "Enable all operations for all users" ON public.inquiries FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Enable all operations for all users" ON public.flea_markets FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Enable all operations for all users" ON public.notifications FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Enable all operations for all users" ON public.notices FOR ALL USING (true) WITH CHECK (true);
 
 -- ==========================================
 -- Auth Trigger (Sync auth.users to public.users)

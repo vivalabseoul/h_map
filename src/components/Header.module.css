@@ -24,7 +24,7 @@
   max-width: 400px;
   width: 100%;
   margin-right: auto;
-  border: 1px solid var(--color-border);
+  border: 3px solid var(--color-border);
   transition: all 0.2s ease;
 }
 
@@ -69,7 +69,6 @@
   background: var(--color-accent);
   color: white;
   border: none;
-  padding: 12px 24px;
   border-radius: var(--radius-full);
   font-weight: 600;
   cursor: pointer;
@@ -154,7 +153,7 @@
   border: none;
   color: var(--color-text-primary);
   cursor: pointer;
-  padding: var(--space-2);
+  padding: var(--space-0);
 }
 
 /* --- Notifications --- */

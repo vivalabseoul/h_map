@@ -234,7 +234,7 @@ export default function Header() {
         {/* Register Button */}
         {!user && (
           <button
-            className={styles.registerButton}
+            className={`btn ${styles.registerButton}`}
             onClick={() => setShowRegisterModal(true)}
           >
             내 공방 등록

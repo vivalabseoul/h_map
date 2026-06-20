@@ -25,8 +25,7 @@ export default function AuthButton() {
 
   if (!user) {
     return (
-      <Link href="/login" className={styles.signInBtn} id="sign-in-button">
-        <LogIn size={16} />
+      <Link href="/login" className={`btn ${styles.signInBtn}`} id="sign-in-button">
         {t('nav.login')}
       </Link>
     );
