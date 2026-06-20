@@ -32,6 +32,7 @@ export default function CreateStudioPage() {
   const [snsInstagram, setSnsInstagram] = useState('');
   const [snsYoutube, setSnsYoutube] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [studioImageUrl, setStudioImageUrl] = useState('');
   const [languages, setLanguages] = useState<string[]>(['English']);
   const [addressTags, setAddressTags] = useState<string[]>([]);
   const [dynamicCategories, setDynamicCategories] = useState(CATEGORIES);
@@ -62,7 +63,7 @@ export default function CreateStudioPage() {
 
     try {
       const finalCategory = isCustomCategory && customCategory.trim() !== '' ? customCategory.trim() : category;
-      
+
       await createWorkshop({
         ownerId: user.id,
         ownerName: user.displayName || 'Instructor',
@@ -72,7 +73,7 @@ export default function CreateStudioPage() {
         address,
         lat: lat ?? (REGIONS.find(r => r.key === region)?.center[0] || 37.576),
         lng: lng ?? (REGIONS.find(r => r.key === region)?.center[1] || 126.988),
-        images: imageUrl ? [imageUrl] : [],
+        images: [imageUrl, studioImageUrl].filter(Boolean),
         tags: ['Beginner_Friendly', ...addressTags], // Mock default tags
         languages,
         phone,
@@ -118,20 +119,19 @@ export default function CreateStudioPage() {
 
       <div className="card" style={{ maxWidth: '800px' }}>
         <form onSubmit={handleSubmit}>
-          
+
           {/* Language Tabs */}
-          <div style={{ display: 'flex', gap: 'var(--space-2)', borderBottom: '1px solid var(--color-border)', marginBottom: 'var(--space-6)' }}>
+          <div style={{ display: 'flex', gap: 'var(--space-2)', borderBottom: '1px solid var(--color-border)', marginBottom: 'var(--space-6)', overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '4px' }}>
             {tabs.map((tab) => (
               <button
                 key={tab.key}
                 type="button"
                 onClick={() => setActiveTab(tab.key)}
+                className="lang-tab-btn"
                 style={{
-                  padding: 'var(--space-3) var(--space-4)',
                   borderBottom: activeTab === tab.key ? '2px solid var(--color-accent)' : '2px solid transparent',
                   color: activeTab === tab.key ? 'var(--color-accent)' : 'var(--color-text-secondary)',
-                  fontWeight: activeTab === tab.key ? 600 : 400,
-                  transition: 'all 0.2s'
+                  fontWeight: activeTab === tab.key ? 600 : 400
                 }}
               >
                 {tab.label}
@@ -152,11 +152,21 @@ export default function CreateStudioPage() {
           </div>
 
           <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
-            <label className="form-label">스튜디오 소개 (Brand Intro) - {activeTab.toUpperCase()}</label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+              <label className="form-label">스튜디오 소개 (Brand Intro) - {activeTab.toUpperCase()}</label>
+              <span style={{ fontSize: '0.8rem', color: (description[activeTab]?.length || 0) >= 300 ? 'var(--color-danger)' : 'var(--color-text-tertiary)' }}>
+                {(description[activeTab]?.length || 0)} / 300
+              </span>
+            </div>
             <textarea
               className="form-input form-textarea"
               value={description[activeTab]}
-              onChange={(e) => handleLangChange('description', e.target.value)}
+              onChange={(e) => {
+                if (e.target.value.length <= 300) {
+                  handleLangChange('description', e.target.value);
+                }
+              }}
+              maxLength={300}
               placeholder="스튜디오의 철학, 특징, 전반적인 브랜드를 소개해 주세요."
               required={activeTab === 'ko'}
             />
@@ -180,26 +190,14 @@ export default function CreateStudioPage() {
             )}
           </div>
 
-          <hr className="divider" />
-
-          {/* Image Upload */}
-          <div style={{ marginBottom: 'var(--space-4)' }}>
-            <label className="form-label" style={{ marginBottom: 'var(--space-2)' }}>대표 사진 (1장만 등록 가능)</label>
-            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-tertiary)', marginBottom: 'var(--space-3)' }}>📸 대표 사진 1장만 업로드 가능합니다.</p>
-            <ImageUpload 
-              initialUrl={imageUrl} 
-              onUpload={setImageUrl} 
-              folder="workshops" 
-            />
-          </div>
 
           {/* Global Config */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
             <div className="form-group">
               <label className="form-label">종목 (Category)</label>
-              <select 
-                className="form-select" 
-                value={isCustomCategory ? 'custom' : category} 
+              <select
+                className="form-select"
+                value={isCustomCategory ? 'custom' : category}
                 onChange={(e) => {
                   if (e.target.value === 'custom') {
                     setIsCustomCategory(true);
@@ -236,7 +234,7 @@ export default function CreateStudioPage() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
             <div className="form-group">
               <label className="form-label">전화번호 (Phone)</label>
               <input type="text" className="form-input" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="010-1234-5678" />
@@ -252,7 +250,7 @@ export default function CreateStudioPage() {
             <input type="url" className="form-input" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://" />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
             <div className="form-group">
               <label className="form-label">인스타그램 (Instagram)</label>
               <input type="text" className="form-input" value={snsInstagram} onChange={(e) => setSnsInstagram(e.target.value)} placeholder="예: vivalab_official (아이디만 입력)" />
@@ -283,6 +281,28 @@ export default function CreateStudioPage() {
                 </label>
               ))}
             </div>
+          </div>
+
+          <hr className="divider" style={{ margin: 'var(--space-6) 0' }} />
+
+          <div className="form-group" style={{ marginBottom: 'var(--space-6)' }}>
+            <label className="form-label" style={{ marginBottom: 'var(--space-2)' }}>대표 사진</label>
+            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-tertiary)', marginBottom: 'var(--space-3)' }}>대표 사진 1장만 업로드 가능.</p>
+            <ImageUpload
+              initialUrl={imageUrl}
+              onUpload={setImageUrl}
+              folder="workshops"
+            />
+          </div>
+
+          <div className="form-group" style={{ marginBottom: 'var(--space-8)' }}>
+            <label className="form-label" style={{ marginBottom: 'var(--space-2)' }}>공방 사진 (선택)</label>
+            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-tertiary)', marginBottom: 'var(--space-3)' }}>공간이미지를 미리 알게되면 예약률이 높아집니다.</p>
+            <ImageUpload
+              initialUrl={studioImageUrl}
+              onUpload={setStudioImageUrl}
+              folder="workshops"
+            />
           </div>
 
           <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%' }} disabled={loading}>

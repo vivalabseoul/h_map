@@ -198,7 +198,7 @@ export default function EditFleaMarketPage() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
             <div className="form-group">
               <label className="form-label">행사 일자/기간 (Date)</label>
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
@@ -215,7 +215,7 @@ export default function EditFleaMarketPage() {
 
           <ImageUpload onUpload={setPosterUrl} initialUrl={posterUrl} folder="flea_markets" />
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
             <div className="form-group">
               <label className="form-label">전화번호 (Phone)</label>
               <input type="tel" className="form-input" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="02-1234-5678" />
@@ -226,7 +226,7 @@ export default function EditFleaMarketPage() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-8)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-4)', marginBottom: 'var(--space-8)' }}>
             <div className="form-group">
               <label className="form-label">인스타그램 (Instagram)</label>
               <input type="text" className="form-input" value={instagram} onChange={(e) => setInstagram(e.target.value)} placeholder="https://instagram.com/..." />

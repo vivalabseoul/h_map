@@ -1,8 +1,8 @@
 /**
  * Compress an image file using HTML5 Canvas.
- * Goal: Resize the image so its maximum dimension is 1200px and compress to ~100KB.
+ * Goal: Resize the image so its maximum dimension is 800px and compress to ~100KB.
  */
-export async function compressImage(file: File, maxWidthOrHeight = 1200, initialQuality = 0.8): Promise<File> {
+export async function compressImage(file: File, maxWidthOrHeight = 800, initialQuality = 0.8): Promise<File> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);

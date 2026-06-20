@@ -30,6 +30,7 @@ export default function EditStudioPage() {
   const [snsInstagram, setSnsInstagram] = useState('');
   const [snsYoutube, setSnsYoutube] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [studioImageUrl, setStudioImageUrl] = useState('');
   const [languages, setLanguages] = useState<string[]>([]);
   const [addressTags, setAddressTags] = useState<string[]>([]);
   const [dynamicCategories, setDynamicCategories] = useState(CATEGORIES);
@@ -81,6 +82,9 @@ export default function EditStudioPage() {
           setSnsYoutube(target.snsLinks?.youtube || '');
           if (target.images && target.images.length > 0) {
             setImageUrl(target.images[0]);
+            if (target.images.length > 1) {
+              setStudioImageUrl(target.images[1]);
+            }
           }
           if (target.languages) {
             setLanguages(target.languages);
@@ -108,7 +112,7 @@ export default function EditStudioPage() {
         phone,
         email,
         website,
-        images: imageUrl ? [imageUrl] : [],
+        images: [imageUrl, studioImageUrl].filter(Boolean),
         languages,
         snsLinks: { instagram: snsInstagram, youtube: snsYoutube },
         // Update tags if a new address was selected
@@ -152,18 +156,17 @@ export default function EditStudioPage() {
         <form onSubmit={handleSubmit}>
           
           {/* Language Tabs */}
-          <div style={{ display: 'flex', gap: 'var(--space-2)', borderBottom: '1px solid var(--color-border)', marginBottom: 'var(--space-6)' }}>
+          <div style={{ display: 'flex', gap: 'var(--space-2)', borderBottom: '1px solid var(--color-border)', marginBottom: 'var(--space-6)', overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '4px' }}>
             {tabs.map((tab) => (
               <button
                 key={tab.key}
                 type="button"
                 onClick={() => setActiveTab(tab.key)}
+                className="lang-tab-btn"
                 style={{
-                  padding: 'var(--space-3) var(--space-4)',
                   borderBottom: activeTab === tab.key ? '2px solid var(--color-accent)' : '2px solid transparent',
                   color: activeTab === tab.key ? 'var(--color-accent)' : 'var(--color-text-secondary)',
-                  fontWeight: activeTab === tab.key ? 600 : 400,
-                  transition: 'all 0.2s'
+                  fontWeight: activeTab === tab.key ? 600 : 400
                 }}
               >
                 {tab.label}
@@ -184,11 +187,21 @@ export default function EditStudioPage() {
           </div>
 
           <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
-            <label className="form-label">스튜디오 소개 (Brand Intro) - {activeTab.toUpperCase()}</label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+              <label className="form-label">스튜디오 소개 (Brand Intro) - {activeTab.toUpperCase()}</label>
+              <span style={{ fontSize: '0.8rem', color: (description[activeTab]?.length || 0) >= 300 ? 'var(--color-danger)' : 'var(--color-text-tertiary)' }}>
+                {(description[activeTab]?.length || 0)} / 300
+              </span>
+            </div>
             <textarea
               className="form-input form-textarea"
               value={description[activeTab]}
-              onChange={(e) => handleLangChange('description', e.target.value)}
+              onChange={(e) => {
+                if (e.target.value.length <= 300) {
+                  handleLangChange('description', e.target.value);
+                }
+              }}
+              maxLength={300}
               placeholder="스튜디오의 철학, 특징, 전반적인 브랜드를 소개해 주세요."
               required={activeTab === 'ko'}
             />
@@ -212,21 +225,10 @@ export default function EditStudioPage() {
             )}
           </div>
 
-          <hr className="divider" />
 
-          {/* Image Upload */}
-          <div style={{ marginBottom: 'var(--space-4)' }}>
-            <label className="form-label" style={{ marginBottom: 'var(--space-2)' }}>스튜디오 대표 사진 (Studio Photo)</label>
-            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-tertiary)', marginBottom: 'var(--space-3)' }}>📸 대표 사진 1장만 업로드 가능합니다.</p>
-            <ImageUpload 
-              initialUrl={imageUrl} 
-              onUpload={setImageUrl} 
-              folder="workshops" 
-            />
-          </div>
 
           {/* Global Config */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
             <div className="form-group">
               <label className="form-label">종목 (Category)</label>
               <select 
@@ -268,7 +270,7 @@ export default function EditStudioPage() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
             <div className="form-group">
               <label className="form-label">전화번호 (Phone)</label>
               <input type="text" className="form-input" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="010-1234-5678" />
@@ -284,7 +286,7 @@ export default function EditStudioPage() {
             <input type="url" className="form-input" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://" />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
             <div className="form-group">
               <label className="form-label">인스타그램 (Instagram)</label>
               <input type="text" className="form-input" value={snsInstagram} onChange={(e) => setSnsInstagram(e.target.value)} placeholder="예: vivalab_official (아이디만 입력)" />
@@ -315,6 +317,29 @@ export default function EditStudioPage() {
                 </label>
               ))}
             </div>
+          </div>
+
+
+          <hr className="divider" style={{ margin: 'var(--space-6) 0' }} />
+
+          <div className="form-group" style={{ marginBottom: 'var(--space-6)' }}>
+            <label className="form-label" style={{ marginBottom: 'var(--space-2)' }}>스튜디오 대표 사진 (Studio Photo)</label>
+            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-tertiary)', marginBottom: 'var(--space-3)' }}>📸 대표 사진 1장만 업로드 가능합니다.</p>
+            <ImageUpload 
+              initialUrl={imageUrl} 
+              onUpload={setImageUrl} 
+              folder="workshops" 
+            />
+          </div>
+
+          <div className="form-group" style={{ marginBottom: 'var(--space-8)' }}>
+            <label className="form-label" style={{ marginBottom: 'var(--space-2)' }}>공방 사진 (선택)</label>
+            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-tertiary)', marginBottom: 'var(--space-3)' }}>📸 공방의 내부/외부 사진을 선택적으로 추가할 수 있습니다.</p>
+            <ImageUpload 
+              initialUrl={studioImageUrl} 
+              onUpload={setStudioImageUrl} 
+              folder="workshops" 
+            />
           </div>
 
           <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%' }} disabled={loading}>

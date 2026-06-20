@@ -33,7 +33,7 @@ export default function RegisterWorkshopModal({ onClose, onSuccess }: RegisterWo
           const canvas = document.createElement('canvas');
           let width = img.width;
           let height = img.height;
-          const MAX_SIZE = 1200;
+          const MAX_SIZE = 800;
           if (width > height && width > MAX_SIZE) {
             height *= MAX_SIZE / width;
             width = MAX_SIZE;

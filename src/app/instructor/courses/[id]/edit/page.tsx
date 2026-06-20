@@ -184,18 +184,17 @@ export default function EditCoursePage() {
           </div>
 
           {/* Language Tabs */}
-          <div style={{ display: 'flex', gap: 'var(--space-2)', borderBottom: '1px solid var(--color-border)', marginBottom: 'var(--space-6)' }}>
+          <div style={{ display: 'flex', gap: 'var(--space-2)', borderBottom: '1px solid var(--color-border)', marginBottom: 'var(--space-6)', overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '4px' }}>
             {tabs.map((tab) => (
               <button
                 key={tab.key}
                 type="button"
                 onClick={() => setActiveTab(tab.key)}
+                className="lang-tab-btn"
                 style={{
-                  padding: 'var(--space-3) var(--space-4)',
                   borderBottom: activeTab === tab.key ? '2px solid var(--color-accent)' : '2px solid transparent',
                   color: activeTab === tab.key ? 'var(--color-accent)' : 'var(--color-text-secondary)',
-                  fontWeight: activeTab === tab.key ? 600 : 400,
-                  transition: 'all 0.2s'
+                  fontWeight: activeTab === tab.key ? 600 : 400
                 }}
               >
                 {tab.label}
@@ -216,46 +215,86 @@ export default function EditCoursePage() {
           </div>
 
           <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
-            <label className="form-label">클래스 소개 (Intro) - {activeTab.toUpperCase()}</label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+              <label className="form-label">클래스 소개 (Intro) - {activeTab.toUpperCase()}</label>
+              <span style={{ fontSize: '0.8rem', color: (description[activeTab].intro?.length || 0) >= 200 ? 'var(--color-danger)' : 'var(--color-text-tertiary)' }}>
+                {(description[activeTab].intro?.length || 0)} / 200
+              </span>
+            </div>
             <textarea
               className="form-input form-textarea"
               style={{ minHeight: '80px' }}
               value={description[activeTab].intro}
-              onChange={(e) => handleLangChange('intro', e.target.value)}
+              onChange={(e) => {
+                if (e.target.value.length <= 200) {
+                  handleLangChange('intro', e.target.value);
+                }
+              }}
+              maxLength={200}
               placeholder="클래스에 대한 전반적인 소개를 적어주세요."
               required={activeTab === 'ko'}
             />
           </div>
 
           <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
-            <label className="form-label">커리큘럼 소개 (Curriculum) - {activeTab.toUpperCase()}</label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+              <label className="form-label">커리큘럼 소개 (Curriculum) - {activeTab.toUpperCase()}</label>
+              <span style={{ fontSize: '0.8rem', color: (description[activeTab].curriculum?.length || 0) >= 300 ? 'var(--color-danger)' : 'var(--color-text-tertiary)' }}>
+                {(description[activeTab].curriculum?.length || 0)} / 300
+              </span>
+            </div>
             <textarea
               className="form-input form-textarea"
               style={{ minHeight: '80px' }}
               value={description[activeTab].curriculum}
-              onChange={(e) => handleLangChange('curriculum', e.target.value)}
+              onChange={(e) => {
+                if (e.target.value.length <= 300) {
+                  handleLangChange('curriculum', e.target.value);
+                }
+              }}
+              maxLength={300}
               placeholder="시간대별 혹은 단계별 진행 과정을 적어주세요."
             />
           </div>
 
           <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
-            <label className="form-label">포함 내역 (Included Items) - {activeTab.toUpperCase()}</label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+              <label className="form-label">포함 내역 (Included Items) - {activeTab.toUpperCase()}</label>
+              <span style={{ fontSize: '0.8rem', color: (description[activeTab].included?.length || 0) >= 200 ? 'var(--color-danger)' : 'var(--color-text-tertiary)' }}>
+                {(description[activeTab].included?.length || 0)} / 200
+              </span>
+            </div>
             <textarea
               className="form-input form-textarea"
               style={{ minHeight: '60px' }}
               value={description[activeTab].included}
-              onChange={(e) => handleLangChange('included', e.target.value)}
+              onChange={(e) => {
+                if (e.target.value.length <= 200) {
+                  handleLangChange('included', e.target.value);
+                }
+              }}
+              maxLength={200}
               placeholder="재료비, 포장비, 다과 등 수강료에 포함된 내역을 적어주세요."
             />
           </div>
 
           <div className="form-group" style={{ marginBottom: 'var(--space-6)' }}>
-            <label className="form-label">주의사항 (Precautions) - {activeTab.toUpperCase()}</label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+              <label className="form-label">주의사항 (Precautions) - {activeTab.toUpperCase()}</label>
+              <span style={{ fontSize: '0.8rem', color: (description[activeTab].precautions?.length || 0) >= 200 ? 'var(--color-danger)' : 'var(--color-text-tertiary)' }}>
+                {(description[activeTab].precautions?.length || 0)} / 200
+              </span>
+            </div>
             <textarea
               className="form-input form-textarea"
               style={{ minHeight: '60px' }}
               value={description[activeTab].precautions}
-              onChange={(e) => handleLangChange('precautions', e.target.value)}
+              onChange={(e) => {
+                if (e.target.value.length <= 200) {
+                  handleLangChange('precautions', e.target.value);
+                }
+              }}
+              maxLength={200}
               placeholder="복장 제한, 주차 가능 여부, 지각 시 유의사항 등을 적어주세요."
             />
           </div>
@@ -272,7 +311,7 @@ export default function EditCoursePage() {
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
             <div className="form-group">
               <label className="form-label">가격 (Price)</label>
               <input type="text" className="form-input" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="예: 50,000원 / $50" required />
@@ -283,14 +322,14 @@ export default function EditCoursePage() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
             <div className="form-group">
               <label className="form-label">최대 인원 (Max Participants)</label>
               <input type="number" min="1" max="50" className="form-input" value={maxParticipants} onChange={(e) => setMaxParticipants(parseInt(e.target.value))} required />
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
             <div className="form-group">
               <label className="form-label">시작 기간 (Start Date) - 선택사항</label>
               <input type="date" className="form-input" value={startDate} onChange={(e) => setStartDate(e.target.value)} />

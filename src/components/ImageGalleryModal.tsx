@@ -11,7 +11,7 @@ interface ImageGalleryModalProps {
 }
 
 export default function ImageGalleryModal({ isOpen, onClose, onSelect, folder }: ImageGalleryModalProps) {
-  const [images, setImages] = useState<{name: string, url: string, created_at: string}[]>([]);
+  const [images, setImages] = useState<{ name: string, url: string, created_at: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentFolder, setCurrentFolder] = useState('inquiries');
 
@@ -42,13 +42,9 @@ export default function ImageGalleryModal({ isOpen, onClose, onSelect, folder }:
     <div className="modal-overlay" style={{ zIndex: 9999 }}>
       <div className="modal-content" style={{ maxWidth: '800px', width: '90%', maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
-          <h2 style={{ margin: 0, fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <ImageIcon size={20} />
-            서버 이미지 불러오기
-          </h2>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <select 
-              value={currentFolder} 
+            <select
+              value={currentFolder}
               onChange={e => setCurrentFolder(e.target.value)}
               style={{ padding: '6px 12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', outline: 'none' }}
             >
@@ -62,7 +58,7 @@ export default function ImageGalleryModal({ isOpen, onClose, onSelect, folder }:
             </button>
           </div>
         </div>
-        
+
         <div style={{ flex: 1, overflowY: 'auto', minHeight: '300px' }}>
           {loading ? (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: 'var(--color-primary)' }}>
@@ -75,15 +71,15 @@ export default function ImageGalleryModal({ isOpen, onClose, onSelect, folder }:
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '16px' }}>
               {images.map(img => (
-                <div 
-                  key={img.name} 
+                <div
+                  key={img.name}
                   onClick={() => {
                     onSelect(img.url);
                     onClose();
                   }}
-                  style={{ 
-                    cursor: 'pointer', 
-                    borderRadius: 'var(--radius-md)', 
+                  style={{
+                    cursor: 'pointer',
+                    borderRadius: 'var(--radius-md)',
                     overflow: 'hidden',
                     border: '2px solid transparent',
                     transition: 'border-color 0.2s',

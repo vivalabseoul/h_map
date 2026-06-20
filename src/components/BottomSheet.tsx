@@ -111,17 +111,14 @@ export default function BottomSheet({ workshop, allWorkshops, onWorkshopClick, o
 
   return (
     <Sheet onClose={onClose}>
-      {/* Image Carousel (Only show if images exist) */}
+      {/* Main Image (Representative Photo) */}
       {workshop.images && workshop.images.length > 0 && (
         <div className={styles.imageCarousel}>
-          {workshop.images.map((img, idx) => (
-            <img
-              key={idx}
-              src={img}
-              alt={`${workshop.name.ko || workshop.name.en} - image ${idx + 1}`}
-              className={styles.workshopImage}
-            />
-          ))}
+          <img
+            src={workshop.images[0]}
+            alt={`${workshop.name.ko || workshop.name.en} - main image`}
+            className={styles.workshopImage}
+          />
         </div>
       )}
 
@@ -251,6 +248,21 @@ export default function BottomSheet({ workshop, allWorkshops, onWorkshopClick, o
           </div>
         )}
       </div>
+
+      {/* Studio Photos (Secondary Images) */}
+      {workshop.images && workshop.images.length > 1 && (
+        <div style={{ marginTop: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
+          <h3 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: 'var(--space-3)' }}>Studio Space</h3>
+          {workshop.images.slice(1).map((img, idx) => (
+            <img
+              key={idx}
+              src={img}
+              alt={`${workshop.name.ko || workshop.name.en} - studio image ${idx + 1}`}
+              style={{ width: '100%', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-2)' }}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Actions */}
       <div className={styles.actions}>

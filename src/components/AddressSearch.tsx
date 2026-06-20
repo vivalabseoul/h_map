@@ -75,6 +75,7 @@ export default function AddressSearch({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onClick={() => setIsOpen(true)}
+          style={{ flex: 1, minWidth: 0 }}
           readOnly
         />
         <button 
