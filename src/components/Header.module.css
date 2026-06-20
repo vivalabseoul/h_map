@@ -62,16 +62,19 @@
 }
 
 .registerButton {
+  position: fixed;
+  bottom: 60px;
+  right: 20px;
+  z-index: 1000;
   background: var(--color-accent);
   color: white;
   border: none;
-  padding: var(--space-2) var(--space-3);
-  /* Unify padding with other elements */
+  padding: 12px 24px;
   border-radius: var(--radius-full);
   font-weight: 600;
   cursor: pointer;
-  font-size: 0.8rem;
-  box-shadow: var(--shadow-sm);
+  font-size: 0.95rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   transition: transform 0.2s ease, background 0.2s ease;
   white-space: nowrap;
 }
@@ -141,7 +144,7 @@
 }
 
 .mobileSubNavLink:hover {
-  background: rgba(0,0,0,0.05);
+  background: rgba(0, 0, 0, 0.05);
   color: var(--color-text-primary);
 }
 
@@ -383,9 +386,6 @@
 }
 
 @media (max-width: 768px) {
-  .headerActions {
-    gap: var(--space-2);
-  }
 
   .navLinks,
   .headerRight,
@@ -396,12 +396,12 @@
   .menuButton {
     display: flex;
   }
-  
+
   .headerSearchContainer {
     max-width: 200px;
     padding: 6px 12px;
   }
-  
+
   .headerSearchInput {
     font-size: 0.9rem;
   }
@@ -411,18 +411,7 @@
   }
 
   .registerButton {
-    position: fixed;
-    bottom: 80px;
-    right: 16px;
-    left: auto;
-    transform: none;
-    z-index: 9999;
-    padding: 12px 20px;
-    font-size: 0.9rem;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    bottom: 20px;
   }
 
-  .registerButton:hover {
-    transform: scale(1.05);
-  }
 }
