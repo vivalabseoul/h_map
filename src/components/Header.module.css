@@ -102,6 +102,29 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
+.mobileSubMenuContainer {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg-alt);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.mobileSubNavLink {
+  padding: var(--space-2) var(--space-5);
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.mobileSubNavLink:hover {
+  background: rgba(0,0,0,0.05);
+  color: var(--color-text-primary);
+}
+
 .menuButton {
   display: none;
   background: none;
@@ -345,5 +368,9 @@
 
   .logo {
     font-size: 1.2rem;
+  }
+
+  .hideOnMobileLoggedIn {
+    display: none !important;
   }
 }
