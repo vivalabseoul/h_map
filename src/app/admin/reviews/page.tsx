@@ -2,11 +2,12 @@
 import React, { useEffect, useState } from 'react';
 import { getAllReviews, deleteReview } from '@/lib/database';
 import type { Review } from '@/types';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Search } from 'lucide-react';
 
 export default function AdminReviewsPage() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchReviews();
@@ -33,12 +34,32 @@ export default function AdminReviewsPage() {
 
   if (loading) return <div>Loading...</div>;
 
+  const filteredReviews = reviews.filter(r => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    const nameMatch = (r.userName || '').toLowerCase().includes(q);
+    const textMatch = (r.text || '').toLowerCase().includes(q);
+    return nameMatch || textMatch;
+  });
+
   return (
     <div>
       <div className="page-header">
         <div>
           <h1>리뷰 관리</h1>
-          <p>사용자들이 남긴 전체 리뷰를 확인하고 부적절한 리뷰를 삭제합니다.</p>
+          <p>{filteredReviews.length} reviews found</p>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: 'var(--space-3)', marginBottom: 'var(--space-6)', flexWrap: 'wrap' }}>
+        <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
+          <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
+          <input
+            type="text" className="form-input"
+            style={{ paddingLeft: '36px', width: '100%' }}
+            placeholder="Search by username, content..."
+            value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
       </div>
 
@@ -54,7 +75,7 @@ export default function AdminReviewsPage() {
             </tr>
           </thead>
           <tbody>
-            {reviews.map((r) => (
+            {filteredReviews.map((r) => (
               <tr key={r.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
                 <td style={{ padding: 'var(--space-3)' }}>{r.userName}</td>
                 <td style={{ padding: 'var(--space-3)' }}>{r.text}</td>
@@ -67,10 +88,10 @@ export default function AdminReviewsPage() {
                 </td>
               </tr>
             ))}
-            {reviews.length === 0 && (
+            {filteredReviews.length === 0 && (
               <tr>
                 <td colSpan={5} style={{ padding: 'var(--space-4)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
-                  등록된 리뷰가 없습니다.
+                  검색 결과가 없습니다.
                 </td>
               </tr>
             )}

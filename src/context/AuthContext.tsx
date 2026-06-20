@@ -13,7 +13,7 @@ interface AuthContextValue {
   loading: boolean;
   signInGoogle: () => Promise<void>;
   signInEmail: (email: string, password: string) => Promise<User | null>;
-  register: (email: string, password: string, name: string, role?: UserRole, file?: File | null) => Promise<User | null>;
+  register: (email: string, password: string, name: string, role?: UserRole, file?: File | null, companyName?: string, jobTitle?: string) => Promise<User | null>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   updatePassword: (password: string) => Promise<void>;

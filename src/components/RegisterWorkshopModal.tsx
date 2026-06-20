@@ -1,9 +1,9 @@
 'use client';
 import React, { useState } from 'react';
-import { createInquiry } from '@/lib/database';
+import { createInquiry, uploadImage } from '@/lib/database';
 import { useLanguage } from '@/context/LanguageContext';
 import styles from './RegisterWorkshopModal.module.css';
-import { X, Store, AtSign, Phone, User } from 'lucide-react';
+import { X, Store, AtSign, Phone, User, Image as ImageIcon } from 'lucide-react';
 
 interface RegisterWorkshopModalProps {
   onClose: () => void;
@@ -18,6 +18,56 @@ export default function RegisterWorkshopModal({ onClose, onSuccess }: RegisterWo
     contact: '',
     sns: '',
   });
+  const [mainImage, setMainImage] = useState<File | null>(null);
+
+  const resizeImageTo100KB = (file: File): Promise<File> => {
+    return new Promise((resolve) => {
+      if (!file.type.startsWith('image/')) {
+        resolve(file);
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          const MAX_SIZE = 1200;
+          if (width > height && width > MAX_SIZE) {
+            height *= MAX_SIZE / width;
+            width = MAX_SIZE;
+          } else if (height > MAX_SIZE) {
+            width *= MAX_SIZE / height;
+            height = MAX_SIZE;
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+
+          let quality = 0.9;
+          const compress = () => {
+            canvas.toBlob((blob) => {
+              if (blob) {
+                if (blob.size > 100 * 1024 && quality > 0.1) {
+                  quality -= 0.15;
+                  compress();
+                } else {
+                  resolve(new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() }));
+                }
+              } else {
+                resolve(file);
+              }
+            }, 'image/jpeg', quality);
+          };
+          compress();
+        };
+        img.src = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,10 +78,25 @@ export default function RegisterWorkshopModal({ onClose, onSuccess }: RegisterWo
 
     setLoading(true);
     try {
+      let imageUrl = '';
+      if (mainImage) {
+        try {
+          imageUrl = await uploadImage(mainImage, 'inquiries');
+        } catch (e) {
+          // fallback to base64 if supabase is not configured
+          imageUrl = await new Promise((resolve) => {
+             const reader = new FileReader();
+             reader.onload = (ev) => resolve(ev.target?.result as string);
+             reader.readAsDataURL(mainImage);
+          });
+        }
+      }
+
       const content = `
 공방/신청자 이름: ${formData.name}
 연락처(전화번호 등): ${formData.contact || '미입력'}
 SNS/인스타: ${formData.sns}
+${imageUrl ? `메인이미지: ${imageUrl}` : ''}
       `.trim();
 
       await createInquiry({
@@ -100,6 +165,24 @@ SNS/인스타: ${formData.sns}
               onChange={(e) => setFormData({ ...formData, sns: e.target.value })}
               required
             />
+          </div>
+
+          <div className={styles.inputGroup}>
+            <label><ImageIcon size={16} /> 메인이미지</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={async (e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                  const file = e.target.files[0];
+                  const resized = await resizeImageTo100KB(file);
+                  setMainImage(resized);
+                }
+              }}
+            />
+            <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
+              공방소개에서 메인이미지로 등록됩니다. (자동으로 100kb 이하로 최적화됩니다)
+            </p>
           </div>
 
           <button type="submit" className={styles.submitBtn} disabled={loading}>

@@ -1,8 +1,8 @@
 /**
  * Compress an image file using HTML5 Canvas.
- * Goal: Resize the image so its maximum dimension is 1200px and compress to ~200KB.
+ * Goal: Resize the image so its maximum dimension is 1200px and compress to ~100KB.
  */
-export async function compressImage(file: File, maxWidthOrHeight = 1200, quality = 0.8): Promise<File> {
+export async function compressImage(file: File, maxWidthOrHeight = 1200, initialQuality = 0.8): Promise<File> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -37,22 +37,31 @@ export async function compressImage(file: File, maxWidthOrHeight = 1200, quality
 
         ctx.drawImage(img, 0, 0, width, height);
 
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) {
-              reject(new Error('Canvas is empty'));
-              return;
-            }
-            // Create a new File from the blob
-            const compressedFile = new File([blob], file.name, {
-              type: 'image/jpeg',
-              lastModified: Date.now(),
-            });
-            resolve(compressedFile);
-          },
-          'image/jpeg',
-          quality
-        );
+        let quality = initialQuality;
+        const compress = () => {
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) {
+                reject(new Error('Canvas is empty'));
+                return;
+              }
+              if (blob.size > 100 * 1024 && quality > 0.1) {
+                quality -= 0.15;
+                compress();
+              } else {
+                const compressedFile = new File([blob], file.name, {
+                  type: 'image/jpeg',
+                  lastModified: Date.now(),
+                });
+                resolve(compressedFile);
+              }
+            },
+            'image/jpeg',
+            quality
+          );
+        };
+        
+        compress();
       };
       img.onerror = (error) => reject(error);
     };

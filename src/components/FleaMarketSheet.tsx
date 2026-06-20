@@ -57,7 +57,7 @@ export default function FleaMarketSheet({ market, onClose }: FleaMarketSheetProp
           </div>
 
           <div className={styles.ratingRow}>
-            <span className={styles.categoryBadge} style={{ background: market.source === 'api' ? '#fef3c7' : '#e0f2fe', color: market.source === 'api' ? '#d97706' : '#0284c7' }}>
+            <span className={styles.categoryBadge} style={{ background: market.source === 'api' ? '#fef3c7' : 'var(--color-accent-light)', color: market.source === 'api' ? '#d97706' : 'var(--color-accent)' }}>
               {market.source === 'api' ? '🎉 Local Festival' : '🎪 Flea Market'}
             </span>
           </div>
@@ -69,7 +69,7 @@ export default function FleaMarketSheet({ market, onClose }: FleaMarketSheetProp
           <div className={styles.infoGrid}>
             <div className={styles.infoItem}>
               <Calendar size={16} className={styles.infoIcon} />
-              <span>{market.date}</span>
+              <span style={{ color: 'var(--color-accent)', fontWeight: 600 }}>{market.date}</span>
             </div>
             <div className={styles.infoItem}>
               <MapPin size={16} className={styles.infoIcon} />
@@ -130,7 +130,7 @@ export default function FleaMarketSheet({ market, onClose }: FleaMarketSheetProp
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="btn btn-primary"
-                style={{ width: '100%', display: 'flex', justifyContent: 'center', backgroundColor: 'var(--color-clay)' }}
+                style={{ width: '100%', display: 'flex', justifyContent: 'center', backgroundColor: 'var(--color-brown)', color: '#ffffff' }}
                 onClick={() => incrementVendorApplicationClick(market.id).catch(console.error)}
               >
                 🎪 Apply as a Vendor

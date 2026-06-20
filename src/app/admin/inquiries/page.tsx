@@ -1,5 +1,6 @@
 'use client';
 import React, { useEffect, useState } from 'react';
+import { Search } from 'lucide-react';
 import { getInquiries, updateInquiryReply } from '@/lib/database';
 import type { Inquiry } from '@/types';
 
@@ -7,6 +8,7 @@ export default function AdminInquiriesPage() {
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     getInquiries().then(setInquiries);
@@ -36,12 +38,34 @@ export default function AdminInquiriesPage() {
     return map[cat] || cat;
   };
 
+  const filteredInquiries = inquiries.filter(inq => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    const titleMatch = (inq.title || '').toLowerCase().includes(q);
+    const contentMatch = (inq.content || '').toLowerCase().includes(q);
+    const userMatch = (inq.userName || '').toLowerCase().includes(q) || (inq.userEmail || '').toLowerCase().includes(q);
+    const categoryMatch = categoryLabel(inq.category).toLowerCase().includes(q);
+    return titleMatch || contentMatch || userMatch || categoryMatch;
+  });
+
   return (
     <div>
       <div className="page-header">
         <div>
           <h1>문의 관리 (Inquiries)</h1>
-          <p>사용자 문의 내역을 확인하고 답변할 수 있습니다.</p>
+          <p>{filteredInquiries.length} inquiries found</p>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: 'var(--space-3)', marginBottom: 'var(--space-6)', flexWrap: 'wrap' }}>
+        <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
+          <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
+          <input
+            type="text" className="form-input"
+            style={{ paddingLeft: '36px', width: '100%' }}
+            placeholder="Search by title, content, author..."
+            value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
       </div>
 
@@ -58,7 +82,7 @@ export default function AdminInquiriesPage() {
             </tr>
           </thead>
           <tbody>
-            {inquiries.map((inq) => (
+            {filteredInquiries.map((inq) => (
               <React.Fragment key={inq.id}>
                 <tr>
                   <td><span className="badge badge-info">{categoryLabel(inq.category)}</span></td>
@@ -123,10 +147,10 @@ export default function AdminInquiriesPage() {
                 )}
               </React.Fragment>
             ))}
-            {inquiries.length === 0 && (
+            {filteredInquiries.length === 0 && (
               <tr>
                 <td colSpan={6} style={{ textAlign: 'center', padding: 'var(--space-8)' }}>
-                  등록된 문의가 없습니다.
+                  검색 결과가 없습니다.
                 </td>
               </tr>
             )}

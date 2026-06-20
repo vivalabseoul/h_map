@@ -162,6 +162,28 @@ CREATE POLICY "Enable all operations for all users" ON public.inquiries FOR ALL 
 CREATE POLICY "Enable all operations for all users" ON public.flea_markets FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Enable all operations for all users" ON public.notifications FOR ALL USING (true) WITH CHECK (true);
 
--- Insert Demo Users
--- Note: In Supabase, auth.users must be created via the Auth API. 
--- The public.users table should be synced via a trigger.
+-- ==========================================
+-- Auth Trigger (Sync auth.users to public.users)
+-- ==========================================
+-- Creates a new row in public.users whenever a user signs up
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.users (id, email, display_name, photo_url, role, disabled)
+  VALUES (
+    new.id,
+    new.email,
+    COALESCE(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name', SPLIT_PART(new.email, '@', 1)),
+    COALESCE(new.raw_user_meta_data->>'avatar_url', ''),
+    'member',
+    false
+  );
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger the function every time a user is created
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();

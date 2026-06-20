@@ -19,7 +19,8 @@ export default function ImageUpload({ initialUrl = '', onUpload, folder = 'poste
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { userRole, user } = useAuth();
   
-  const isAdmin = userRole === 'super_admin';
+  // 보안 및 프라이버시를 위해 최고관리자(super_admin)와 일반 관리자(manager)만 접근 가능
+  const isAdmin = userRole === 'super_admin' || userRole === 'manager';
 
   React.useEffect(() => {
     if (initialUrl) {
@@ -39,7 +40,7 @@ export default function ImageUpload({ initialUrl = '', onUpload, folder = 'poste
 
     setIsUploading(true);
     try {
-      // 1. Compress image (~200kb, max 1200px)
+      // 1. Compress image (~100kb, max 1200px)
       const compressedFile = await compressImage(file, 1200, 0.8);
       
       // 2. Upload to Supabase Storage
@@ -73,21 +74,22 @@ export default function ImageUpload({ initialUrl = '', onUpload, folder = 'poste
             type="button"
             onClick={() => setIsGalleryOpen(true)}
             style={{
-              display: 'flex',
+              display: 'inline-flex',
               alignItems: 'center',
               gap: '4px',
-              padding: '4px 12px',
+              padding: '6px 16px',
               fontSize: '0.875rem',
-              background: 'var(--color-primary)',
+              background: '#0284c7',
               color: 'white',
               border: 'none',
-              borderRadius: 'var(--radius-sm)',
+              borderRadius: '6px',
               cursor: 'pointer',
-              fontWeight: 500
+              fontWeight: 'bold',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
             }}
           >
             <Library size={16} />
-            기존 이미지 갤러리
+            [관리자용] 기존 이미지 불러오기
           </button>
         )}
       </div>
@@ -120,7 +122,7 @@ export default function ImageUpload({ initialUrl = '', onUpload, folder = 'poste
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', color: 'var(--color-text-secondary)' }}>
               <Upload size={32} />
               <span style={{ fontSize: '0.875rem' }}>클릭하여 이미지 파일 선택 (JPG, PNG 등)</span>
-              <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>원본 사진(예: 5MB)도 자동으로 <strong>200KB 내외로 압축</strong>되어 빠르게 업로드됩니다.</span>
+              <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>원본 사진(예: 5MB)도 자동으로 <strong>100KB 내외로 압축</strong>되어 빠르게 업로드됩니다.</span>
             </div>
           )}
         </div>

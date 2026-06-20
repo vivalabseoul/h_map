@@ -27,6 +27,14 @@ const safeParse = (val: any) => {
   return val;
 };
 
+const ensureLocaleObject = (val: any): Record<Locale, string> => {
+  const parsed = safeParse(val);
+  if (typeof parsed === 'string') {
+    return { ko: parsed, en: '', ja: '', zh: '' };
+  }
+  return parsed || { ko: '', en: '', ja: '', zh: '' };
+};
+
 const mapWorkshop = (d: any): Workshop => ({
   id: d.id, ownerId: d.owner_id, ownerName: d.owner_name, name: safeParse(d.name) || {en:'',ko:'',ja:'',zh:''}, category: d.category,
   description: safeParse(d.description) || {en:'',ko:'',ja:'',zh:''}, address: safeParse(d.address) || {en:'',ko:'',ja:'',zh:''}, lat: d.lat, lng: d.lng,
@@ -65,9 +73,13 @@ const mapInquiry = (d: any): Inquiry => ({
   reply: d.reply, createdAt: d.created_at,
 });
 const mapFleaMarket = (d: any): FleaMarket => ({
-  id: d.id, creatorId: d.creator_id, creatorName: d.creator_name, name: d.name,
-  date: d.date, address: d.address, lat: d.lat, lng: d.lng, admissionFee: d.admission_fee,
-  posterUrl: d.poster_url, images: d.images || [], description: d.description,
+  id: d.id, creatorId: d.creator_id, creatorName: d.creator_name, 
+  name: ensureLocaleObject(d.name),
+  date: d.date, 
+  address: ensureLocaleObject(d.address), 
+  lat: d.lat, lng: d.lng, admissionFee: d.admission_fee,
+  posterUrl: d.poster_url, images: safeParse(d.images) || [], 
+  description: ensureLocaleObject(d.description),
   phone: d.phone, website: d.website, instagram: d.instagram, youtube: d.youtube,
   vendorApplicationLink: d.vendor_application_link,
   applicationClicks: d.application_clicks || 0,

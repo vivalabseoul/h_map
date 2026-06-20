@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import ImageUpload from '@/components/ImageUpload';
 import { updateUserProfile } from '@/lib/database';
+import { supabase } from '@/lib/supabase';
 
 export default function ProfileForm() {
   const { user, updatePassword, updateEmail } = useAuth();
@@ -44,6 +45,17 @@ export default function ProfileForm() {
         photoURL,
         bio
       });
+
+      // 서버(auth.users)의 메타데이터도 동기화
+      if (supabase) {
+        await supabase.auth.updateUser({
+          data: {
+            full_name: displayName,
+            name: displayName,
+            avatar_url: photoURL
+          }
+        });
+      }
       
       if (newPassword) {
         await updatePassword(newPassword);

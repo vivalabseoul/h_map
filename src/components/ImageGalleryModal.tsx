@@ -13,11 +13,18 @@ interface ImageGalleryModalProps {
 export default function ImageGalleryModal({ isOpen, onClose, onSelect, folder }: ImageGalleryModalProps) {
   const [images, setImages] = useState<{name: string, url: string, created_at: string}[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentFolder, setCurrentFolder] = useState('inquiries');
+
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentFolder('inquiries');
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen) {
       setLoading(true);
-      listStorageImages(folder, 50)
+      listStorageImages(currentFolder, 50)
         .then(data => {
           setImages(data);
           setLoading(false);
@@ -27,7 +34,7 @@ export default function ImageGalleryModal({ isOpen, onClose, onSelect, folder }:
           setLoading(false);
         });
     }
-  }, [isOpen, folder]);
+  }, [isOpen, currentFolder]);
 
   if (!isOpen) return null;
 
@@ -37,11 +44,23 @@ export default function ImageGalleryModal({ isOpen, onClose, onSelect, folder }:
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
           <h2 style={{ margin: 0, fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <ImageIcon size={20} />
-            기존 이미지 선택 ({folder})
+            서버 이미지 불러오기
           </h2>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)' }}>
-            <X size={24} />
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <select 
+              value={currentFolder} 
+              onChange={e => setCurrentFolder(e.target.value)}
+              style={{ padding: '6px 12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', outline: 'none' }}
+            >
+              <option value="inquiries">내 공방 등록 (inquiries)</option>
+              <option value="workshops">스튜디오 (workshops)</option>
+              <option value="flea_markets">플리마켓 (flea_markets)</option>
+              <option value="posters">포스터 (posters)</option>
+            </select>
+            <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)', padding: '4px' }}>
+              <X size={24} />
+            </button>
+          </div>
         </div>
         
         <div style={{ flex: 1, overflowY: 'auto', minHeight: '300px' }}>

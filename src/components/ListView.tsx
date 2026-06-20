@@ -54,15 +54,9 @@ export default function ListView({ workshops, fleaMarkets, onWorkshopClick, onFl
                     <div className={styles.subtitle}>{market.date}</div>
                     
                     <div className={styles.meta}>
-                      {!hasImage && desc && (
-                        <div className={styles.metaItem} style={{ marginBottom: '8px', color: '#333' }}>
-                          <span className={styles.metaIcon}>💬</span>
-                          <span style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{desc}</span>
-                        </div>
-                      )}
                       <div className={styles.metaItem}>
-                        <span className={styles.metaIcon}>📍</span>
-                        <span style={{ display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{address}</span>
+                        <span className={styles.metaIcon}>💬</span>
+                        <span style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{desc}</span>
                       </div>
                     </div>
                   </div>

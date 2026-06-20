@@ -103,7 +103,7 @@
 }
 
 .menuButton {
-  display: block;
+  display: none;
   background: none;
   border: none;
   color: var(--color-text-primary);

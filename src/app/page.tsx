@@ -56,8 +56,9 @@ export default function HomePage() {
         const q = searchQuery.toLowerCase();
         const matchesName = Object.values(w.name).some(n => n?.toLowerCase().includes(q));
         const matchesAddress = Object.values(w.address).some(a => a?.toLowerCase().includes(q));
+        const matchesDescription = Object.values(w.description || {}).some(d => d?.toLowerCase().includes(q));
         const matchesTags = w.tags.some(t => t.toLowerCase().includes(q));
-        if (!matchesName && !matchesAddress && !matchesTags) return false;
+        if (!matchesName && !matchesAddress && !matchesDescription && !matchesTags) return false;
       }
       return true;
     });
@@ -75,8 +76,18 @@ export default function HomePage() {
   }, [globalWorkshops, mapBounds, searchQuery]);
 
   const globalFleaMarkets = useMemo(() => {
-    return fleaMarkets.filter((m) => m.status !== 'inactive');
-  }, [fleaMarkets]);
+    return fleaMarkets.filter((m) => {
+      if (m.status === 'inactive') return false;
+      if (searchQuery.trim() !== '') {
+        const q = searchQuery.toLowerCase();
+        const matchesName = Object.values(m.name || {}).some(n => n?.toLowerCase().includes(q));
+        const matchesAddress = Object.values(m.address || {}).some(a => a?.toLowerCase().includes(q));
+        const matchesDescription = Object.values(m.description || {}).some(d => d?.toLowerCase().includes(q));
+        if (!matchesName && !matchesAddress && !matchesDescription) return false;
+      }
+      return true;
+    });
+  }, [fleaMarkets, searchQuery]);
 
   const viewportFleaMarkets = useMemo(() => {
     if (mapBounds) {

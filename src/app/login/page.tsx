@@ -212,16 +212,9 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p style={{
-          textAlign: 'center',
-          fontSize: 'var(--font-size-sm)',
-          color: 'var(--color-text-secondary)',
-        }}>
-          {t('auth.no_account')}{' '}
-          <Link href="/register" style={{ color: 'var(--color-accent)', fontWeight: 600 }}>
-            {t('nav.register')}
-          </Link>
-        </p>
+        <Link href="/register" className="btn btn-lg" style={{ width: '100%', display: 'flex', justifyContent: 'center', marginBottom: 'var(--space-4)', backgroundColor: '#111111', color: '#ffffff', border: 'none' }}>
+          {t('nav.register')}
+        </Link>
 
         <p style={{
           textAlign: 'center',

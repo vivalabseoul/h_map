@@ -42,7 +42,6 @@ export default function RoleRequestsAdminPage() {
       const { data, error } = await supabase
         .from('role_requests')
         .select('*, users(email, display_name)')
-        .eq('status', 'pending')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -51,7 +50,6 @@ export default function RoleRequestsAdminPage() {
         const { data: fallbackData, error: fallbackError } = await supabase
           .from('role_requests')
           .select('*')
-          .eq('status', 'pending')
           .order('created_at', { ascending: false });
         
         if (fallbackError) {
@@ -81,10 +79,26 @@ export default function RoleRequestsAdminPage() {
       // 1. Update user role
       await updateUserRole(request.user_id, request.requested_role);
 
+      const updateData: any = { status: 'approved' };
+
+      // Delete image from storage to save space and protect privacy
+      if (request.business_card_url) {
+        try {
+          const urlParts = request.business_card_url.split('business_cards/');
+          if (urlParts.length > 1) {
+            const fileName = urlParts[1];
+            await supabase!.storage.from('business_cards').remove([fileName]);
+            updateData.business_card_url = null;
+          }
+        } catch (e) {
+          console.error('Failed to delete image:', e);
+        }
+      }
+
       // 2. Update request status
       const { error } = await supabase!
         .from('role_requests')
-        .update({ status: 'approved' })
+        .update(updateData)
         .eq('id', request.id);
 
       if (error) throw error;
@@ -102,12 +116,28 @@ export default function RoleRequestsAdminPage() {
     if (reason === null) return; // cancelled
 
     try {
+      const updateData: any = { 
+        status: 'rejected', 
+        reject_reason: reason || '관리자에 의해 반려되었습니다.' 
+      };
+
+      // Delete image from storage to save space and protect privacy
+      if (request.business_card_url) {
+        try {
+          const urlParts = request.business_card_url.split('business_cards/');
+          if (urlParts.length > 1) {
+            const fileName = urlParts[1];
+            await supabase!.storage.from('business_cards').remove([fileName]);
+            updateData.business_card_url = null;
+          }
+        } catch (e) {
+          console.error('Failed to delete image:', e);
+        }
+      }
+
       const { error } = await supabase!
         .from('role_requests')
-        .update({ 
-          status: 'rejected', 
-          reject_reason: reason || '관리자에 의해 반려되었습니다.' 
-        })
+        .update(updateData)
         .eq('id', request.id);
 
       if (error) throw error;
@@ -158,7 +188,7 @@ export default function RoleRequestsAdminPage() {
 
       {requests.length === 0 ? (
         <div className={styles.emptyState}>
-          대기 중인 등급 승인 요청이 없습니다.
+          등록된 등급 승인 요청이 없습니다.
         </div>
       ) : (
         <div className={styles.tableContainer}>
@@ -169,6 +199,7 @@ export default function RoleRequestsAdminPage() {
                 <th>이름 (이메일)</th>
                 <th>요청 등급</th>
                 <th>명함</th>
+                <th>상태</th>
                 <th style={{ textAlign: 'right' }}>관리</th>
               </tr>
             </thead>
@@ -209,9 +240,20 @@ export default function RoleRequestsAdminPage() {
                       </div>
                     )}
                   </td>
+                  <td data-label="상태" style={{ fontWeight: '500' }}>
+                    {req.status === 'pending' && <span style={{ color: '#f59e0b' }}>대기 중</span>}
+                    {req.status === 'approved' && <span style={{ color: '#10b981' }}>승인됨</span>}
+                    {req.status === 'rejected' && <span style={{ color: '#ef4444' }}>반려됨</span>}
+                  </td>
                   <td data-label="관리" className={styles.actions}>
-                    <button onClick={() => handleApprove(req)} style={{ background: '#10b981', color: '#fff', border: 'none', padding: '6px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}>승인</button>
-                    <button onClick={() => handleReject(req)} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '6px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}>반려</button>
+                    {req.status === 'pending' ? (
+                      <>
+                        <button onClick={() => handleApprove(req)} style={{ background: '#10b981', color: '#fff', border: 'none', padding: '6px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}>승인</button>
+                        <button onClick={() => handleReject(req)} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '6px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}>반려</button>
+                      </>
+                    ) : (
+                      <span style={{ fontSize: '0.85rem', color: '#666' }}>처리 완료</span>
+                    )}
                   </td>
                 </tr>
               ))}

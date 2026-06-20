@@ -26,6 +26,17 @@ export default function Header() {
     setIsMobileMenuOpen(false);
   }, [pathname]);
 
+  // Briefly open and close sidebar on mobile to indicate it exists
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+      setIsMobileMenuOpen(true);
+      const timer = setTimeout(() => {
+        setIsMobileMenuOpen(false);
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
@@ -92,10 +103,11 @@ export default function Header() {
       <div className={styles.headerActions}>
         <div className={styles.headerRight}>
           <LanguageSwitcher />
-          <AuthButton />
         </div>
 
         <NotificationBell />
+        
+        <AuthButton />
 
         {/* Register Button */}
         <button
@@ -130,7 +142,6 @@ export default function Header() {
         {/* Bottom Actions */}
         <div className={styles.mobileBottomActions}>
           <LanguageSwitcher />
-          <AuthButton />
         </div>
       </div>
 

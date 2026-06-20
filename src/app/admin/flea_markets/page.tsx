@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getFleaMarkets, deleteFleaMarket, updateFleaMarket } from '@/lib/database';
 import type { FleaMarket } from '@/types';
-import { Trash2, Pencil, RefreshCw } from 'lucide-react';
+import { Trash2, Pencil, RefreshCw, Search } from 'lucide-react';
 
 export default function AdminFleaMarketsPage() {
   const [markets, setMarkets] = useState<FleaMarket[]>([]);
@@ -12,6 +12,7 @@ export default function AdminFleaMarketsPage() {
   const [selectedMarkets, setSelectedMarkets] = useState<Set<string>>(new Set());
   const [bulkStatus, setBulkStatus] = useState<'active' | 'inactive'>('inactive');
   const [updating, setUpdating] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchMarkets();
@@ -27,10 +28,10 @@ export default function AdminFleaMarketsPage() {
   };
 
   const toggleSelectAll = () => {
-    if (selectedMarkets.size === markets.length && markets.length > 0) {
+    if (selectedMarkets.size === filteredMarkets.length && filteredMarkets.length > 0) {
       setSelectedMarkets(new Set());
     } else {
-      setSelectedMarkets(new Set(markets.map(m => m.id)));
+      setSelectedMarkets(new Set(filteredMarkets.map(m => m.id)));
     }
   };
 
@@ -94,12 +95,22 @@ export default function AdminFleaMarketsPage() {
 
   if (loading) return <div>Loading...</div>;
 
+  const filteredMarkets = markets.filter(m => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    const nameMatch = Object.values(m.name || {}).some(n => n?.toLowerCase().includes(q));
+    const descMatch = Object.values(m.description || {}).some(d => d?.toLowerCase().includes(q));
+    const addressMatch = Object.values(m.address || {}).some(a => a?.toLowerCase().includes(q));
+    const creatorMatch = (m.creatorName || '').toLowerCase().includes(q);
+    return nameMatch || descMatch || addressMatch || creatorMatch;
+  });
+
   return (
     <div>
       <div className="page-header">
         <div>
           <h1>플리마켓 관리 (Admin)</h1>
-          <p>전체 플리마켓 현황 및 공공 축제 데이터 동기화</p>
+          <p>{filteredMarkets.length} flea markets found</p>
         </div>
         <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
           <button onClick={handleSyncFestivals} disabled={syncing} className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
@@ -109,6 +120,18 @@ export default function AdminFleaMarketsPage() {
           <Link href="/admin/flea_markets/new" className="btn btn-primary">
             + 새 플리마켓 등록
           </Link>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: 'var(--space-3)', marginBottom: 'var(--space-4)', flexWrap: 'wrap', alignItems: 'center' }}>
+        <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
+          <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
+          <input
+            type="text" className="form-input"
+            style={{ paddingLeft: '36px', width: '100%' }}
+            placeholder="Search by name, description, address..."
+            value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
       </div>
 
@@ -143,7 +166,7 @@ export default function AdminFleaMarketsPage() {
               <th style={{ padding: 'var(--space-3)', width: '40px' }}>
                 <input 
                   type="checkbox" 
-                  checked={markets.length > 0 && selectedMarkets.size === markets.length}
+                  checked={filteredMarkets.length > 0 && selectedMarkets.size === filteredMarkets.length}
                   onChange={toggleSelectAll}
                 />
               </th>
@@ -156,7 +179,7 @@ export default function AdminFleaMarketsPage() {
             </tr>
           </thead>
           <tbody>
-            {markets.map((m) => (
+            {filteredMarkets.map((m) => (
               <tr key={m.id} style={{ borderBottom: '1px solid var(--color-border)', background: selectedMarkets.has(m.id) ? 'var(--color-surface-hover)' : 'transparent' }}>
                 <td style={{ padding: 'var(--space-3)' }}>
                   <input 
@@ -201,10 +224,10 @@ export default function AdminFleaMarketsPage() {
                 </td>
               </tr>
             ))}
-            {markets.length === 0 && (
+            {filteredMarkets.length === 0 && (
               <tr>
                 <td colSpan={7} style={{ padding: 'var(--space-4)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
-                  등록된 플리마켓이 없습니다.
+                  검색 결과가 없습니다.
                 </td>
               </tr>
             )}

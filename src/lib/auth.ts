@@ -93,7 +93,9 @@ export async function registerWithEmail(
   password: string, 
   displayName: string,
   requestedRole: UserRole = 'member',
-  businessCardFile?: File | null
+  businessCardFile?: File | null,
+  companyName?: string,
+  jobTitle?: string
 ): Promise<User | null> {
   if (!supabase || !isSupabaseConfigured) {
     alert('Supabase is not configured.');
@@ -105,6 +107,8 @@ export async function registerWithEmail(
       options: {
         data: {
           full_name: displayName,
+          company_name: companyName || '',
+          job_title: jobTitle || ''
         }
       }
     });
