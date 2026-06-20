@@ -6,6 +6,7 @@ import BottomSheet from '@/components/BottomSheet';
 import FleaMarketSheet from '@/components/FleaMarketSheet';
 import type { Workshop, WorkshopCategory, Region, FleaMarket } from '@/types';
 import { getWorkshops, getFleaMarkets } from '@/lib/database';
+import { useFilter } from '@/context/FilterContext';
 
 import ListView from '@/components/ListView';
 import pageStyles from './page.module.css';
@@ -30,13 +31,12 @@ const MapView = dynamic(() => import('@/components/map/MapView'), {
 });
 
 export default function HomePage() {
-  const [viewMode, setViewMode] = useState<'map' | 'list'>('list');
   const [workshops, setWorkshops] = useState<Workshop[]>([]);
   const [fleaMarkets, setFleaMarkets] = useState<FleaMarket[]>([]);
   const [activeCategory, setActiveCategory] = useState<WorkshopCategory | 'all'>('all');
   const [activeLanguage, setActiveLanguage] = useState<string>('all');
   const [selectedRegion, setSelectedRegion] = useState<Region>('korea');
-  const [searchQuery, setSearchQuery] = useState('');
+  const { searchQuery, viewMode, setViewMode } = useFilter();
   const [mapBounds, setMapBounds] = useState<{ north: number; south: number; east: number; west: number } | null>(null);
   const [selectedWorkshop, setSelectedWorkshop] = useState<Workshop | null>(null);
   const [selectedFleaMarket, setSelectedFleaMarket] = useState<FleaMarket | null>(null);
@@ -126,8 +126,6 @@ export default function HomePage() {
         activeLanguage={activeLanguage}
         onCategoryChange={setActiveCategory}
         onLanguageChange={setActiveLanguage}
-        searchQuery={searchQuery}
-        onSearchQueryChange={setSearchQuery}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
       />

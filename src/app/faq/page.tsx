@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
-import { ChevronDown, Search } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import styles from './page.module.css';
 
 type Role = 'member' | 'creator';

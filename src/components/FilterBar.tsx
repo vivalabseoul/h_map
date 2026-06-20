@@ -4,7 +4,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { CATEGORIES, SMART_TAGS, REGIONS } from '@/types';
 import { getDynamicCategories } from '@/lib/categoryUtils';
 import type { WorkshopCategory, Region, Workshop } from '@/types';
-import { ChevronDown, Search } from 'lucide-react';
+import { ChevronDown, Search, Map, List } from 'lucide-react';
 import styles from './FilterBar.module.css';
 
 interface FilterBarProps {
@@ -15,8 +15,6 @@ interface FilterBarProps {
   activeLanguage: string;
   onCategoryChange: (category: WorkshopCategory | 'all') => void;
   onLanguageChange: (language: string) => void;
-  searchQuery: string;
-  onSearchQueryChange: (query: string) => void;
   viewMode?: 'map' | 'list';
   onViewModeChange?: (mode: 'map' | 'list') => void;
 }
@@ -29,8 +27,6 @@ export default function FilterBar({
   activeLanguage,
   onCategoryChange,
   onLanguageChange,
-  searchQuery,
-  onSearchQueryChange,
   viewMode = 'map',
   onViewModeChange = () => { },
 }: FilterBarProps) {
@@ -150,66 +146,47 @@ export default function FilterBar({
         )}
       </div>
 
-      {/* 4. Search Input */}
-      <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-        <Search 
-          size={16} 
-          style={{ 
-            position: 'absolute', 
-            left: 'var(--space-3)', 
-            color: 'var(--color-text-tertiary)' 
-          }} 
-        />
-        <input
-          type="text"
-          placeholder={t('search') || 'Search...'}
-          value={searchQuery}
-          onChange={(e) => onSearchQueryChange(e.target.value)}
-          className={styles.searchInput}
-        />
-      </div>
-
       <div style={{ flexGrow: 1 }} />
 
       {/* View Mode Toggle */}
       <div style={{ display: 'flex', gap: '4px', background: 'var(--color-bg-secondary)', padding: '4px', borderRadius: 'var(--radius-full)' }}>
         <button
-          onClick={() => onViewModeChange('list')}
+          onClick={() => onViewModeChange?.('list')}
           style={{
-            padding: '5px 13px', // padding reduced by 1px to offset 1px border and avoid height jump
+            padding: '6px 12px',
             border: viewMode === 'list' ? '1px solid var(--color-text-primary)' : '1px solid var(--color-border)',
             borderRadius: 'var(--radius-full)',
             background: viewMode === 'list' ? 'var(--color-text-primary)' : 'transparent',
             boxShadow: viewMode === 'list' ? '0 2px 4px rgba(0, 0, 0, 0.2)' : 'none',
             color: viewMode === 'list' ? '#ffffff' : 'var(--color-text-secondary)',
-            fontWeight: viewMode === 'list' ? 600 : 500,
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
+            justifyContent: 'center',
             transition: 'all 0.2s'
           }}
+          aria-label="List View"
         >
-          📋 List
+          <List size={18} strokeWidth={viewMode === 'list' ? 2.5 : 2} />
         </button>
         <button
-          onClick={() => onViewModeChange('map')}
+          onClick={() => onViewModeChange?.('map')}
           style={{
-            padding: '5px 13px', // padding reduced by 1px to offset 1px border and avoid height jump
+            padding: '6px 12px',
             border: viewMode === 'map' ? '1px solid var(--color-text-primary)' : '1px solid var(--color-border)',
             borderRadius: 'var(--radius-full)',
             background: viewMode === 'map' ? 'var(--color-text-primary)' : 'transparent',
             boxShadow: viewMode === 'map' ? '0 2px 4px rgba(0, 0, 0, 0.2)' : 'none',
             color: viewMode === 'map' ? '#ffffff' : 'var(--color-text-secondary)',
-            fontWeight: viewMode === 'map' ? 600 : 500,
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
+            justifyContent: 'center',
             transition: 'all 0.2s'
           }}
+          aria-label="Map View"
         >
-          🗺️ Map
+          <Map size={18} strokeWidth={viewMode === 'map' ? 2.5 : 2} />
         </button>
       </div>
 

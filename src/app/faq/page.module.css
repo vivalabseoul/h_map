@@ -1,13 +1,13 @@
 .container {
   max-width: 800px;
   margin: 0 auto;
-  padding: 80px var(--space-4) var(--space-8);
+  padding: calc(var(--header-height) + var(--space-2)) var(--space-4) var(--space-8);
   min-height: 70vh;
 }
 
 .header {
   text-align: center;
-  margin-bottom: var(--space-8);
+  margin-bottom: var(--space-4);
 }
 
 .title {

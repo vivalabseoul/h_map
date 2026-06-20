@@ -11,6 +11,10 @@
     "logout": "Sign Out",
     "register": "Create Account"
   },
+  "search": {
+    "placeholder_short": "Art Flow Map",
+    "placeholder_long": "Art Flow Map - Find a craft studio"
+  },
   "auth": {
     "login_title": "Welcome Back",
     "login_subtitle": "Sign in to discover handmade studios around the world",

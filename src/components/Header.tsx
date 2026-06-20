@@ -1,10 +1,11 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Map, LayoutDashboard, BookOpen, Shield, Menu, X, LogOut } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { Menu, Search, ArrowLeft, Map, LayoutDashboard, BookOpen, Shield, X, LogOut } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
+import { useFilter } from '@/context/FilterContext';
 import { isAdmin, isInstructor, isMarketCoordinator } from '@/lib/permissions';
 import AuthButton from './AuthButton';
 import LanguageSwitcher from './LanguageSwitcher';
@@ -17,9 +18,12 @@ export default function Header() {
   const { user, userRole, logout } = useAuth();
   const { t } = useLanguage();
   const pathname = usePathname();
+  const router = useRouter();
+  const { searchQuery, setSearchQuery, viewMode, setViewMode } = useFilter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [isMobileScreen, setIsMobileScreen] = useState(false);
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -28,13 +32,21 @@ export default function Header() {
 
   // Briefly open and close sidebar on mobile to indicate it exists
   useEffect(() => {
+    const handleResize = () => setIsMobileScreen(window.innerWidth <= 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+
     if (typeof window !== 'undefined' && window.innerWidth <= 768) {
       setIsMobileMenuOpen(true);
       const timer = setTimeout(() => {
         setIsMobileMenuOpen(false);
       }, 800);
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(timer);
+        window.removeEventListener('resize', handleResize);
+      };
     }
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const toggleMobileMenu = () => {
@@ -50,7 +62,6 @@ export default function Header() {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <span style={{ fontWeight: 600, fontSize: '14px' }}>{user.displayName || user.email}</span>
-            <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>{user.email}</span>
           </div>
         </div>
       )}
@@ -150,20 +161,55 @@ export default function Header() {
         </>
       )}
 
+      {isMobile && (
+        <div style={{ marginTop: 'auto', paddingTop: '16px', paddingBottom: '16px', borderTop: '1px solid var(--color-border)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+            <Link href="/faq" style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', textAlign: 'left', textDecoration: 'none' }} onClick={() => setIsMobileMenuOpen(false)}>FAQ</Link>
+            <Link href="/contact" style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', textAlign: 'left', textDecoration: 'none' }} onClick={() => setIsMobileMenuOpen(false)}>Contact Us</Link>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+            <Link href="/about" style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', textAlign: 'left', textDecoration: 'none' }} onClick={() => setIsMobileMenuOpen(false)}>About</Link>
+            <Link href="/terms" style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', textAlign: 'left', textDecoration: 'none' }} onClick={() => setIsMobileMenuOpen(false)}>Terms</Link>
+            <Link href="/privacy" style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', textAlign: 'left', textDecoration: 'none' }} onClick={() => setIsMobileMenuOpen(false)}>Privacy</Link>
+          </div>
+        </div>
+      )}
+
       {isMobile && user && (
-        <button onClick={logout} className={styles.mobileNavLink} style={{ marginTop: 'auto', borderTop: '1px solid var(--color-border)', borderRadius: 0, padding: '16px 20px', color: 'var(--color-danger)' }}>
+        <button onClick={logout} className={styles.mobileNavLink} style={{ borderTop: '1px solid var(--color-border)', borderRadius: 0, padding: '16px 20px', color: 'var(--color-danger)' }}>
           <LogOut size={16} />
           {t('nav.logout')}
         </button>
+      )}
+
+      {isMobile && (
+        <div style={{ padding: '20px 0 10px 0', fontSize: '0.8rem', color: 'var(--color-text-muted)', textAlign: 'left', lineHeight: '1.6' }}>
+          <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, color: 'var(--color-text-primary)' }}>🎨 Art flow map</span>
+          <br />
+          &copy; {new Date().getFullYear()} All rights reserved.
+        </div>
       )}
     </>
   );
 
   return (
     <header className={styles.header} id="main-header">
-      <Link href="/" className={styles.logo}>
-        <span>Art flow<span className={styles.logoAccent}> map</span></span>
-      </Link>
+      {pathname === '/' ? (
+        <div className={styles.headerSearchContainer}>
+          <Search className={styles.headerSearchIcon} size={18} />
+          <input 
+            type="text"
+            className={styles.headerSearchInput}
+            placeholder={isMobileScreen ? (t('search.placeholder_short') || "Art Flow Map") : (t('search.placeholder_long') || "Art Flow Map - Find a craft studio")}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+      ) : (
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: 'var(--color-text-primary)' }}>
+          <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '1.1rem' }}>Art flow map</span>
+        </Link>
+      )}
 
       {/* Removed Desktop Navigation Links as per user request to keep only sidebar menu */}
 
@@ -172,7 +218,9 @@ export default function Header() {
           <LanguageSwitcher />
         </div>
 
-        <NotificationBell />
+        <div className={styles.hideOnMobile}>
+          <NotificationBell />
+        </div>
         
         <div className={user ? styles.hideOnMobileLoggedIn : ''}>
           <AuthButton />
@@ -201,6 +249,10 @@ export default function Header() {
       />
       <div className={`${styles.mobileMenuContent} ${isMobileMenuOpen ? styles.open : ''}`}>
         <div className={styles.mobileMenuHeader}>
+          <div style={{ marginLeft: '12px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <LanguageSwitcher />
+            <NotificationBell />
+          </div>
           <button className={styles.closeButton} onClick={toggleMobileMenu} aria-label="Close menu">
             <X size={24} />
           </button>
@@ -208,11 +260,6 @@ export default function Header() {
         <nav className={styles.mobileNavLinks}>
           {navLinks(true)}
         </nav>
-
-        {/* Bottom Actions */}
-        <div className={styles.mobileBottomActions}>
-          <LanguageSwitcher />
-        </div>
       </div>
 
       {showRegisterModal && (

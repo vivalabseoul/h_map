@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Bell } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
-import { getNotificationsByUser, markNotificationAsRead, getUnreadNotificationCount } from '@/lib/database';
+import { getNotificationsByUser, markNotificationAsRead } from '@/lib/database';
 import type { AppNotification } from '@/types';
 import styles from './Header.module.css';
 
@@ -15,6 +15,14 @@ export default function NotificationBell() {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const fetchNotifications = async () => {
+      if (!user) return;
+      const data = await getNotificationsByUser(user.id);
+      setNotifications(data);
+      const unread = data.filter(n => !n.isRead).length;
+      setUnreadCount(unread);
+    };
+
     if (user) {
       fetchNotifications();
       // Polling could be added here or real-time subscription via Supabase
@@ -30,14 +38,6 @@ export default function NotificationBell() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  const fetchNotifications = async () => {
-    if (!user) return;
-    const data = await getNotificationsByUser(user.id);
-    setNotifications(data);
-    const unread = data.filter(n => !n.isRead).length;
-    setUnreadCount(unread);
-  };
 
   const handleNotificationClick = async (notification: AppNotification) => {
     if (!notification.isRead) {

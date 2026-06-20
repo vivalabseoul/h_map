@@ -15,12 +15,14 @@ export default function Footer() {
           <span className={styles.hideMobile}>&copy; {new Date().getFullYear()}</span>
         </div>
 
-        <div className={styles.links}>
-          <Link href="/about" className={styles.link}>{t('About') || 'About'}</Link>
-          <Link href="/faq" className={styles.link}>{t('Faq') || 'FAQ'}</Link>
-          <Link href="/terms" className={styles.link}>{t('Terms') || 'Terms'}</Link>
-          <Link href="/privacy" className={styles.link}>{t('Privacy') || 'Privacy'}</Link>
-          <Link href="/contact" className={styles.link}>{t('Contact(문의하기)') || 'Contact Us'}</Link>
+        <div className={styles.hideMobile}>
+          <div className={styles.links}>
+            <Link href="/about" className={styles.link}>{t('About') || 'About'}</Link>
+            <Link href="/faq" className={styles.link}>{t('Faq') || 'FAQ'}</Link>
+            <Link href="/terms" className={styles.link}>{t('Terms') || 'Terms'}</Link>
+            <Link href="/privacy" className={styles.link}>{t('Privacy') || 'Privacy'}</Link>
+            <Link href="/contact" className={styles.link}>{t('Contact') || 'Contact Us'}</Link>
+          </div>
         </div>
       </div>
     </footer>

@@ -14,6 +14,8 @@ interface FilterContextType {
   setActiveTags: (tags: string[]) => void;
   viewMode: ViewMode;
   setViewMode: (mode: ViewMode) => void;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
 }
 
 const FilterContext = createContext<FilterContextType | undefined>(undefined);
@@ -23,6 +25,7 @@ export function FilterProvider({ children }: { children: ReactNode }) {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [activeTags, setActiveTags] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('map');
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   return (
     <FilterContext.Provider
@@ -35,6 +38,8 @@ export function FilterProvider({ children }: { children: ReactNode }) {
         setActiveTags,
         viewMode,
         setViewMode,
+        searchQuery,
+        setSearchQuery,
       }}
     >
       {children}

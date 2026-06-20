@@ -2,7 +2,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ArrowLeft, MapPin, BookOpen, Calendar } from 'lucide-react';
+import { MapPin, BookOpen, Calendar } from 'lucide-react';
 import styles from './Sidebar.module.css';
 
 export type SidebarItem = 

@@ -11,6 +11,10 @@
     "logout": "로그아웃",
     "register": "회원가입"
   },
+  "search": {
+    "placeholder_short": "Art Flow Map",
+    "placeholder_long": "Art Flow Map - 원하는 공방 찾기"
+  },
   "auth": {
     "login_title": "다시 오신 것을 환영합니다",
     "login_subtitle": "로그인하여 전 세계 핸드메이드 스튜디오를 찾아보세요",

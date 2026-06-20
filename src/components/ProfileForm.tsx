@@ -17,10 +17,13 @@ export default function ProfileForm() {
 
   useEffect(() => {
     if (user) {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       setEmail(user.email || '');
       setDisplayName(user.displayName || '');
       setPhotoURL(user.photoURL || '');
-      setBio((user as any).bio || '');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const customUser = user as any;
+      setBio(customUser.bio || '');
     }
   }, [user]);
 

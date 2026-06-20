@@ -119,3 +119,38 @@
   color: var(--color-text-secondary);
   font-weight: 500;
 }
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-2); /* 좁은 간격 */
+  }
+  
+  .listContainer {
+    padding: var(--space-2);
+    padding-top: 80px;
+    padding-bottom: 80px;
+  }
+
+  .imageArea {
+    height: 120px; /* 더 좁은 카드에 맞춰 이미지 높이 축소 */
+  }
+
+  .contentArea {
+    padding: var(--space-2);
+  }
+
+  .title {
+    font-size: 0.95rem;
+    margin-bottom: 2px;
+  }
+
+  .subtitle {
+    font-size: 0.75rem;
+    margin-bottom: 4px;
+  }
+
+  .meta {
+    font-size: 0.75rem;
+  }
+}

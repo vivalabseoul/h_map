@@ -1,5 +1,4 @@
 import React from 'react';
-import Image from 'next/image';
 
 export default function AboutPage() {
   return (
@@ -7,7 +6,7 @@ export default function AboutPage() {
       <div className="page-container">
         <div className="card" style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
           <h1 style={{ marginBottom: 'var(--space-2)' }}>Art flow map</h1>
-          <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-8)' }}>
+          <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)' }}>
             Discover Local Craft Studios & Flea Markets
           </p>
 
