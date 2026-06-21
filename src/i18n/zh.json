@@ -42,7 +42,13 @@
     "new_password": "新密码",
     "confirm_new_password": "确认新密码",
     "update_password": "修改密码",
-    "password_updated": "密码修改成功。"
+    "password_updated": "密码修改成功。",
+    "agree_all": "我同意所有条款和条件。",
+    "agree_terms": "[必填] 我同意服务条款。",
+    "agree_privacy": "[必填] 我同意隐私政策。",
+    "view_details": "查看详情",
+    "error_terms_required": "您必须同意服务条款和隐私政策。",
+    "error_privacy_required": "您必须同意隐私政策。"
   },
   "filters": {
     "all": "全部",

@@ -41,8 +41,14 @@
     "email_sent": "パスワード再設定リンクがメールに送信されました。",
     "new_password": "新しいパスワード",
     "confirm_new_password": "新しいパスワード確認",
-    "update_password": "パスワード変更",
-    "password_updated": "パスワードが正常に変更されました。"
+    "update_password": "パスワードを更新",
+    "password_updated": "パスワードが正常に更新されました。",
+    "agree_all": "すべての利用規約に同意します。",
+    "agree_terms": "[必須] 利用規約に同意します。",
+    "agree_privacy": "[必須] プライバシーポリシーに同意します。",
+    "view_details": "詳細を見る",
+    "error_terms_required": "利用規約とプライバシーポリシーの両方に同意する必要があります。",
+    "error_privacy_required": "プライバシーポリシーに同意する必要があります。"
   },
   "filters": {
     "all": "すべて",

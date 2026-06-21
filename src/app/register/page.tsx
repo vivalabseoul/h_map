@@ -21,6 +21,8 @@ export default function RegisterPage() {
   const [jobTitle, setJobTitle] = useState('');
   const [businessCard, setBusinessCard] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [agreePrivacy, setAgreePrivacy] = useState(false);
 
   const resizeImage = (file: File): Promise<File> => {
     return new Promise((resolve) => {
@@ -86,6 +88,12 @@ export default function RegisterPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    
+    if (!agreeTerms || !agreePrivacy) {
+      setError(t('auth.error_terms_required'));
+      return;
+    }
+
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -346,6 +354,52 @@ export default function RegisterPage() {
               </p>
             </div>
           )}
+
+          {/* Agreements */}
+          <div className="form-group" style={{ marginBottom: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {/* All Agree Checkbox Helper */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', paddingBottom: '12px', borderBottom: '1px solid var(--color-border)' }}>
+              <input type="checkbox" id="agree-all" 
+                checked={agreeTerms && agreePrivacy} 
+                onChange={(e) => {
+                  setAgreeTerms(e.target.checked);
+                  setAgreePrivacy(e.target.checked);
+                }} 
+                style={{ marginTop: '4px', width: '16px', height: '16px', accentColor: 'var(--color-accent)' }} 
+              />
+              <label htmlFor="agree-all" style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--color-text-primary)', cursor: 'pointer' }}>
+                {t('auth.agree_all')}
+              </label>
+            </div>
+
+            {/* Terms of Service Checkbox */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+              <input type="checkbox" id="terms-agree" 
+                checked={agreeTerms} onChange={(e) => setAgreeTerms(e.target.checked)} 
+                style={{ marginTop: '4px', width: '16px', height: '16px', accentColor: 'var(--color-accent)' }} 
+              />
+              <label htmlFor="terms-agree" style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', lineHeight: '1.4', cursor: 'pointer' }}>
+                {t('auth.agree_terms')}
+                <Link href="/terms" target="_blank" style={{ color: 'var(--color-accent)', textDecoration: 'underline', marginLeft: '6px' }}>
+                  {t('auth.view_details')}
+                </Link>
+              </label>
+            </div>
+
+            {/* Privacy Agreement Checkbox */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+              <input type="checkbox" id="privacy-agree" 
+                checked={agreePrivacy} onChange={(e) => setAgreePrivacy(e.target.checked)} 
+                style={{ marginTop: '4px', width: '16px', height: '16px', accentColor: 'var(--color-accent)' }} 
+              />
+              <label htmlFor="privacy-agree" style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', lineHeight: '1.4', cursor: 'pointer' }}>
+                {t('auth.agree_privacy')}
+                <Link href="/privacy" target="_blank" style={{ color: 'var(--color-accent)', textDecoration: 'underline', marginLeft: '6px' }}>
+                  {t('auth.view_details')}
+                </Link>
+              </label>
+            </div>
+          </div>
 
           <button type="submit" className="btn btn-primary btn-lg"
             style={{ width: '100%', marginBottom: 'var(--space-4)' }}

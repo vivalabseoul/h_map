@@ -30,22 +30,11 @@ export default function Header() {
     setIsMobileMenuOpen(false);
   }, [pathname]);
 
-  // Briefly open and close sidebar on mobile to indicate it exists
+  // Track mobile screen size for responsive rendering
   useEffect(() => {
     const handleResize = () => setIsMobileScreen(window.innerWidth <= 768);
     handleResize();
     window.addEventListener('resize', handleResize);
-
-    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
-      setIsMobileMenuOpen(true);
-      const timer = setTimeout(() => {
-        setIsMobileMenuOpen(false);
-      }, 800);
-      return () => {
-        clearTimeout(timer);
-        window.removeEventListener('resize', handleResize);
-      };
-    }
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 

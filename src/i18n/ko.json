@@ -52,7 +52,13 @@
     "new_password": "새 비밀번호",
     "confirm_new_password": "새 비밀번호 확인",
     "update_password": "비밀번호 변경하기",
-    "password_updated": "비밀번호가 성공적으로 변경되었습니다."
+    "password_updated": "비밀번호가 성공적으로 변경되었습니다.",
+    "agree_all": "모든 약관에 동의합니다.",
+    "agree_terms": "[필수] 서비스 이용약관에 동의합니다.",
+    "agree_privacy": "[필수] 개인정보 수집 및 이용에 동의합니다.",
+    "view_details": "자세히 보기",
+    "error_terms_required": "서비스 이용약관 및 개인정보 수집 이용에 모두 동의해야 합니다.",
+    "error_privacy_required": "개인정보 수집 및 이용에 동의해야 합니다."
   },
   "filters": {
     "all": "전체",
