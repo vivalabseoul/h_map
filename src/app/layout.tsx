@@ -6,7 +6,7 @@ import { LanguageProvider } from '@/context/LanguageContext';
 import { FilterProvider } from '@/context/FilterContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import AnnouncementBanner from '@/components/AnnouncementBanner';
+import NoticePopup from '@/components/NoticePopup';
 
 const playfair = Playfair_Display({ 
   subsets: ['latin'],
@@ -83,12 +83,12 @@ export default function RootLayout({
           <LanguageProvider>
             <FilterProvider>
               <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-                <AnnouncementBanner />
                 <Header />
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
                   {children}
                 </div>
                 <Footer />
+                <NoticePopup />
               </div>
             </FilterProvider>
           </LanguageProvider>

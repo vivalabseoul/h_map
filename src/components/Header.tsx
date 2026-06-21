@@ -163,7 +163,8 @@ export default function Header() {
 
       {isMobile && (
         <div style={{ marginTop: 'auto', paddingTop: '16px', paddingBottom: '16px', borderTop: '1px solid var(--color-border)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+            <Link href="/notices" style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', textAlign: 'left', textDecoration: 'none' }} onClick={() => setIsMobileMenuOpen(false)}>Notice</Link>
             <Link href="/faq" style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', textAlign: 'left', textDecoration: 'none' }} onClick={() => setIsMobileMenuOpen(false)}>FAQ</Link>
             <Link href="/contact" style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', textAlign: 'left', textDecoration: 'none' }} onClick={() => setIsMobileMenuOpen(false)}>Contact Us</Link>
           </div>
