@@ -45,26 +45,29 @@ export default function BottomSheet({ workshop, allWorkshops, onWorkshopClick, o
   const similarWorkshops = useMemo(() => {
     if (!allWorkshops || allWorkshops.length === 0) return [];
 
-    // Calculate score for each workshop
+    const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+      const p = 0.017453292519943295;
+      const c = Math.cos;
+      const a = 0.5 - c((lat2 - lat1) * p)/2 + 
+              c(lat1 * p) * c(lat2 * p) * 
+              (1 - c((lon2 - lon1) * p))/2;
+      return 12742 * Math.asin(Math.sqrt(a));
+    };
+
+    // Calculate distance for each workshop
     const scored = allWorkshops
       .filter((w) => w.id !== workshop.id && w.status === 'active')
       .map((w) => {
-        let score = 0;
-        if (w.category === workshop.category) score += 2;
-        w.tags.forEach(tag => {
-          if (workshop.tags.includes(tag)) score += 1;
-        });
-        if (w.region === workshop.region) score += 0.5;
-        return { workshop: w, score };
+        const distance = getDistance(workshop.lat, workshop.lng, w.lat, w.lng);
+        return { workshop: w, distance };
       });
 
-    // Sort by score and take top 3
+    // Sort by distance (closest first) and take top 3
     return scored
-      .filter((s) => s.score > 0)
-      .sort((a, b) => b.score - a.score)
+      .sort((a, b) => a.distance - b.distance)
       .slice(0, 3)
       .map((s) => s.workshop);
-  }, [allWorkshops, workshop]);
+  }, [workshop, allWorkshops]);
 
   // Close on escape is handled by Sheet component
 
@@ -310,7 +313,7 @@ export default function BottomSheet({ workshop, allWorkshops, onWorkshopClick, o
 
       {/* Similar Workshops Recommendation */}
       {similarWorkshops.length > 0 && (
-        <div style={{ marginTop: 'var(--space-6)', paddingTop: 'var(--space-6)', borderTop: '1px solid var(--color-border)' }}>
+        <div style={{ marginTop: 'var(--space-4)' }}>
           <h3 className={styles.sectionTitle}>{t('workshop.similar') || 'Similar Workshops'}</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', marginTop: 'var(--space-3)' }}>
             {similarWorkshops.map((sim) => (
