@@ -46,6 +46,16 @@ const LanguageContext = createContext<LanguageContextValue>({
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>('en');
 
+  React.useEffect(() => {
+    if (typeof navigator !== 'undefined') {
+      const lang = navigator.language.split('-')[0].toLowerCase();
+      const supported: Locale[] = ['ko', 'en', 'ja', 'zh'];
+      const defaultLocale = supported.includes(lang as Locale) ? (lang as Locale) : 'en';
+      setLocaleState(defaultLocale);
+      document.documentElement.lang = defaultLocale;
+    }
+  }, []);
+
   const setLocale = useCallback((newLocale: Locale) => {
     setLocaleState(newLocale);
     if (typeof document !== 'undefined') {

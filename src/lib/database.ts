@@ -50,6 +50,8 @@ const mapWorkshop = (d: any): Workshop => ({
   youtubeClicks: d.youtube_clicks || 0,
   shareClicks: d.share_clicks || 0,
   navClicks: d.nav_clicks || 0,
+  mapPinClicks: d.map_pin_clicks || 0,
+  listClicks: d.list_clicks || 0,
   createdAt: d.created_at,
 });
 const mapCourse = (d: any): Course => ({
@@ -240,12 +242,16 @@ export async function incrementWorkshopLinkClick(workshopId: string, linkType: s
     const local = getLocalWorkshops();
     const idx = local.findIndex(w => w.id === workshopId);
     if (idx > -1) {
-      local[idx].totalClicks = (local[idx].totalClicks || 0) + 1;
+      if (linkType !== 'map_pin' && linkType !== 'list_item') {
+        local[idx].totalClicks = (local[idx].totalClicks || 0) + 1;
+      }
       if (linkType === 'website') local[idx].websiteClicks = (local[idx].websiteClicks || 0) + 1;
       else if (linkType === 'instagram') local[idx].instagramClicks = (local[idx].instagramClicks || 0) + 1;
       else if (linkType === 'youtube') local[idx].youtubeClicks = (local[idx].youtubeClicks || 0) + 1;
       else if (linkType === 'share') local[idx].shareClicks = (local[idx].shareClicks || 0) + 1;
       else if (linkType === 'nav') local[idx].navClicks = (local[idx].navClicks || 0) + 1;
+      else if (linkType === 'map_pin') local[idx].mapPinClicks = (local[idx].mapPinClicks || 0) + 1;
+      else if (linkType === 'list_item') local[idx].listClicks = (local[idx].listClicks || 0) + 1;
       saveLocalWorkshops(local);
     }
     return;

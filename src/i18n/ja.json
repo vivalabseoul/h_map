@@ -77,7 +77,8 @@
     "apply": "申し込む",
     "full": "満席",
     "login_to_apply": "ログインして申し込み",
-    "tags": "タグ"
+    "tags": "タグ",
+    "similar": "類似のワークショップ"
   },
   "review": {
     "title": "レビュー",

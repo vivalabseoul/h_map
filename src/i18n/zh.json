@@ -77,7 +77,8 @@
     "apply": "立即报名",
     "full": "已满",
     "login_to_apply": "登录以报名",
-    "tags": "标签"
+    "tags": "标签",
+    "similar": "类似的工坊"
   },
   "review": {
     "title": "评论",

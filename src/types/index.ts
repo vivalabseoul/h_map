@@ -70,6 +70,8 @@ export interface Workshop {
   youtubeClicks?: number;
   shareClicks?: number;
   navClicks?: number;
+  mapPinClicks?: number;
+  listClicks?: number;
   createdAt: string;
 }
 

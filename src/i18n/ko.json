@@ -87,7 +87,8 @@
     "apply": "신청하기",
     "full": "마감",
     "login_to_apply": "로그인 후 신청",
-    "tags": "태그"
+    "tags": "태그",
+    "similar": "비슷한 공방"
   },
   "review": {
     "title": "리뷰",

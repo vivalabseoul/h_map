@@ -45,6 +45,8 @@ CREATE TABLE public.workshops (
   youtube_clicks INTEGER DEFAULT 0,
   share_clicks INTEGER DEFAULT 0,
   nav_clicks INTEGER DEFAULT 0,
+  map_pin_clicks INTEGER DEFAULT 0,
+  list_clicks INTEGER DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -228,22 +230,21 @@ BEGIN
   INSERT INTO public.workshop_clicks (workshop_id, link_type)
   VALUES (p_workshop_id, p_link_type);
 
-  -- Update the total count on workshops table
-  UPDATE public.workshops
-  SET total_clicks = COALESCE(total_clicks, 0) + 1
-  WHERE id = p_workshop_id;
-
   -- Update specific columns based on p_link_type
   IF p_link_type = 'website' THEN
-    UPDATE public.workshops SET website_clicks = COALESCE(website_clicks, 0) + 1 WHERE id = p_workshop_id;
+    UPDATE public.workshops SET website_clicks = COALESCE(website_clicks, 0) + 1, total_clicks = COALESCE(total_clicks, 0) + 1 WHERE id = p_workshop_id;
   ELSIF p_link_type = 'instagram' THEN
-    UPDATE public.workshops SET instagram_clicks = COALESCE(instagram_clicks, 0) + 1 WHERE id = p_workshop_id;
+    UPDATE public.workshops SET instagram_clicks = COALESCE(instagram_clicks, 0) + 1, total_clicks = COALESCE(total_clicks, 0) + 1 WHERE id = p_workshop_id;
   ELSIF p_link_type = 'youtube' THEN
-    UPDATE public.workshops SET youtube_clicks = COALESCE(youtube_clicks, 0) + 1 WHERE id = p_workshop_id;
+    UPDATE public.workshops SET youtube_clicks = COALESCE(youtube_clicks, 0) + 1, total_clicks = COALESCE(total_clicks, 0) + 1 WHERE id = p_workshop_id;
   ELSIF p_link_type = 'share' THEN
-    UPDATE public.workshops SET share_clicks = COALESCE(share_clicks, 0) + 1 WHERE id = p_workshop_id;
+    UPDATE public.workshops SET share_clicks = COALESCE(share_clicks, 0) + 1, total_clicks = COALESCE(total_clicks, 0) + 1 WHERE id = p_workshop_id;
   ELSIF p_link_type = 'nav' THEN
-    UPDATE public.workshops SET nav_clicks = COALESCE(nav_clicks, 0) + 1 WHERE id = p_workshop_id;
+    UPDATE public.workshops SET nav_clicks = COALESCE(nav_clicks, 0) + 1, total_clicks = COALESCE(total_clicks, 0) + 1 WHERE id = p_workshop_id;
+  ELSIF p_link_type = 'map_pin' THEN
+    UPDATE public.workshops SET map_pin_clicks = COALESCE(map_pin_clicks, 0) + 1 WHERE id = p_workshop_id;
+  ELSIF p_link_type = 'list_item' THEN
+    UPDATE public.workshops SET list_clicks = COALESCE(list_clicks, 0) + 1 WHERE id = p_workshop_id;
   END IF;
 END;
 $$ LANGUAGE plpgsql;

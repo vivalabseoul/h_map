@@ -5,7 +5,7 @@ import FilterBar from '@/components/FilterBar';
 import BottomSheet from '@/components/BottomSheet';
 import FleaMarketSheet from '@/components/FleaMarketSheet';
 import type { Workshop, WorkshopCategory, Region, FleaMarket } from '@/types';
-import { getWorkshops, getFleaMarkets } from '@/lib/database';
+import { getWorkshops, getFleaMarkets, incrementWorkshopLinkClick } from '@/lib/database';
 import { useFilter } from '@/context/FilterContext';
 
 import ListView from '@/components/ListView';
@@ -107,6 +107,13 @@ export default function HomePage() {
   }, [globalFleaMarkets, mapBounds, viewMode]);
 
   const handleMarkerClick = useCallback((workshop: Workshop) => {
+    incrementWorkshopLinkClick(workshop.id, 'map_pin').catch(console.error);
+    setSelectedWorkshop(workshop);
+    setSelectedFleaMarket(null);
+  }, []);
+
+  const handleListItemClick = useCallback((workshop: Workshop) => {
+    incrementWorkshopLinkClick(workshop.id, 'list_item').catch(console.error);
     setSelectedWorkshop(workshop);
     setSelectedFleaMarket(null);
   }, []);
@@ -147,7 +154,7 @@ export default function HomePage() {
           <ListView
             workshops={viewportWorkshops}
             fleaMarkets={viewportFleaMarkets}
-            onWorkshopClick={handleMarkerClick}
+            onWorkshopClick={handleListItemClick}
             onFleaMarketClick={handleFleaMarketClick}
             viewMode={viewMode}
             onViewModeChange={setViewMode}
@@ -159,7 +166,7 @@ export default function HomePage() {
         <BottomSheet
           workshop={selectedWorkshop}
           allWorkshops={workshops}
-          onWorkshopClick={handleMarkerClick}
+          onWorkshopClick={handleListItemClick}
           onClose={() => setSelectedWorkshop(null)}
         />
       )}

@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { LayoutDashboard, Users, Store, BookOpen, MessageSquare, Star, Tent, PlusCircle, Globe, User, Megaphone } from 'lucide-react';
+import { LayoutDashboard, Users, Store, BookOpen, MessageSquare, Star, Tent, PlusCircle, Globe, User, Megaphone, Activity } from 'lucide-react';
 import Sidebar, { SidebarItem } from '@/components/Sidebar';
 import RoleGuard from '@/components/RoleGuard';
 import { useLanguage } from '@/context/LanguageContext';
@@ -18,6 +18,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           items={[
             { type: 'header', label: '📊 통계 및 관리' },
             { href: '/admin', label: t('admin.dashboard'), icon: <LayoutDashboard size={18} /> },
+            { href: '/admin/reports', label: '보고서 관리', icon: <Activity size={18} /> },
             { href: '/admin/members', label: t('admin.members'), icon: <Users size={18} /> },
             { href: '/admin/role_requests', label: '등급 승인 관리', icon: <Users size={18} /> },
             { href: '/admin/workshops', label: t('admin.workshops') || '스튜디오 관리', icon: <Store size={18} /> },

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">ArtFlow Map</string>
+    <string name="title_activity_main">ArtFlow Map</string>
+    <string name="package_name">com.artflowmap.app</string>
+    <string name="custom_url_scheme">com.artflowmap.app</string>
+</resources>
