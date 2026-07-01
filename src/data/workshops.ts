@@ -6,6 +6,7 @@ import type { Workshop, Course, Review, Booking } from '@/types';
 export const demoWorkshops: Workshop[] = [
   {
     id: 'w1',
+    slug: 'ikseon-pottery-studio',
     ownerId: 'demo-instructor-1',
     ownerName: 'Kim Yuna',
     name: {
@@ -41,6 +42,7 @@ export const demoWorkshops: Workshop[] = [
   },
   {
     id: 'w2',
+    slug: 'jongno-clay-works',
     ownerId: 'demo-instructor-1',
     ownerName: 'Kim Yuna',
     name: {
@@ -75,6 +77,7 @@ export const demoWorkshops: Workshop[] = [
   },
   {
     id: 'w3',
+    slug: 'seoul-leather-crafts',
     ownerId: 'demo-instructor-2',
     ownerName: 'Park Jihoon',
     name: {
@@ -109,6 +112,7 @@ export const demoWorkshops: Workshop[] = [
   },
   {
     id: 'w4',
+    slug: 'bukchon-leather-art',
     ownerId: 'demo-instructor-2',
     ownerName: 'Park Jihoon',
     name: {
@@ -143,6 +147,7 @@ export const demoWorkshops: Workshop[] = [
   },
   {
     id: 'w5',
+    slug: 'scent-of-seoul',
     ownerId: 'demo-instructor-3',
     ownerName: 'Lee Soyeon',
     name: {
@@ -177,6 +182,7 @@ export const demoWorkshops: Workshop[] = [
   },
   {
     id: 'w6',
+    slug: 'myeongdong-perfume-lab',
     ownerId: 'demo-instructor-3',
     ownerName: 'Lee Soyeon',
     name: {

@@ -1,0 +1,319 @@
+/* Main Image Wrapper */
+.imageCarousel {
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: var(--space-4);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.workshopImage {
+  display: block;
+  max-width: 100%;
+  max-height: 500px;
+  width: auto;
+  height: auto;
+  margin: 0 auto;
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-alt);
+  object-fit: contain;
+}
+
+@media (max-width: 767px) {
+  .workshopImage {
+    max-height: 50vh; /* Prevent image from being taller than half the screen on mobile */
+  }
+}
+
+/* Ensure leftColumn doesn't overflow on mobile */
+.leftColumn {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Workshop header */
+.workshopHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-3);
+}
+
+.workshopName {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-brown);
+  line-height: var(--line-height-tight);
+}
+
+/* Rating */
+.ratingRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-brown);
+}
+
+.stars {
+  color: var(--color-warning);
+}
+
+.reviewCount {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.categoryBadge {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  text-transform: capitalize;
+}
+
+/* Tags */
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  border-radius: var(--radius-full);
+  background: var(--color-sage-light);
+  color: var(--color-sage);
+}
+
+/* Description */
+.description {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-relaxed);
+  margin-bottom: var(--space-4);
+  white-space: pre-wrap;
+}
+
+/* Info grid */
+.infoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+  min-width: 0;
+}
+
+.infoItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  min-width: 0;
+  word-break: break-word;
+}
+
+.infoIcon {
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.navigateBtn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  transition: all var(--transition-fast);
+}
+
+.navigateBtn:hover {
+  background: var(--color-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.shareBtn {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-secondary);
+  transition: all var(--transition-fast);
+}
+
+.shareBtn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+/* Section divider */
+.sectionTitle {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-brown);
+  margin-bottom: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-light);
+}
+
+/* Course cards */
+.courseList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+@media (max-width: 640px) {
+  .infoGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+}
+
+/* Instructor Profile */
+.instructorProfile {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--color-bg-alt);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-4);
+}
+
+.instructorAvatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--color-border);
+}
+
+.instructorAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarPlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.instructorInfo {
+  flex: 1;
+}
+
+.instructorName {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 2px;
+}
+
+.instructorBio {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-tight);
+}
+
+@media (max-width: 600px) {
+  .workshopName {
+    font-size: 1.1rem; /* About half the visual weight of xl on mobile */
+  }
+}
+/* ---------- Responsive Layout ---------- */
+.pageContainer {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-4);
+  overflow-x: hidden; /* Prevent any horizontal overflow */
+  box-sizing: border-box; /* Ensure padding doesn't add to width */
+}
+
+.contentGrid {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: var(--space-4);
+  min-width: 0; /* Prevent flex overflow */
+  box-sizing: border-box;
+}
+
+.contentGrid > * {
+  min-width: 0; /* Critical: prevents flex children from overflowing */
+}
+
+@media (min-width: 768px) {
+  .contentGrid {
+    display: grid;
+    grid-template-columns: 480px 1fr;
+    gap: var(--space-8);
+    align-items: start;
+  }
+
+  .leftColumn {
+    order: 1;
+    position: sticky;
+    top: calc(var(--header-height) + var(--space-4));
+  }
+
+  .rightColumn {
+    order: 2;
+  }
+}
+

@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
 import { Bell } from 'lucide-react';
-import Link from 'next/link';
+import Link from '@/components/LocalizedLink';
 import { useAuth } from '@/context/AuthContext';
 import { getNotificationsByUser, markNotificationAsRead } from '@/lib/database';
 import type { AppNotification } from '@/types';

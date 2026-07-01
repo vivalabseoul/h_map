@@ -36,14 +36,18 @@ const ensureLocaleObject = (val: any): Record<Locale, string> => {
   return parsed || { ko: '', en: '', ja: '', zh: '' };
 };
 
-const mapWorkshop = (d: any): Workshop => ({
-  id: d.id, ownerId: d.owner_id, ownerName: d.owner_name, name: safeParse(d.name) || {en:'',ko:'',ja:'',zh:''}, category: d.category,
+const mapWorkshop = (d: any): Workshop => {
+  const nameObj = safeParse(d.name) || {en:'',ko:'',ja:'',zh:''};
+  const fallbackSlug = (nameObj.en || nameObj.ko || d.id || 'workshop').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  return {
+  id: d.id, slug: d.slug || fallbackSlug, ownerId: d.owner_id, ownerName: d.owner_name, name: nameObj, category: d.category,
   description: safeParse(d.description) || {en:'',ko:'',ja:'',zh:''}, address: safeParse(d.address) || {en:'',ko:'',ja:'',zh:''}, lat: d.lat, lng: d.lng,
   images: safeParse(d.images) || [], rating: d.rating, reviewCount: d.review_count,
   tags: safeParse(d.tags)?.filter((t:string) => !t.startsWith('lang:')) || [], 
+
   languages: safeParse(d.tags)?.filter((t:string) => t.startsWith('lang:')).map((t:string) => t.replace('lang:', '')) || safeParse(d.languages) || [], 
   phone: d.phone, email: d.email, website: d.website, snsLinks: safeParse(d.sns_links),
-  region: d.region, status: d.status, 
+  region: d.region, status: d.status, isPrivate: d.is_private || false,
   totalClicks: d.total_clicks || 0,
   websiteClicks: d.website_clicks || 0,
   instagramClicks: d.instagram_clicks || 0,
@@ -53,12 +57,13 @@ const mapWorkshop = (d: any): Workshop => ({
   mapPinClicks: d.map_pin_clicks || 0,
   listClicks: d.list_clicks || 0,
   createdAt: d.created_at,
-});
+  };
+};
 const mapCourse = (d: any): Course => ({
   id: d.id, workshopId: d.workshop_id, instructorId: d.instructor_id, instructorName: d.instructor_name,
   title: d.title, description: d.description, price: d.price, duration: d.duration,
   maxParticipants: d.max_participants, currentParticipants: d.current_participants,
-  status: d.status, imageUrl: d.image_url, startDate: d.start_date, endDate: d.end_date,
+  status: d.status, isPrivate: d.is_private || false, imageUrl: d.image_url, startDate: d.start_date, endDate: d.end_date,
   availableDays: d.available_days || [], availableTimes: d.available_times || [],
   externalLink: d.external_link,
   autoApprove: d.auto_approve ?? false,
@@ -143,6 +148,26 @@ export async function getWorkshopById(id: string): Promise<Workshop | null> {
   return data ? mapWorkshop(data) : null;
 }
 
+export async function getWorkshopBySlug(slug: string): Promise<Workshop | null> {
+  if (!supabase || !isSupabaseConfigured) return getLocalWorkshops().find(w => w.slug === slug) || null;
+  
+  const { data, error } = await supabase.from('workshops').select('*').eq('slug', slug).single();
+  
+  if (data) return mapWorkshop(data);
+  
+  // FALLBACK: If slug column doesn't exist (error 42703) or query fails, fetch all and match
+  const { data: allData } = await supabase.from('workshops').select('*');
+  if (allData) {
+    const matched = allData.find(d => {
+      const w = mapWorkshop(d);
+      return w.slug.toLowerCase() === slug.toLowerCase() || w.id === slug;
+    });
+    if (matched) return mapWorkshop(matched);
+  }
+  
+  return getLocalWorkshops().find(w => w.slug.toLowerCase() === slug.toLowerCase()) || null;
+}
+
 export async function createWorkshop(data: Omit<Workshop, 'id' | 'createdAt' | 'rating' | 'reviewCount'>): Promise<string> {
   if (!supabase || !isSupabaseConfigured) {
     const newWorkshop = { ...data, id: `w_${Date.now()}`, createdAt: new Date().toISOString(), rating: 0, reviewCount: 0 };
@@ -155,7 +180,7 @@ export async function createWorkshop(data: Omit<Workshop, 'id' | 'createdAt' | '
     owner_id: data.ownerId, owner_name: data.ownerName, name: data.name, category: data.category,
     description: data.description, address: data.address, lat: data.lat, lng: data.lng,
     images: data.images, tags: [...(data.tags || []), ...(data.languages?.map(l => `lang:${l}`) || [])], phone: data.phone, email: data.email, website: data.website,
-    sns_links: data.snsLinks, region: data.region, status: data.status,
+    sns_links: data.snsLinks, region: data.region, status: data.status, is_private: data.isPrivate || false,
   };
   const { data: res, error } = await supabase.from('workshops').insert(insertData).select('id').single();
   if (error) {
@@ -202,6 +227,7 @@ export async function updateWorkshop(id: string, data: Partial<Workshop>): Promi
   if (data.region) updateData.region = data.region;
   if (data.lat !== undefined) updateData.lat = data.lat;
   if (data.lng !== undefined) updateData.lng = data.lng;
+  if (data.isPrivate !== undefined) updateData.is_private = data.isPrivate;
   
   const { error } = await supabase.from('workshops').update(updateData).eq('id', id);
   if (error) {
@@ -294,7 +320,7 @@ export async function createCourse(data: Omit<Course, 'id' | 'createdAt' | 'curr
   const insertData = {
     workshop_id: data.workshopId, instructor_id: data.instructorId, instructor_name: data.instructorName,
     title: data.title, description: data.description, price: data.price, duration: data.duration,
-    max_participants: data.maxParticipants, status: data.status, image_url: data.imageUrl,
+    max_participants: data.maxParticipants, status: data.status, is_private: data.isPrivate || false, image_url: data.imageUrl,
     start_date: data.startDate, end_date: data.endDate, 
     available_days: data.availableDays, available_times: data.availableTimes,
     external_link: data.externalLink,
@@ -312,6 +338,7 @@ export async function updateCourse(id: string, data: Partial<Course>): Promise<v
   if (data.description) updateData.description = data.description;
   if (data.price) updateData.price = data.price;
   if (data.status) updateData.status = data.status;
+  if (data.isPrivate !== undefined) updateData.is_private = data.isPrivate;
   if (data.imageUrl !== undefined) updateData.image_url = data.imageUrl;
   if (data.startDate) updateData.start_date = data.startDate;
   if (data.endDate) updateData.end_date = data.endDate;
@@ -784,7 +811,7 @@ export async function getMainNotice(): Promise<Notice | null> {
     .select('*')
     .eq('is_main', true)
     .eq('is_active', true)
-    .single();
+    .maybeSingle();
     
   if (error || !data) {
     return getLocalNotices().find(n => n.isMain && n.isActive) || null; // Fallback to demo data
@@ -881,4 +908,170 @@ export async function deleteNotice(id: string): Promise<void> {
       saveLocalNotices(local);
     }
   }
+}
+
+// ==========================================
+// Analytics: Click Trends & Traffic Sources
+// ==========================================
+
+export interface ClickTrendItem {
+  date: string;
+  label: string;
+  totalClicks: number;
+  mapPinClicks: number;
+  listClicks: number;
+  externalClicks: number;
+}
+
+export interface ClicksByTypeItem {
+  name: string;
+  value: number;
+}
+
+const LINK_TYPE_LABELS: Record<string, string> = {
+  map_pin: '지도 핀 클릭',
+  list_item: '리스트 클릭',
+  website: '웹사이트',
+  instagram: '인스타그램',
+  youtube: '유튜브',
+  nav: '길찾기',
+  share: '공유',
+};
+
+/**
+ * Fetch daily click trends from workshop_clicks table.
+ */
+export async function getClickTrends(startDate: string, endDate: string): Promise<ClickTrendItem[]> {
+  if (!supabase || !isSupabaseConfigured) {
+    return generateDemoTrends(startDate, endDate);
+  }
+
+  const { data, error } = await supabase
+    .from('workshop_clicks')
+    .select('link_type, created_at')
+    .gte('created_at', `${startDate}T00:00:00`)
+    .lte('created_at', `${endDate}T23:59:59`)
+    .order('created_at', { ascending: true });
+
+  if (error || !data) {
+    console.warn('Failed to fetch click trends:', error);
+    return generateDemoTrends(startDate, endDate);
+  }
+
+  const grouped: Record<string, { total: number; mapPin: number; list: number; external: number }> = {};
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    const key = d.toISOString().split('T')[0];
+    grouped[key] = { total: 0, mapPin: 0, list: 0, external: 0 };
+  }
+
+  for (const row of data) {
+    const dateKey = new Date(row.created_at).toISOString().split('T')[0];
+    if (!grouped[dateKey]) {
+      grouped[dateKey] = { total: 0, mapPin: 0, list: 0, external: 0 };
+    }
+    grouped[dateKey].total += 1;
+    if (row.link_type === 'map_pin') grouped[dateKey].mapPin += 1;
+    else if (row.link_type === 'list_item') grouped[dateKey].list += 1;
+    else grouped[dateKey].external += 1;
+  }
+
+  return Object.entries(grouped)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, counts]) => ({
+      date,
+      label: `${date.slice(5, 7)}/${date.slice(8, 10)}`,
+      totalClicks: counts.total,
+      mapPinClicks: counts.mapPin,
+      listClicks: counts.list,
+      externalClicks: counts.external,
+    }));
+}
+
+/**
+ * Fetch click breakdown by link_type from workshop_clicks table.
+ */
+export async function getClicksByType(startDate: string, endDate: string): Promise<ClicksByTypeItem[]> {
+  if (!supabase || !isSupabaseConfigured) {
+    return generateDemoClicksByType();
+  }
+
+  const { data, error } = await supabase
+    .from('workshop_clicks')
+    .select('link_type')
+    .gte('created_at', `${startDate}T00:00:00`)
+    .lte('created_at', `${endDate}T23:59:59`);
+
+  if (error || !data) {
+    console.warn('Failed to fetch clicks by type:', error);
+    return generateDemoClicksByType();
+  }
+
+  const counts: Record<string, number> = {};
+  for (const row of data) {
+    counts[row.link_type] = (counts[row.link_type] || 0) + 1;
+  }
+
+  return Object.entries(counts)
+    .map(([type, value]) => ({
+      name: LINK_TYPE_LABELS[type] || type,
+      value,
+    }))
+    .sort((a, b) => b.value - a.value);
+}
+
+/**
+ * Get total click count for a date range.
+ */
+export async function getTotalClicks(startDate: string, endDate: string): Promise<number> {
+  if (!supabase || !isSupabaseConfigured) {
+    return generateDemoTrends(startDate, endDate).reduce((sum, d) => sum + d.totalClicks, 0);
+  }
+
+  const { count, error } = await supabase
+    .from('workshop_clicks')
+    .select('*', { count: 'exact', head: true })
+    .gte('created_at', `${startDate}T00:00:00`)
+    .lte('created_at', `${endDate}T23:59:59`);
+
+  if (error) {
+    console.warn('Failed to fetch total clicks:', error);
+    return 0;
+  }
+  return count || 0;
+}
+
+// Demo fallback data generators
+function generateDemoTrends(startDate: string, endDate: string): ClickTrendItem[] {
+  const results: ClickTrendItem[] = [];
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    const dateStr = d.toISOString().split('T')[0];
+    const mapPin = Math.floor(Math.random() * 30) + 5;
+    const list = Math.floor(Math.random() * 20) + 3;
+    const external = Math.floor(Math.random() * 15) + 2;
+    results.push({
+      date: dateStr,
+      label: `${dateStr.slice(5, 7)}/${dateStr.slice(8, 10)}`,
+      totalClicks: mapPin + list + external,
+      mapPinClicks: mapPin,
+      listClicks: list,
+      externalClicks: external,
+    });
+  }
+  return results;
+}
+
+function generateDemoClicksByType(): ClicksByTypeItem[] {
+  return [
+    { name: '지도 핀 클릭', value: 245 },
+    { name: '리스트 클릭', value: 182 },
+    { name: '길찾기', value: 97 },
+    { name: '인스타그램', value: 78 },
+    { name: '웹사이트', value: 56 },
+    { name: '유튜브', value: 34 },
+    { name: '공유', value: 23 },
+  ];
 }

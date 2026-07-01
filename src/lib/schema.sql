@@ -21,6 +21,7 @@ CREATE TABLE public.users (
 -- 2. Workshops Table
 CREATE TABLE public.workshops (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  slug TEXT UNIQUE,
   owner_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
   owner_name TEXT,
   name JSONB NOT NULL,
@@ -47,6 +48,7 @@ CREATE TABLE public.workshops (
   nav_clicks INTEGER DEFAULT 0,
   map_pin_clicks INTEGER DEFAULT 0,
   list_clicks INTEGER DEFAULT 0,
+  is_private BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -70,6 +72,7 @@ CREATE TABLE public.courses (
   image_url TEXT,
   external_link TEXT,
   auto_approve BOOLEAN DEFAULT false,
+  is_private BOOLEAN DEFAULT false,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

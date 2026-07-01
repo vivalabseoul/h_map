@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
+import Link from '@/components/LocalizedLink';
 import { Megaphone, X } from 'lucide-react';
 import { getMainNotice } from '@/lib/database';
 import type { Notice } from '@/types';

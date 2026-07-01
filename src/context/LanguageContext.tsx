@@ -2,7 +2,8 @@
 // ==========================================
 // Language Context — i18n Provider
 // ==========================================
-import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useCallback, useMemo } from 'react';
+import { useParams, useRouter, usePathname } from 'next/navigation';
 import type { Locale, Translations } from '@/types';
 import en from '@/i18n/en.json';
 import ja from '@/i18n/ja.json';
@@ -33,7 +34,7 @@ function flattenObject(obj: Record<string, unknown>, prefix = ''): Record<string
 
 interface LanguageContextValue {
   locale: Locale;
-  setLocale: (locale: Locale) => void;
+  setLocale: (newLocale: Locale) => void;
   t: (key: string) => string;
 }
 
@@ -44,33 +45,37 @@ const LanguageContext = createContext<LanguageContextValue>({
 });
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>('en');
-
-  React.useEffect(() => {
-    if (typeof navigator !== 'undefined') {
-      const lang = navigator.language.split('-')[0].toLowerCase();
-      const supported: Locale[] = ['ko', 'en', 'ja', 'zh'];
-      const defaultLocale = supported.includes(lang as Locale) ? (lang as Locale) : 'en';
-      setLocaleState(defaultLocale);
-      document.documentElement.lang = defaultLocale;
-    }
-  }, []);
+  const params = useParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  
+  const currentLocale = (params?.locale as Locale) || 'en';
 
   const setLocale = useCallback((newLocale: Locale) => {
-    setLocaleState(newLocale);
-    if (typeof document !== 'undefined') {
-      document.documentElement.lang = newLocale;
+    if (!pathname) return;
+    
+    // Replace current locale in pathname with new locale
+    const segments = pathname.split('/');
+    if (segments.length > 1) {
+      segments[1] = newLocale; // Assumes structure is always /[locale]/...
     }
-  }, []);
+    
+    const newPath = segments.join('/') || `/${newLocale}`;
+    router.push(newPath);
+  }, [pathname, router]);
 
   const t = useCallback(
     (key: string): string => {
-      return translations[locale]?.[key] ?? translations['en']?.[key] ?? key;
+      return translations[currentLocale]?.[key] ?? translations['en']?.[key] ?? key;
     },
-    [locale]
+    [currentLocale]
   );
 
-  const value = useMemo(() => ({ locale, setLocale, t }), [locale, setLocale, t]);
+  const value = useMemo(() => ({ 
+    locale: currentLocale, 
+    setLocale, 
+    t 
+  }), [currentLocale, setLocale, t]);
 
   return (
     <LanguageContext.Provider value={value}>
@@ -81,4 +86,35 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
 export function useLanguage() {
   return useContext(LanguageContext);
+}
+
+export function useLocalizedRouter() {
+  const router = useRouter();
+  const { locale } = useLanguage();
+
+  return useMemo(() => ({
+    ...router,
+    push: (href: string, options?: any) => {
+      let localizedHref = href;
+      if (typeof href === 'string' && href.startsWith('/')) {
+        const segments = href.split('/');
+        const locales = ['ko', 'en', 'ja', 'zh'];
+        if (!locales.includes(segments[1])) {
+          localizedHref = `/${locale}${href === '/' ? '' : href}`;
+        }
+      }
+      return router.push(localizedHref, options);
+    },
+    replace: (href: string, options?: any) => {
+      let localizedHref = href;
+      if (typeof href === 'string' && href.startsWith('/')) {
+        const segments = href.split('/');
+        const locales = ['ko', 'en', 'ja', 'zh'];
+        if (!locales.includes(segments[1])) {
+          localizedHref = `/${locale}${href === '/' ? '' : href}`;
+        }
+      }
+      return router.replace(localizedHref, options);
+    }
+  }), [router, locale]);
 }

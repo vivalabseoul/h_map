@@ -1,4 +1,5 @@
 'use client';
+import { useLocalizedRouter } from '@/context/LanguageContext';
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
@@ -16,7 +17,7 @@ export default function RoleGuard({
   fallbackPath = '/login',
 }: RoleGuardProps) {
   const { user, userRole, loading } = useAuth();
-  const router = useRouter();
+  const router = useLocalizedRouter();
 
   React.useEffect(() => {
     if (!loading) {

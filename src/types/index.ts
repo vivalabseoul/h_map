@@ -40,6 +40,7 @@ export interface AppUser {
 // ==========================================
 export interface Workshop {
   id: string;
+  slug?: string;
   ownerId: string;
   ownerName?: string;
   name: Record<Locale, string>;
@@ -64,6 +65,7 @@ export interface Workshop {
   };
   region: Region;
   status: WorkshopStatus;
+  isPrivate?: boolean;
   totalClicks?: number;
   websiteClicks?: number;
   instagramClicks?: number;
@@ -127,6 +129,7 @@ export interface Course {
   maxParticipants: number;
   currentParticipants: number;
   status: CourseStatus;
+  isPrivate?: boolean;
   imageUrl?: string;
   startDate: string;
   endDate: string;

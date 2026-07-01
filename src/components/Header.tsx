@@ -1,6 +1,7 @@
 'use client';
+import { useLocalizedRouter } from '@/context/LanguageContext';
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+import Link from '@/components/LocalizedLink';
 import { usePathname, useRouter } from 'next/navigation';
 import { Menu, Search, ArrowLeft, Map, LayoutDashboard, BookOpen, Shield, X, LogOut } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -18,7 +19,7 @@ export default function Header() {
   const { user, userRole, logout } = useAuth();
   const { t } = useLanguage();
   const pathname = usePathname();
-  const router = useRouter();
+  const router = useLocalizedRouter();
   const { searchQuery, setSearchQuery, viewMode, setViewMode } = useFilter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
