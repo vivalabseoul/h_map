@@ -124,7 +124,9 @@ export interface Course {
   instructorName?: string;
   title: Record<Locale, string>;
   description: Record<Locale, CourseDescription | string | any>;
-  price: string;
+  price: string; // Legacy string
+  priceKrw?: number; // Base currency
+  priceUsd?: number; // Calculated/Display currency
   duration: string;
   maxParticipants: number;
   currentParticipants: number;

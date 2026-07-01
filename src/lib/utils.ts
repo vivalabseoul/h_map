@@ -9,3 +9,5 @@ export function formatPrice(priceStr: string | null | undefined, region?: string
     return `$${num.toLocaleString('en-US')}`;
   }
 }
+
+

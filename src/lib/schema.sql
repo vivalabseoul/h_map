@@ -61,6 +61,8 @@ CREATE TABLE public.courses (
   title JSONB NOT NULL,
   description JSONB NOT NULL,
   price TEXT NOT NULL,
+  price_krw NUMERIC,
+  price_usd NUMERIC,
   duration TEXT NOT NULL,
   max_participants INTEGER NOT NULL,
   current_participants INTEGER DEFAULT 0,

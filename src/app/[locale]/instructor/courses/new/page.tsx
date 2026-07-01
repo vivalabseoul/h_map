@@ -24,6 +24,7 @@ export default function CreateCoursePage() {
   });
   const [workshopId, setWorkshopId] = useState('');
   const [price, setPrice] = useState('');
+  const [priceKrw, setPriceKrw] = useState<number | ''>('');
   const [duration, setDuration] = useState('1 Hour');
   const [maxParticipants, setMaxParticipants] = useState(1);
   const [startDate, setStartDate] = useState('');
@@ -80,6 +81,7 @@ export default function CreateCoursePage() {
         title,
         description,
         price,
+        priceKrw: priceKrw === '' ? undefined : priceKrw,
         duration,
         maxParticipants,
         status: 'open',
@@ -310,8 +312,26 @@ export default function CreateCoursePage() {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
               <div className="form-group">
-                <label className="form-label">가격 (Price)</label>
-                <input type="text" className="form-input" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="예: 50,000원 / $50" required />
+                <label className="form-label">가격 (Price in KRW)</label>
+                <div style={{ position: 'relative' }}>
+                  <input 
+                    type="number" 
+                    className="form-input" 
+                    value={priceKrw} 
+                    onChange={(e) => {
+                      setPriceKrw(e.target.value ? Number(e.target.value) : '');
+                      // Keep legacy price string in sync for fallback
+                      setPrice(e.target.value ? `${Number(e.target.value).toLocaleString()}원` : '');
+                    }} 
+                    placeholder="예: 50000" 
+                    required 
+                  />
+                  {typeof priceKrw === 'number' && priceKrw > 0 && (
+                    <div style={{ marginTop: '4px', fontSize: '0.85rem', color: 'var(--color-primary)', fontWeight: 500 }}>
+                      저장 시 '{priceKrw.toLocaleString()}원'으로 표기됩니다.
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="form-group">
                 <label className="form-label">소요 시간 (Duration)</label>

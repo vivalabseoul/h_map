@@ -28,6 +28,9 @@ export default function WorkshopDetailClient({ workshop }: WorkshopDetailClientP
   const [currentReviewCount, setCurrentReviewCount] = useState(workshop.reviewCount);
 
   useEffect(() => {
+    // Force scroll to top when navigating between workshops
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    
     getCoursesByWorkshop(workshop.id).then(setCourses);
     getUserProfile(workshop.ownerId).then(setInstructor);
     getWorkshops().then(setAllWorkshops);

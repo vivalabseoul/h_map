@@ -61,7 +61,7 @@ const mapWorkshop = (d: any): Workshop => {
 };
 const mapCourse = (d: any): Course => ({
   id: d.id, workshopId: d.workshop_id, instructorId: d.instructor_id, instructorName: d.instructor_name,
-  title: d.title, description: d.description, price: d.price, duration: d.duration,
+  title: d.title, description: d.description, price: d.price, priceKrw: d.price_krw, priceUsd: d.price_usd, duration: d.duration,
   maxParticipants: d.max_participants, currentParticipants: d.current_participants,
   status: d.status, isPrivate: d.is_private || false, imageUrl: d.image_url, startDate: d.start_date, endDate: d.end_date,
   availableDays: d.available_days || [], availableTimes: d.available_times || [],
@@ -317,9 +317,12 @@ export async function getCoursesByInstructor(instructorId: string): Promise<Cour
 
 export async function createCourse(data: Omit<Course, 'id' | 'createdAt' | 'currentParticipants'>): Promise<string> {
   if (!supabase) throw new Error('Supabase not configured');
+  
+
   const insertData = {
     workshop_id: data.workshopId, instructor_id: data.instructorId, instructor_name: data.instructorName,
-    title: data.title, description: data.description, price: data.price, duration: data.duration,
+    title: data.title, description: data.description, price: data.price, 
+    duration: data.duration,
     max_participants: data.maxParticipants, status: data.status, is_private: data.isPrivate || false, image_url: data.imageUrl,
     start_date: data.startDate, end_date: data.endDate, 
     available_days: data.availableDays, available_times: data.availableTimes,
@@ -336,7 +339,8 @@ export async function updateCourse(id: string, data: Partial<Course>): Promise<v
   const updateData: any = {};
   if (data.title) updateData.title = data.title;
   if (data.description) updateData.description = data.description;
-  if (data.price) updateData.price = data.price;
+  if (data.price !== undefined) updateData.price = data.price;
+
   if (data.status) updateData.status = data.status;
   if (data.isPrivate !== undefined) updateData.is_private = data.isPrivate;
   if (data.imageUrl !== undefined) updateData.image_url = data.imageUrl;
@@ -346,7 +350,8 @@ export async function updateCourse(id: string, data: Partial<Course>): Promise<v
   if (data.availableTimes) updateData.available_times = data.availableTimes;
   if (data.externalLink !== undefined) updateData.external_link = data.externalLink;
   if (data.autoApprove !== undefined) updateData.auto_approve = data.autoApprove;
-  await supabase.from('courses').update(updateData).eq('id', id);
+  const { error } = await supabase.from('courses').update(updateData).eq('id', id);
+  if (error) throw error;
 }
 
 export async function deleteCourse(id: string): Promise<void> {
