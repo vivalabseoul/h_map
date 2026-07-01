@@ -160,12 +160,12 @@ export async function getWorkshopBySlug(slug: string): Promise<Workshop | null> 
   if (allData) {
     const matched = allData.find(d => {
       const w = mapWorkshop(d);
-      return w.slug.toLowerCase() === slug.toLowerCase() || w.id === slug;
+      return (w.slug && w.slug.toLowerCase() === slug.toLowerCase()) || w.id === slug;
     });
     if (matched) return mapWorkshop(matched);
   }
   
-  return getLocalWorkshops().find(w => w.slug.toLowerCase() === slug.toLowerCase()) || null;
+  return getLocalWorkshops().find(w => w.slug && w.slug.toLowerCase() === slug.toLowerCase()) || null;
 }
 
 export async function createWorkshop(data: Omit<Workshop, 'id' | 'createdAt' | 'rating' | 'reviewCount'>): Promise<string> {

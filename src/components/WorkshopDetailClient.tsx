@@ -1,6 +1,7 @@
 'use client';
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { ArrowLeft, Navigation, Share2, MapPin, Phone, Globe, Star, MessageCircle, Link as LinkIcon, Map, List } from 'lucide-react';
 import { FaInstagram, FaFacebook, FaYoutube } from 'react-icons/fa';
 import { useLanguage } from '@/context/LanguageContext';
@@ -28,8 +29,10 @@ export default function WorkshopDetailClient({ workshop }: WorkshopDetailClientP
   const [currentReviewCount, setCurrentReviewCount] = useState(workshop.reviewCount);
 
   useEffect(() => {
-    // Force scroll to top when navigating between workshops
-    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    // Force scroll to top when navigating between workshops, with slight delay for DOM paint
+    setTimeout(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    }, 10);
     
     getCoursesByWorkshop(workshop.id).then(setCourses);
     getUserProfile(workshop.ownerId).then(setInstructor);
@@ -367,11 +370,9 @@ export default function WorkshopDetailClient({ workshop }: WorkshopDetailClientP
           <h3 className={styles.sectionTitle}>{t('workshop.similar') || 'Similar Workshops'}</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', marginTop: 'var(--space-3)' }}>
             {similarWorkshops.map((sim) => (
-              <div
+              <Link
+                href={`/${locale}/workshops/${sim.slug || sim.id}`}
                 key={sim.id}
-                onClick={() => {
-                  router.push(`/${locale}/workshops/${sim.slug || sim.id}`);
-                }}
                 style={{
                   display: 'flex',
                   gap: 'var(--space-3)',
@@ -380,7 +381,9 @@ export default function WorkshopDetailClient({ workshop }: WorkshopDetailClientP
                   borderRadius: 'var(--radius-md)',
                   cursor: 'pointer',
                   border: '1px solid transparent',
-                  transition: 'border-color 0.2s'
+                  transition: 'border-color 0.2s',
+                  textDecoration: 'none',
+                  color: 'inherit'
                 }}
                 onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'var(--color-accent)')}
                 onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'transparent')}
@@ -403,7 +406,7 @@ export default function WorkshopDetailClient({ workshop }: WorkshopDetailClientP
                     {sim.tags.slice(0, 3).map(t => `#${t}`).join(' ')}
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
