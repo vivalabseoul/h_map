@@ -1080,3 +1080,44 @@ function generateDemoClicksByType(): ClicksByTypeItem[] {
     { name: '공유', value: 23 },
   ];
 }
+
+// ==========================================
+// Withdrawal Requests (회원탈퇴 신청)
+// ==========================================
+
+export async function submitWithdrawalRequest(
+  userId: string,
+  userEmail: string,
+  reason: string,
+  detail?: string
+): Promise<void> {
+  if (!supabase || !isSupabaseConfigured) {
+    console.warn('Supabase not configured — withdrawal request not saved.');
+    return;
+  }
+
+  // 중복 신청 방지: 이미 pending 상태 신청이 있으면 업데이트
+  const { data: existing } = await supabase
+    .from('withdrawal_requests')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('status', 'pending')
+    .maybeSingle();
+
+  if (existing) {
+    const { error } = await supabase
+      .from('withdrawal_requests')
+      .update({ reason, detail: detail || null, created_at: new Date().toISOString() })
+      .eq('id', existing.id);
+    if (error) throw new Error(error.message);
+  } else {
+    const { error } = await supabase.from('withdrawal_requests').insert({
+      user_id: userId,
+      user_email: userEmail,
+      reason,
+      detail: detail || null,
+    });
+    if (error) throw new Error(error.message);
+  }
+}
+

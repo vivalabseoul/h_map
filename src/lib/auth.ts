@@ -255,4 +255,32 @@ export async function findEmailByName(name: string): Promise<string[]> {
   });
 }
 
+/**
+ * Delete user account (calls server-side API route)
+ */
+export async function deleteUserAccount(userId: string): Promise<void> {
+  // Get the current session token for server-side verification
+  let token = '';
+  if (supabase) {
+    const { data: { session } } = await supabase.auth.getSession();
+    token = session?.access_token || '';
+  }
+
+  const response = await fetch('/api/auth/delete-account', {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ userId }),
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data.error || '회원탈퇴에 실패했습니다.');
+  }
+}
+
+
 export { isSupabaseConfigured };
+

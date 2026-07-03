@@ -253,3 +253,20 @@ BEGIN
   END IF;
 END;
 $$ LANGUAGE plpgsql;
+
+-- ==========================================
+-- 11. Withdrawal Requests Table (회원탈퇴 신청)
+-- ==========================================
+CREATE TABLE public.withdrawal_requests (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
+  user_email TEXT NOT NULL,
+  reason TEXT NOT NULL,           -- 탈퇴 사유 (선택지)
+  detail TEXT,                    -- 추가 의견 (선택)
+  status TEXT DEFAULT 'pending',  -- 'pending' | 'processed'
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.withdrawal_requests ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Enable all operations for all users" ON public.withdrawal_requests FOR ALL USING (true) WITH CHECK (true);
+
