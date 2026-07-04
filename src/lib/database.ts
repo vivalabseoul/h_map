@@ -110,6 +110,27 @@ const mapNotification = (d: any): AppNotification => ({
 });
 
 // ==========================================
+// Cache State (Client-Side)
+// ==========================================
+let cachedWorkshops: Workshop[] | null = null;
+let lastWorkshopsFetch = 0;
+
+let cachedFleaMarkets: FleaMarket[] | null = null;
+let lastFleaMarketsFetch = 0;
+
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+export function clearWorkshopsCache() {
+  cachedWorkshops = null;
+  lastWorkshopsFetch = 0;
+}
+
+export function clearFleaMarketsCache() {
+  cachedFleaMarkets = null;
+  lastFleaMarketsFetch = 0;
+}
+
+// ==========================================
 // Workshops
 // ==========================================
 
@@ -128,10 +149,19 @@ function saveLocalWorkshops(workshops: Workshop[]) {
 }
 
 export async function getWorkshops(): Promise<Workshop[]> {
+  const now = Date.now();
+  if (cachedWorkshops && (now - lastWorkshopsFetch < CACHE_TTL)) {
+    return cachedWorkshops;
+  }
+
   if (!supabase || !isSupabaseConfigured) return getLocalWorkshops();
   const { data, error } = await supabase.from('workshops').select('*').order('created_at', { ascending: false });
+  
   if (error || !data) return getLocalWorkshops();
-  return (data || []).map(mapWorkshop);
+  
+  cachedWorkshops = (data || []).map(mapWorkshop);
+  lastWorkshopsFetch = now;
+  return cachedWorkshops;
 }
 
 export async function getWorkshopsByOwner(ownerId: string): Promise<Workshop[]> {
@@ -189,8 +219,10 @@ export async function createWorkshop(data: Omit<Workshop, 'id' | 'createdAt' | '
     const local = getLocalWorkshops();
     local.unshift(newWorkshop as Workshop);
     saveLocalWorkshops(local);
+    clearWorkshopsCache();
     return newWorkshop.id;
   }
+  clearWorkshopsCache();
   return res.id;
 }
 
@@ -239,6 +271,7 @@ export async function updateWorkshop(id: string, data: Partial<Workshop>): Promi
       saveLocalWorkshops(local);
     }
   }
+  clearWorkshopsCache();
 }
 
 export async function deleteWorkshop(id: string): Promise<void> {
@@ -249,18 +282,11 @@ export async function deleteWorkshop(id: string): Promise<void> {
       local.splice(idx, 1);
       saveLocalWorkshops(local);
     }
+    clearWorkshopsCache();
     return;
   }
-  const { error } = await supabase.from('workshops').delete().eq('id', id);
-  if (error) {
-    console.warn("Supabase delete failed, falling back to local memory:", error);
-    const local = getLocalWorkshops();
-    const idx = local.findIndex(w => w.id === id);
-    if (idx > -1) {
-      local.splice(idx, 1);
-      saveLocalWorkshops(local);
-    }
-  }
+  await supabase.from('workshops').delete().eq('id', id);
+  clearWorkshopsCache();
 }
 
 export async function incrementWorkshopLinkClick(workshopId: string, linkType: string): Promise<void> {
@@ -598,9 +624,17 @@ export async function updateInquiryReply(id: string, reply: string): Promise<voi
 // Flea Markets
 // ==========================================
 export async function getFleaMarkets(): Promise<FleaMarket[]> {
+  const now = Date.now();
+  if (cachedFleaMarkets && (now - lastFleaMarketsFetch < CACHE_TTL)) {
+    return cachedFleaMarkets;
+  }
+
   if (!supabase || !isSupabaseConfigured) return [];
   const { data } = await supabase.from('flea_markets').select('*').order('created_at', { ascending: false });
-  return (data || []).map(mapFleaMarket);
+  
+  cachedFleaMarkets = (data || []).map(mapFleaMarket);
+  lastFleaMarketsFetch = now;
+  return cachedFleaMarkets;
 }
 
 export async function getFleaMarketsByCreator(creatorId: string): Promise<FleaMarket[]> {
@@ -627,6 +661,7 @@ export async function createFleaMarket(data: Omit<FleaMarket, 'id' | 'createdAt'
   };
   const { data: res, error } = await supabase.from('flea_markets').insert(insertData).select('id').single();
   if (error) throw error;
+  clearFleaMarketsCache();
   return res.id;
 }
 
@@ -659,6 +694,7 @@ export async function updateFleaMarket(id: string, data: Partial<FleaMarket>): P
 export async function deleteFleaMarket(id: string): Promise<void> {
   if (!supabase) throw new Error('Supabase not configured');
   await supabase.from('flea_markets').delete().eq('id', id);
+  clearFleaMarketsCache();
 }
 
 export async function incrementVendorApplicationClick(id: string): Promise<void> {

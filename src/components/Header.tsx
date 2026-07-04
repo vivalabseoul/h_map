@@ -1,7 +1,8 @@
 'use client';
 import { useLocalizedRouter } from '@/context/LanguageContext';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from '@/components/LocalizedLink';
+import { useModalHistory } from '@/hooks/useModalHistory';
 import { usePathname, useRouter } from 'next/navigation';
 import { Menu, Search, ArrowLeft, Map, LayoutDashboard, BookOpen, Shield, X, LogOut } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -42,6 +43,12 @@ export default function Header() {
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
+
+  const closeMobileMenu = useCallback(() => setIsMobileMenuOpen(false), []);
+  const closeRegisterModal = useCallback(() => setShowRegisterModal(false), []);
+
+  useModalHistory(isMobileMenuOpen, closeMobileMenu);
+  useModalHistory(showRegisterModal, closeRegisterModal);
 
   const navLinks = (isMobile: boolean) => (
     <>
@@ -260,9 +267,9 @@ export default function Header() {
 
       {showRegisterModal && (
         <RegisterWorkshopModal
-          onClose={() => setShowRegisterModal(false)}
+          onClose={closeRegisterModal}
           onSuccess={() => {
-            setShowRegisterModal(false);
+            closeRegisterModal();
             setShowToast(true);
           }}
         />

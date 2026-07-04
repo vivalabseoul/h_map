@@ -1,6 +1,7 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { X, Loader2, Image as ImageIcon } from 'lucide-react';
+import { useModalHistory } from '@/hooks/useModalHistory';
 import { listStorageImages } from '@/lib/database';
 
 interface ImageGalleryModalProps {
@@ -14,6 +15,12 @@ export default function ImageGalleryModal({ isOpen, onClose, onSelect, folder }:
   const [images, setImages] = useState<{ name: string, url: string, created_at: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentFolder, setCurrentFolder] = useState('inquiries');
+
+  const handleClose = useCallback(() => {
+    onClose();
+  }, [onClose]);
+
+  useModalHistory(isOpen, handleClose);
 
   useEffect(() => {
     if (isOpen) {

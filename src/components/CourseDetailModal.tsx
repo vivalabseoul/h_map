@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { useModalHistory } from '@/hooks/useModalHistory';
 import type { Course, Workshop } from '@/types';
 import { useLanguage } from '@/context/LanguageContext';
 import { getWorkshopById } from '@/lib/database';
@@ -14,6 +15,13 @@ export default function CourseDetailModal({ course, onClose }: CourseDetailModal
   const { t, locale } = useLanguage();
   const [workshop, setWorkshop] = useState<Workshop | null>(null);
   const isOpen = course.status === 'open';
+
+  // Make sure onClose is stable or use useModalHistory carefully
+  const handleClose = useCallback(() => {
+    onClose();
+  }, [onClose]);
+
+  useModalHistory(true, handleClose);
 
   React.useEffect(() => {
     if (course.workshopId) {

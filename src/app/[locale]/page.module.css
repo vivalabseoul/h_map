@@ -85,6 +85,12 @@
     /* Peek state: shows only top ~130px */
     transform: translateY(calc(100% - 80px));
     pointer-events: auto;
+    overflow-y: hidden;
+  }
+
+  /* Prevent the internal list container from scrolling when minimized */
+  .listHidden > div {
+    overflow-y: hidden !important;
   }
 }
 

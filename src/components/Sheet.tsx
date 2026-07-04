@@ -1,6 +1,7 @@
 'use client';
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { X } from 'lucide-react';
+import { useModalHistory } from '@/hooks/useModalHistory';
 import styles from './Sheet.module.css';
 
 interface SheetProps {
@@ -9,6 +10,12 @@ interface SheetProps {
 }
 
 export default function Sheet({ children, onClose }: SheetProps) {
+  const handleClose = useCallback(() => {
+    onClose();
+  }, [onClose]);
+
+  useModalHistory(true, handleClose);
+
   // Close on escape
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
