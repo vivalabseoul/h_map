@@ -120,16 +120,26 @@ export default function WorkshopDetailClient({ workshop }: WorkshopDetailClientP
 
   const handleShare = useCallback(async () => {
     incrementWorkshopLinkClick(workshop.id, 'share').catch(console.error);
+    const shareUrl = window.location.href;
+    
     if (navigator.share) {
       try {
         await navigator.share({
           title: workshop.name[locale],
           text: workshop.description[locale],
-          url: window.location.href,
+          url: shareUrl,
         });
-      } catch {
-        // User cancelled share
+        return;
+      } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') return;
       }
+    }
+    
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      alert(locale === 'ko' ? '링크가 클립보드에 복사되었습니다.' : 'Link copied to clipboard.');
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
     }
   }, [workshop, locale]);
 

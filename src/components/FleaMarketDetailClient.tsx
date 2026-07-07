@@ -27,16 +27,26 @@ export default function FleaMarketDetailClient({ market }: FleaMarketDetailClien
   }, [market.lat, market.lng, market.name, locale]);
 
   const handleShare = useCallback(async () => {
+    const shareUrl = window.location.href;
+
     if (navigator.share) {
       try {
         await navigator.share({
           title: market.name[locale] || market.name.ko || market.name.en,
           text: market.description[locale] || market.description.ko || market.description.en,
-          url: window.location.href,
+          url: shareUrl,
         });
-      } catch {
-        // User cancelled share
+        return;
+      } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') return;
       }
+    }
+
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      alert(locale === 'ko' ? '링크가 클립보드에 복사되었습니다.' : 'Link copied to clipboard.');
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
     }
   }, [market, locale]);
 
