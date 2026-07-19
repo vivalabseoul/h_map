@@ -31,7 +31,7 @@ export default function MarketCoordinatorDashboard() {
           <p>등록하신 플리마켓 정보를 관리합니다.</p>
         </div>
         <Link href="/market_coordinator/new" className="btn btn-primary">
-          🎪 새 플리마켓 등록
+          새 플리마켓 등록
         </Link>
       </div>
 
@@ -52,7 +52,7 @@ export default function MarketCoordinatorDashboard() {
                 alignItems: 'center'
               }}>
                 <div>
-                  <h3 style={{ margin: '0 0 var(--space-2) 0' }}>🎪 {market.name.ko}</h3>
+                  <h3 style={{ margin: '0 0 var(--space-2) 0' }}>{market.name.ko}</h3>
                   <p style={{ margin: 0, color: 'var(--color-text-secondary)', fontSize: '0.875rem' }}>
                     일자: {market.date} | 주소: {market.address.ko}
                   </p>

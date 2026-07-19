@@ -19,7 +19,9 @@ export default function AboutPage() {
 
             <h3 style={{ marginBottom: 'var(--space-4)', color: 'var(--color-brown)' }}>Contact Info</h3>
             <ul style={{ listStyle: 'none', padding: 0 }}>
-              <li style={{ marginBottom: 'var(--space-2)' }}><strong>Company:</strong> Vivalab Seoul</li>
+              <li style={{ marginBottom: 'var(--space-2)' }}><strong>Company:</strong> Moonga Corp(Vivalab Seoul)</li>
+              <li style={{ marginBottom: 'var(--space-2)' }}><strong>CEO:</strong> Stella(Jungha) Moon</li>
+              <li style={{ marginBottom: 'var(--space-2)' }}><strong>BN:</strong> 274-19-02203</li>
               <li style={{ marginBottom: 'var(--space-2)' }}><strong>Email:</strong> vivalabseoul@gmail.com</li>
               <li style={{ marginBottom: 'var(--space-2)' }}><strong>Location:</strong> Seoul, Republic of Korea</li>
             </ul>

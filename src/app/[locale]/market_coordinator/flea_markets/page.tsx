@@ -47,7 +47,7 @@ export default function CoordinatorFleaMarketsPage() {
           <p>등록하신 플리마켓을 수정하거나 삭제할 수 있습니다.</p>
         </div>
         <Link href="/market_coordinator/new" className="btn btn-primary">
-          🎪 새 플리마켓 등록
+          새 플리마켓 등록
         </Link>
       </div>
 
@@ -65,7 +65,7 @@ export default function CoordinatorFleaMarketsPage() {
           <tbody>
             {markets.map((m) => (
               <tr key={m.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                <td style={{ padding: 'var(--space-3)', fontWeight: 'bold' }}>🎪 {m.name.ko || m.name.en}</td>
+                <td style={{ padding: 'var(--space-3)', fontWeight: 'bold' }}>{m.name.ko || m.name.en}</td>
                 <td style={{ padding: 'var(--space-3)' }}>{m.date}</td>
                 <td style={{ padding: 'var(--space-3)' }}>
                   <span className="badge" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>

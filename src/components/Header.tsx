@@ -125,7 +125,7 @@ export default function Header() {
             className={`${isMobile ? styles.mobileNavLink : styles.navLink} ${pathname.startsWith('/market_coordinator') ? (isMobile ? styles.mobileNavLinkActive : styles.navLinkActive) : ''}`}
             onClick={() => { if (isMobile && pathname === '/market_coordinator') setIsMobileMenuOpen(false); }}
           >
-            🎪 {t('nav.market') || 'Flea Market'}
+            {t('nav.market') || 'Flea Market'}
           </Link>
           {isMobile && pathname.startsWith('/market_coordinator') && (
             <div className={styles.mobileSubMenuContainer}>
@@ -278,7 +278,7 @@ export default function Header() {
       {showToast && (
         <Toast
           type="success"
-          message="공방 등록 신청이 접수되었습니다! 🎉"
+          message="공방 등록 신청이 접수되었습니다!"
           onClose={() => setShowToast(false)}
         />
       )}

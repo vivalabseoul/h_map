@@ -189,7 +189,6 @@ export default function AdminFleaMarketsPage() {
                   />
                 </td>
                 <td style={{ fontWeight: 'bold' }}>
-                  {m.status === 'inactive' ? '🚫 ' : '🎪 '} 
                   {m.name.ko || m.name.en}
                 </td>
                 <td>{m.date}</td>

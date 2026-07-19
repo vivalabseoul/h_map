@@ -122,7 +122,7 @@ export default function EditFleaMarketPage() {
     <div>
       <div className="page-header">
         <div>
-          <h1>🎪 플리마켓 수정 (Edit Flea Market)</h1>
+          <h1>플리마켓 수정 (Edit Flea Market)</h1>
           <p>등록된 플리마켓 행사 정보를 수정합니다.</p>
         </div>
       </div>
@@ -249,7 +249,7 @@ export default function EditFleaMarketPage() {
           </div>
 
           <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%' }} disabled={loading}>
-            {loading ? '수정 중...' : '🎪 플리마켓 수정하기'}
+            {loading ? '수정 중...' : '플리마켓 수정하기'}
           </button>
         </form>
       </div>

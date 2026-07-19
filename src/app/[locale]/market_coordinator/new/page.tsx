@@ -86,7 +86,7 @@ export default function CreateFleaMarketPage() {
     <div>
       <div className="page-header">
         <div>
-          <h1>🎪 플리마켓 등록 (Create Flea Market)</h1>
+          <h1>플리마켓 등록 (Create Flea Market)</h1>
           <p>새로운 플리마켓 행사 정보를 등록해주세요.</p>
         </div>
       </div>
@@ -214,7 +214,7 @@ export default function CreateFleaMarketPage() {
           </div>
 
           <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%' }} disabled={loading}>
-            {loading ? '등록 중...' : '🎪 플리마켓 등록하기'}
+            {loading ? '등록 중...' : '플리마켓 등록하기'}
           </button>
         </form>
       </div>

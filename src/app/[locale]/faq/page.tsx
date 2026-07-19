@@ -295,13 +295,13 @@ export default function FaqPage() {
           className={`${styles.tabBtn} ${activeRole === 'member' ? styles.tabBtnActive : ''}`}
           onClick={() => { setActiveRole('member'); setActiveCategory('all'); setOpenId(null); }}
         >
-          🧑‍🎨 For Members (수강생용)
+          For Members (수강생용)
         </button>
         <button
           className={`${styles.tabBtn} ${activeRole === 'creator' ? styles.tabBtnActive : ''}`}
           onClick={() => { setActiveRole('creator'); setActiveCategory('all'); setOpenId(null); }}
         >
-          👩‍🏫 For Creators (크리에이터용)
+          For Creators (크리에이터용)
         </button>
       </div>
 

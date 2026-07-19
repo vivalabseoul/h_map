@@ -6,8 +6,8 @@ import { ArrowLeft, Navigation, Share2, MapPin, Phone, Globe, Star, MessageCircl
 import { FaInstagram, FaFacebook, FaYoutube } from 'react-icons/fa';
 import { useLanguage } from '@/context/LanguageContext';
 import { getDynamicCategories } from '@/lib/categoryUtils';
-import type { Workshop, Course, AppUser } from '@/types';
-import { getCoursesByWorkshop, getUserProfile, getWorkshopById, incrementWorkshopLinkClick, getWorkshops } from '@/lib/database';
+import type { Workshop, Course, AppUser, FleaMarket } from '@/types';
+import { getCoursesByWorkshop, getUserProfile, getWorkshopById, incrementWorkshopLinkClick, getWorkshops, getFleaMarkets } from '@/lib/database';
 import { useAuth } from '@/context/AuthContext';
 import CourseCard from './CourseCard';
 import ReviewSection from './ReviewSection';
@@ -24,6 +24,7 @@ export default function WorkshopDetailClient({ workshop }: WorkshopDetailClientP
   const [courses, setCourses] = useState<Course[]>([]);
   const [instructor, setInstructor] = useState<AppUser | null>(null);
   const [allWorkshops, setAllWorkshops] = useState<Workshop[]>([]);
+  const [allFleaMarkets, setAllFleaMarkets] = useState<FleaMarket[]>([]);
 
   const [currentRating, setCurrentRating] = useState(workshop.rating);
   const [currentReviewCount, setCurrentReviewCount] = useState(workshop.reviewCount);
@@ -37,6 +38,7 @@ export default function WorkshopDetailClient({ workshop }: WorkshopDetailClientP
     getCoursesByWorkshop(workshop.id).then(setCourses);
     getUserProfile(workshop.ownerId).then(setInstructor);
     getWorkshops().then(setAllWorkshops);
+    getFleaMarkets().then(setAllFleaMarkets);
     setCurrentRating(workshop.rating);
     setCurrentReviewCount(workshop.reviewCount);
   }, [workshop]);
@@ -87,23 +89,63 @@ export default function WorkshopDetailClient({ workshop }: WorkshopDetailClientP
     });
   }, [courses, user, workshop.ownerId]);
 
-  const similarWorkshops = useMemo(() => {
-    if (!allWorkshops || allWorkshops.length === 0) return [];
+  const nearbyPlaces = useMemo(() => {
+    const festivalsScored = (allFleaMarkets || [])
+      .filter((m) => m.status !== 'inactive')
+      .map((m) => {
+        const distance = getDistance(workshop.lat, workshop.lng, m.lat, m.lng);
+        const name = m.name[locale] || m.name.ko || m.name.en || '';
+        const desc = m.description[locale] || m.description.ko || m.description.en || '';
+        return {
+          id: m.id,
+          type: 'festival' as const,
+          name,
+          description: desc,
+          subtitle: m.date ? `${m.date}` : (locale === 'ko' ? '지역 축제' : 'Festival'),
+          imageUrl: m.posterUrl,
+          linkUrl: `/${locale}/fleamarkets/${m.id}`,
+          badgeText: locale === 'ko' ? '축제' : 'Festival',
+          badgeBg: '#fef3c7',
+          badgeColor: '#d97706',
+          distance,
+        };
+      })
+      .sort((a, b) => a.distance - b.distance);
 
-    // Calculate distance for each workshop
-    const scored = allWorkshops
+    const workshopsScored = (allWorkshops || [])
       .filter((w) => w.id !== workshop.id && w.status === 'active')
       .map((w) => {
         const distance = getDistance(workshop.lat, workshop.lng, w.lat, w.lng);
-        return { workshop: w, distance };
-      });
+        const name = w.name[locale] || w.name.ko || w.name.en || '';
+        const desc = w.description[locale] || w.description.ko || w.description.en || '';
+        return {
+          id: w.id,
+          type: 'workshop' as const,
+          name,
+          description: desc,
+          subtitle: `⭐ ${w.rating} (${w.reviewCount})`,
+          imageUrl: w.images && w.images.length > 0 ? w.images[0] : undefined,
+          linkUrl: `/${locale}/workshops/${w.slug || w.id}`,
+          badgeText: locale === 'ko' ? '공방' : 'Studio',
+          badgeBg: '#e0f2fe',
+          badgeColor: '#0284c7',
+          distance,
+        };
+      })
+      .sort((a, b) => a.distance - b.distance);
 
-    // Sort by distance (closest first) and take top 3
-    return scored
-      .sort((a, b) => a.distance - b.distance)
-      .slice(0, 3)
-      .map((s) => s.workshop);
-  }, [workshop, allWorkshops]);
+    const result = [];
+    
+    // Prioritize festivals FIRST (up to 3 nearest festivals)
+    const maxFestivals = 3;
+    result.push(...festivalsScored.slice(0, maxFestivals));
+
+    // Fill remaining up to 4 total with nearest workshops
+    const remaining = Math.max(0, 4 - result.length);
+    result.push(...workshopsScored.slice(0, remaining));
+
+    return result;
+  }, [workshop, allWorkshops, allFleaMarkets, locale]);
 
   const handleNavigate = useCallback(() => {
     incrementWorkshopLinkClick(workshop.id, 'nav').catch(console.error);
@@ -175,13 +217,20 @@ export default function WorkshopDetailClient({ workshop }: WorkshopDetailClientP
         {/* Left Column: Images */}
         <div className={styles.leftColumn}>
           {/* Main Image (Representative Photo) */}
-          {workshop.images && workshop.images.length > 0 && (
+          {workshop.images && workshop.images.length > 0 ? (
             <div className={styles.imageCarousel}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={workshop.images[0]}
                 alt={`${workshop.name.ko || workshop.name.en} - main image`}
                 className={styles.workshopImage}
               />
+            </div>
+          ) : (
+            <div className={styles.imageCarousel} style={{ width: '100%', minHeight: '280px', borderRadius: 'var(--radius-lg)', background: '#f8fafc', border: '1px solid var(--color-border-light, #e5e7eb)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo.png" alt="Art Flow Map Logo" style={{ width: '72px', height: '72px', objectFit: 'contain', opacity: 0.85 }} />
+              <span style={{ fontSize: '13px', fontWeight: 600, color: '#64748b' }}>Art Flow Map</span>
             </div>
           )}
 
@@ -374,47 +423,36 @@ export default function WorkshopDetailClient({ workshop }: WorkshopDetailClientP
         </div>
       </div>
 
-      {/* Similar Workshops - always at bottom */}
-      {similarWorkshops.length > 0 && (
+      {/* 함께 둘러보기 좋은 곳 (Good places to explore together - Festivals prioritized first) */}
+      {nearbyPlaces.length > 0 && (
         <div style={{ marginTop: 'var(--space-6)' }}>
-          <h3 className={styles.sectionTitle}>{t('workshop.similar') || 'Similar Workshops'}</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', marginTop: 'var(--space-3)' }}>
-            {similarWorkshops.map((sim) => (
+          <h3 className={styles.sectionTitle}>{t('workshop.similar') || '함께 둘러보기 좋은 곳'}</h3>
+          <div className={styles.nearbyGrid}>
+            {nearbyPlaces.map((place) => (
               <Link
-                href={`/${locale}/workshops/${sim.slug || sim.id}`}
-                key={sim.id}
-                style={{
-                  display: 'flex',
-                  gap: 'var(--space-3)',
-                  padding: 'var(--space-3)',
-                  background: 'var(--color-bg-alt)',
-                  borderRadius: 'var(--radius-md)',
-                  cursor: 'pointer',
-                  border: '1px solid transparent',
-                  transition: 'border-color 0.2s',
-                  textDecoration: 'none',
-                  color: 'inherit'
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'var(--color-accent)')}
-                onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'transparent')}
+                href={place.linkUrl}
+                key={place.id}
+                className={styles.nearbyCard}
               >
-                <div style={{ width: '60px', height: '60px', borderRadius: 'var(--radius-sm)', background: '#e0e0e0', flexShrink: 0, overflow: 'hidden' }}>
-                  {sim.images && sim.images[0] ? (
-                    <img src={sim.images[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <div className={styles.nearbyImageArea}>
+                  {place.imageUrl ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img src={place.imageUrl} alt={place.name} className={styles.nearbyImage} />
                   ) : (
-                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}></div>
+                    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', gap: '4px' }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src="/logo.png" alt="Art Flow Map" style={{ width: '36px', height: '36px', objectFit: 'contain', opacity: 0.85 }} />
+                      <span style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 600 }}>Art Flow Map</span>
+                    </div>
                   )}
+                  <span className={styles.nearbyBadge} style={{ background: place.badgeBg, color: place.badgeColor }}>
+                    {place.badgeText}
+                  </span>
                 </div>
-                <div style={{ flex: 1, overflow: 'hidden' }}>
-                  <h4 style={{ fontSize: 'var(--font-size-sm)', margin: '0 0 4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--color-text-primary)' }}>
-                    {sim.name[locale] || sim.name.ko || sim.name.en}
-                  </h4>
-                  <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', margin: '0 0 4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {sim.description[locale] || sim.description.ko || sim.description.en}
-                  </p>
-                  <div style={{ fontSize: '10px', color: 'var(--color-accent)', fontWeight: 500 }}>
-                    {sim.tags.slice(0, 3).map(t => `#${t}`).join(' ')}
-                  </div>
+                <div className={styles.nearbyContentArea}>
+                  <h4 className={styles.nearbyTitle}>{place.name}</h4>
+                  <div className={styles.nearbySubtitle}>{place.subtitle}</div>
+                  <p className={styles.nearbyDescription}>{place.description}</p>
                 </div>
               </Link>
             ))}

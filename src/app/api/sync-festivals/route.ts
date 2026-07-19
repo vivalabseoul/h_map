@@ -20,26 +20,51 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const apiKey = process.env.FESTIVAL_API_KEY;
+  const apiKey = process.env.FESTIVAL_API_KEY?.trim();
   if (!apiKey) {
-    return NextResponse.json({ error: 'FESTIVAL_API_KEY is not configured in environment variables' }, { status: 500 });
+    return NextResponse.json({ error: 'FESTIVAL_API_KEY is not configured in environment variables (.env.local)' }, { status: 500 });
   }
 
   try {
     // 1. Fetch data from the public API
-    // type=json is important for the response format
-    const apiUrl = `https://api.data.go.kr/openapi/tn_pubr_public_cltur_fstvl_api?serviceKey=${apiKey}&pageNo=1&numOfRows=100&type=json`;
-    const response = await fetch(apiUrl);
-    
-    if (!response.ok) {
-      throw new Error(`API fetch failed with status ${response.status}`);
+    // Public Data Portal API keys can be passed as raw string or decoded string
+    const keysToTry = [apiKey, decodeURIComponent(apiKey)];
+    let items: any[] = [];
+    let fetchErrorMsg = '';
+
+    for (const keyCandidate of keysToTry) {
+      try {
+        const apiUrl = `https://api.data.go.kr/openapi/tn_pubr_public_cltur_fstvl_api?serviceKey=${keyCandidate}&pageNo=1&numOfRows=100&type=json`;
+        const response = await fetch(apiUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'application/json, text/plain, */*'
+          }
+        });
+        const text = await response.text();
+
+        if (text.startsWith('{')) {
+          const json = JSON.parse(text);
+          const fetchedItems = json?.response?.body?.items || [];
+          if (Array.isArray(fetchedItems) && fetchedItems.length > 0) {
+            items = fetchedItems;
+            break; // Success!
+          }
+        } else if (text.includes('SERVICE_KEY_IS_NOT_REGISTERED')) {
+          fetchErrorMsg = '공공데이터포털 API키가 아직 활성화되지 않았거나 (승인 후 최대 1~2시간 소요) 잘못된 인증키입니다.';
+        } else if (text.includes('<returnReasonCode>')) {
+          const match = text.match(/<returnAuthMsg>(.*?)<\/returnAuthMsg>/);
+          fetchErrorMsg = match ? match[1] : '공공데이터포털 API 호출 에러가 발생했습니다.';
+        }
+      } catch (err: any) {
+        fetchErrorMsg = err.message;
+      }
     }
 
-    const json = await response.json();
-    const items = json?.response?.body?.items || [];
-
-    if (!Array.isArray(items) || items.length === 0) {
-      return NextResponse.json({ message: 'No items found from the API' });
+    if (!items || items.length === 0) {
+      return NextResponse.json({ 
+        error: fetchErrorMsg || '공공데이터포털 API에서 축제 데이터를 가져오지 못했습니다. (서비스키 승인 상태를 확인해주세요)' 
+      }, { status: 500 });
     }
 
     // Fetch a valid user to satisfy the foreign key constraint

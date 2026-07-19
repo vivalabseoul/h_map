@@ -109,45 +109,27 @@ function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChang
           {fleaMarkets.map((market) => {
             const isApi = market.source === 'api';
             const bgColor = isApi ? '#f59e0b' : '#0284c7';
-            const iconEmoji = isApi ? '🎉' : '🎪';
             
             return (
               <Marker
                 key={market.id}
                 position={[market.lat, market.lng]}
                 icon={L.divIcon({
-                  className: '',
-                  html: `
-                    <div style="
-                      display: flex;
-                      align-items: center;
-                      justify-content: center;
-                      width: 42px;
-                      height: 42px;
-                      border-radius: 50% 50% 50% 0;
-                      transform: rotate(-45deg);
-                      background: ${bgColor};
-                      box-shadow: 0 3px 10px rgba(0,0,0,0.25);
-                      border: 3px solid white;
-                      cursor: pointer;
-                      transition: transform 0.2s;
-                    ">
-                      <span style="transform: rotate(45deg); font-size: 1.15rem; line-height: 1;">${iconEmoji}</span>
-                    </div>
-                  `,
-                  iconSize: [42, 42],
-                  iconAnchor: [21, 42],
-                  popupAnchor: [0, -42],
+                  className: 'festival-dot-marker',
+                  html: `<div style="width: 100%; height: 100%; border-radius: 50%; background: ${bgColor};"></div>`,
+                  iconSize: [18, 18],
+                  iconAnchor: [9, 9],
+                  popupAnchor: [0, -12],
                 })}
               >
               <Popup>
                 <div style={{ fontFamily: 'Inter, sans-serif', width: '200px' }}>
                   <strong style={{ fontSize: '14px', display: 'block', marginBottom: '4px' }}>{market.name[locale] || market.name.ko || market.name.en}</strong>
                   <div style={{ fontSize: '12px', color: '#555', marginBottom: '2px', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    💬 {market.description[locale] || market.description.ko || market.description.en || '소개글이 없습니다.'}
+                    {market.description[locale] || market.description.ko || market.description.en || '소개글이 없습니다.'}
                   </div>
                   <div style={{ fontSize: '12px', color: '#0284c7', fontWeight: 500 }}>
-                    📅 {market.date}
+                    일정: {market.date}
                   </div>
                   <button 
                     style={{ marginTop: '8px', width: '100%', padding: '6px', background: '#0284c7', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}

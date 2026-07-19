@@ -41,4 +41,23 @@
   line-height: 1;
 }
 
+.mapContainer :global(.festival-dot-marker) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  border: 3px solid white;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mapContainer :global(.festival-dot-marker:hover) {
+  transform: scale(1.35);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+  z-index: 1000 !important;
+}
+
 
