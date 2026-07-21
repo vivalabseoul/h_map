@@ -7,6 +7,8 @@ import { FilterProvider } from '@/context/FilterContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import NoticePopup from '@/components/NoticePopup';
+import MobileBackHandler from '@/components/MobileBackHandler';
+import ScrollToTop from '@/components/ScrollToTop';
 
 const playfair = Playfair_Display({ 
   subsets: ['latin'],
@@ -17,21 +19,21 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.artflowmap.com'),
-  title: 'Art flow map — Discover Local Craft Workshops',
+  title: 'ArtFlowMap — Discover Local Craft Workshops & Artisan Markets',
   description:
-    'A visual-first, location-based platform helping tourists discover local handmade craft workshops worldwide. Pottery, leather, perfume, candle, textile, jewelry classes and more.',
-  keywords: 'art flow map, handmade, workshop, craft, pottery, leather, perfume, map, travel, Seoul, Korea, 원데이클래스, 공방, 이색데이트, 서울 공방',
+    'A visual-first, location-based platform helping travelers discover local handmade craft workshops worldwide. Pottery, leather, perfume, candle, textile, jewelry classes & artisan flea markets.',
+  keywords: 'art flow map, ArtFlowMap, handmade, workshop, craft, pottery, leather, perfume, map, travel, Seoul, Korea, 원데이클래스, 공방, 이색데이트, 서울 공방, 로컬 축제',
   openGraph: {
-    title: 'Art flow map — Discover Local Craft Workshops',
-    description: 'Find the perfect handmade craft workshop for your trip. Explore pottery, leather crafting, perfume making and more on our interactive map.',
+    title: 'ArtFlowMap — Discover Local Craft Workshops & Artisan Markets',
+    description: 'Find the perfect handmade craft workshop and artisan festival for your trip. Explore pottery, leather crafting, perfume making and more on our interactive map.',
     url: 'https://www.artflowmap.com',
-    siteName: 'Art flow map',
+    siteName: 'ArtFlowMap',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'Art flow map - Discover Local Craft Workshops',
+        alt: 'ArtFlowMap - Discover Local Craft Workshops',
       },
     ],
     locale: 'en_US',
@@ -39,12 +41,19 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Art flow map — Discover Local Craft Workshops',
-    description: 'Find the perfect handmade craft workshop for your trip.',
+    title: 'ArtFlowMap — Discover Local Craft Workshops & Artisan Markets',
+    description: 'Find the perfect handmade craft workshop and artisan festival for your trip.',
     images: ['/og-image.png'],
   },
   alternates: {
-    canonical: '/',
+    canonical: 'https://www.artflowmap.com',
+    languages: {
+      'ko': 'https://www.artflowmap.com/ko',
+      'en': 'https://www.artflowmap.com/en',
+      'ja': 'https://www.artflowmap.com/ja',
+      'zh': 'https://www.artflowmap.com/zh',
+      'x-default': 'https://www.artflowmap.com/en',
+    },
   },
   robots: {
     index: true,
@@ -103,6 +112,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           />
         </noscript>
         {/* End Google Tag Manager (noscript) */}
+        <ScrollToTop />
         <AuthProvider>
           <LanguageProvider>
             <FilterProvider>
@@ -113,6 +123,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 </div>
                 <Footer />
                 <NoticePopup />
+                <MobileBackHandler />
               </div>
             </FilterProvider>
           </LanguageProvider>

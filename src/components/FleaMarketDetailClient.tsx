@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, Navigation, Share2, MapPin, Phone, Globe, Calendar, Image as ImageIcon, Map, List } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { incrementVendorApplicationClick, getFleaMarkets, getWorkshops } from '@/lib/database';
+import { getFallbackImage } from '@/lib/imageUtils';
 import type { FleaMarket, Workshop } from '@/types';
 import styles from './DetailLayout.module.css';
 
@@ -44,7 +45,7 @@ export default function FleaMarketDetailClient({ market }: FleaMarketDetailClien
           type: 'festival' as const,
           name,
           description: desc,
-          subtitle: m.date ? `${m.date}` : (locale === 'ko' ? '지역 축제' : 'Festival'),
+          subtitle: m.date ? `${m.date.replace(/20(\d{2})/g, '$1').replace(/-/g, '.')}` : (locale === 'ko' ? '지역 축제' : 'Festival'),
           imageUrl: m.posterUrl,
           linkUrl: `/${locale}/fleamarkets/${m.id}`,
           badgeText: locale === 'ko' ? '축제' : 'Festival',
@@ -140,19 +141,19 @@ export default function FleaMarketDetailClient({ market }: FleaMarketDetailClien
       <div className={styles.contentGrid}>
         {/* Left Column: Images */}
         <div className={styles.leftColumn}>
-          {/* Image/Poster (Show Poster or Logo Fallback) */}
-          {market.posterUrl ? (
-            <div style={{ width: '100%', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginBottom: 'var(--space-4)', background: 'var(--color-bg-alt)' }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={market.posterUrl} alt="Poster" style={{ width: '100%', maxHeight: '640px', objectFit: 'contain', display: 'block', margin: '0 auto' }} />
-            </div>
-          ) : (
-            <div style={{ width: '100%', minHeight: '280px', borderRadius: 'var(--radius-lg)', background: '#f8fafc', border: '1px solid var(--color-border-light, #e5e7eb)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: 'var(--space-4)' }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.png" alt="Art Flow Map Logo" style={{ width: '72px', height: '72px', objectFit: 'contain', opacity: 0.85 }} />
-              <span style={{ fontSize: '13px', fontWeight: 600, color: '#64748b' }}>Art Flow Map</span>
-            </div>
-          )}
+          {/* Image/Poster (Show Poster or Fallback) */}
+          <div style={{ width: '100%', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginBottom: 'var(--space-4)', background: 'var(--color-bg-alt)' }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img 
+              src={market.posterUrl || getFallbackImage(market.name[locale] || market.name.en || market.name.ko)} 
+              alt="Poster" 
+              style={{ width: '100%', maxHeight: '640px', objectFit: 'contain', display: 'block', margin: '0 auto' }} 
+              onError={(e) => { 
+                e.currentTarget.onerror = null; 
+                e.currentTarget.src = getFallbackImage('default'); 
+              }}
+            />
+          </div>
         </div>
 
         {/* Right Column: Info */}
@@ -175,7 +176,7 @@ export default function FleaMarketDetailClient({ market }: FleaMarketDetailClien
       <div className={styles.infoGrid}>
         <div className={styles.infoItem}>
           <Calendar size={16} className={styles.infoIcon} />
-          <span style={{ color: 'var(--color-accent)', fontWeight: 600 }}>{market.date}</span>
+          <span style={{ color: 'var(--color-accent)', fontWeight: 600 }}>{market.date.replace(/20(\d{2})/g, '$1').replace(/-/g, '.')}</span>
         </div>
         <div className={styles.infoItem}>
           <MapPin size={16} className={styles.infoIcon} />
@@ -257,16 +258,16 @@ export default function FleaMarketDetailClient({ market }: FleaMarketDetailClien
                 className={styles.nearbyCard}
               >
                 <div className={styles.nearbyImageArea}>
-                  {place.imageUrl ? (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img src={place.imageUrl} alt={place.name} className={styles.nearbyImage} />
-                  ) : (
-                    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', gap: '4px' }}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src="/logo.png" alt="Art Flow Map" style={{ width: '36px', height: '36px', objectFit: 'contain', opacity: 0.85 }} />
-                      <span style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 600 }}>Art Flow Map</span>
-                    </div>
-                  )}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img 
+                    src={(place.imageUrl && place.imageUrl !== 'null' && place.imageUrl !== 'undefined') ? place.imageUrl : getFallbackImage(place.name + ' ' + place.description)} 
+                    alt={place.name} 
+                    className={styles.nearbyImage} 
+                    onError={(e) => { 
+                      e.currentTarget.onerror = null; 
+                      e.currentTarget.src = getFallbackImage('default'); 
+                    }}
+                  />
                   <span className={styles.nearbyBadge} style={{ background: place.badgeBg, color: place.badgeColor }}>
                     {place.badgeText}
                   </span>

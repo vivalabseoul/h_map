@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { CATEGORIES, SMART_TAGS, REGIONS } from '@/types';
 import { getDynamicCategories } from '@/lib/categoryUtils';
+import { getDynamicRegions } from '@/lib/regionUtils';
 import type { WorkshopCategory, Region, Workshop } from '@/types';
 import { ChevronDown, Search, Map, List } from 'lucide-react';
 import styles from './FilterBar.module.css';
@@ -48,7 +49,8 @@ export default function FilterBar({
     setOpenDropdown(prev => prev === name ? null : name);
   };
 
-  const selectedRegionData = REGIONS.find(r => r.key === selectedRegion) || REGIONS[0];
+  const dynamicRegions = getDynamicRegions(workshops, [], locale);
+  const selectedRegionData = dynamicRegions.find(r => r.key === selectedRegion) || dynamicRegions[0] || REGIONS[0];
   const dynamicCategories = getDynamicCategories(workshops);
   const selectedCatData = dynamicCategories.find(c => c.key === activeCategory);
 
@@ -58,7 +60,7 @@ export default function FilterBar({
   };
 
   // Determine what to show on the button
-  let buttonLabel: React.ReactNode = t('filters.all');
+  let buttonLabel: React.ReactNode = locale === 'ko' ? '카테고리' : 'Category';
   if (activeCategory !== 'all') {
     if (selectedCatData) {
       buttonLabel = <>{getCatLabel(activeCategory)}</>;
@@ -72,20 +74,24 @@ export default function FilterBar({
 
       {/* 1. Region Dropdown */}
       <div style={{ position: 'relative' }}>
-        <button className={styles.chip} onClick={() => toggleDropdown('region')} style={{ background: openDropdown === 'region' ? 'var(--color-bg-secondary)' : '#fff' }}>
-          {selectedRegionData.emoji} {selectedRegionData.label[locale]} <ChevronDown size={14} style={{ marginLeft: 4 }} />
+        <button className={styles.chip} onClick={() => toggleDropdown('region')} style={{ background: openDropdown === 'region' ? 'var(--color-bg-secondary)' : 'var(--color-surface)' }}>
+          {selectedRegionData.emoji} <ChevronDown size={14} style={{ marginLeft: 4 }} />
         </button>
         {openDropdown === 'region' && (
-          <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 4, background: '#fff', borderRadius: 'var(--radius-md)', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', zIndex: 1000, minWidth: '150px', display: 'flex', flexDirection: 'column', padding: 'var(--space-2)' }}>
-            {REGIONS.map(region => (
+          <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 4, background: 'var(--color-surface)', borderRadius: 'var(--radius-md)', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', zIndex: 1000, minWidth: '160px', display: 'flex', flexDirection: 'column', padding: 'var(--space-2)' }}>
+            {dynamicRegions.map(region => (
               <button
                 key={region.key}
                 disabled={!region.available}
                 onClick={() => { if (region.available) { onRegionChange(region.key); setOpenDropdown(null); } }}
-                style={{ textAlign: 'left', padding: 'var(--space-2)', background: selectedRegion === region.key ? 'var(--color-bg-secondary)' : 'transparent', border: 'none', borderRadius: 'var(--radius-sm)', cursor: region.available ? 'pointer' : 'not-allowed', opacity: region.available ? 1 : 0.5, display: 'flex', justifyContent: 'space-between' }}
+                style={{ textAlign: 'left', padding: 'var(--space-2)', background: selectedRegion === region.key ? 'var(--color-bg-secondary)' : 'transparent', border: 'none', borderRadius: 'var(--radius-sm)', cursor: region.available ? 'pointer' : 'not-allowed', opacity: region.available ? 1 : 0.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
               >
                 <span>{region.emoji} {region.label[locale]}</span>
-                {!region.available && <span style={{ fontSize: '0.7rem', color: 'var(--color-warning)' }}>{t('region.coming_soon')}</span>}
+                {region.count > 0 && region.key !== 'all' && (
+                  <span style={{ fontSize: '0.75rem', color: 'var(--color-accent)', fontWeight: 600, marginLeft: 8 }}>
+                    {region.count}
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -94,17 +100,17 @@ export default function FilterBar({
 
       {/* 2. Category Dropdown */}
       <div style={{ position: 'relative' }}>
-        <button className={styles.chip} onClick={() => toggleDropdown('category')} style={{ background: openDropdown === 'category' ? 'var(--color-bg-secondary)' : '#fff' }}>
+        <button className={styles.chip} onClick={() => toggleDropdown('category')} style={{ background: openDropdown === 'category' ? 'var(--color-bg-secondary)' : 'var(--color-surface)' }}>
           {buttonLabel}
           <ChevronDown size={14} style={{ marginLeft: 4 }} />
         </button>
         {openDropdown === 'category' && (
-          <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 4, background: '#fff', borderRadius: 'var(--radius-md)', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', zIndex: 1000, minWidth: '150px', display: 'flex', flexDirection: 'column', padding: 'var(--space-2)' }}>
+          <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 4, background: 'var(--color-surface)', borderRadius: 'var(--radius-md)', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', zIndex: 1000, minWidth: '150px', display: 'flex', flexDirection: 'column', padding: 'var(--space-2)' }}>
             <button
               onClick={() => { onCategoryChange('all'); setOpenDropdown(null); }}
               style={{ textAlign: 'left', padding: 'var(--space-2)', background: activeCategory === 'all' ? 'var(--color-bg-secondary)' : 'transparent', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
             >
-              {t('filters.all')}
+              {locale === 'ko' ? '전체 카테고리' : 'All Categories'}
             </button>
             {dynamicCategories.map(cat => (
               <button
@@ -121,25 +127,35 @@ export default function FilterBar({
 
       {/* 3. Language Dropdown */}
       <div className={styles.languageFilter} style={{ position: 'relative' }}>
-        <button className={styles.chip} onClick={() => toggleDropdown('language')} style={{ background: openDropdown === 'language' ? 'var(--color-bg-secondary)' : '#fff' }}>
-          {activeLanguage === 'all' ? '🌐 All' : `🌐 ${activeLanguage}`}
+        <button className={styles.chip} onClick={() => toggleDropdown('language')} style={{ background: openDropdown === 'language' ? 'var(--color-bg-secondary)' : 'var(--color-surface)' }}>
+          {activeLanguage === 'all' ? (locale === 'ko' ? '🌐 사용언어' : '🌐 Language') : `🌐 ${[
+            { value: 'English', label: 'English' },
+            { value: 'Korean', label: '한국어' },
+            { value: 'Japanese', label: '日本語' },
+            { value: 'Chinese', label: '中文' }
+          ].find(l => l.value === activeLanguage)?.label || activeLanguage}`}
           <ChevronDown size={14} style={{ marginLeft: 4 }} />
         </button>
         {openDropdown === 'language' && (
-          <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 4, background: '#fff', borderRadius: 'var(--radius-md)', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', zIndex: 1000, minWidth: '150px', display: 'flex', flexDirection: 'column', padding: 'var(--space-2)' }}>
+          <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 4, background: 'var(--color-surface)', borderRadius: 'var(--radius-md)', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', zIndex: 1000, minWidth: '150px', display: 'flex', flexDirection: 'column', padding: 'var(--space-2)' }}>
             <button
               onClick={() => { onLanguageChange('all'); setOpenDropdown(null); }}
               style={{ textAlign: 'left', padding: 'var(--space-2)', background: activeLanguage === 'all' ? 'var(--color-bg-secondary)' : 'transparent', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
             >
-              All Languages
+              {locale === 'ko' ? '모든 사용언어' : 'All Languages'}
             </button>
-            {['English', 'Korean', 'Japanese', 'Chinese', 'Spanish', 'French'].map(lang => (
+            {[
+              { value: 'English', label: 'English' },
+              { value: 'Korean', label: '한국어' },
+              { value: 'Japanese', label: '日本語' },
+              { value: 'Chinese', label: '中文' }
+            ].map(lang => (
               <button
-                key={lang}
-                onClick={() => { onLanguageChange(lang); setOpenDropdown(null); }}
-                style={{ textAlign: 'left', padding: 'var(--space-2)', background: activeLanguage === lang ? 'var(--color-bg-secondary)' : 'transparent', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
+                key={lang.value}
+                onClick={() => { onLanguageChange(lang.value); setOpenDropdown(null); }}
+                style={{ textAlign: 'left', padding: 'var(--space-2)', background: activeLanguage === lang.value ? 'var(--color-bg-secondary)' : 'transparent', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
               >
-                {lang}
+                {lang.label}
               </button>
             ))}
           </div>

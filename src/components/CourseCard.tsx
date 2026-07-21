@@ -5,6 +5,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
 import { createBooking, createNotification } from '@/lib/database';
 import { formatPrice } from '@/lib/utils';
+import { getFallbackImage } from '@/lib/imageUtils';
 import type { Course } from '@/types';
 import CourseDetailModal from './CourseDetailModal';
 import styles from './CourseCard.module.css';
@@ -60,31 +61,18 @@ export default function CourseCard({ course, region }: CourseCardProps) {
 
   return (
     <div className={styles.card}>
-      {course.imageUrl ? (
-        <div style={{
-          width: '100%',
-          height: '160px',
-          backgroundImage: `url(${course.imageUrl})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          borderTopLeftRadius: 'var(--radius-lg)',
-          borderTopRightRadius: 'var(--radius-lg)',
-        }} />
-      ) : (
-        <div style={{
-          width: '100%',
-          height: '160px',
-          backgroundColor: 'var(--color-bg-alt)',
-          borderTopLeftRadius: 'var(--radius-lg)',
-          borderTopRightRadius: 'var(--radius-lg)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'var(--color-text-muted)'
-        }}>
-          No Image
-        </div>
-      )}
+      <div style={{ position: 'relative', width: '100%', height: '160px', overflow: 'hidden', borderTopLeftRadius: 'var(--radius-lg)', borderTopRightRadius: 'var(--radius-lg)' }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img 
+          src={course.imageUrl || getFallbackImage(course.title[locale] || course.title.en || course.title.ko)} 
+          alt={course.title[locale] || course.title.en || course.title.ko} 
+          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          onError={(e) => { 
+            e.currentTarget.onerror = null; 
+            e.currentTarget.src = getFallbackImage('default'); 
+          }}
+        />
+      </div>
       
       <div className={styles.cardHeader} style={{ paddingTop: 'var(--space-4)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>

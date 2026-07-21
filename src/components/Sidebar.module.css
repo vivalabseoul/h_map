@@ -102,6 +102,48 @@
 
 @media (max-width: 768px) {
   .sidebar {
-    display: none !important;
+    position: sticky;
+    top: var(--header-height);
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border-light);
+    z-index: 40;
+  }
+
+  .sidebarHeader {
+    display: none;
+  }
+
+  .nav {
+    flex-direction: row;
+    padding: 0 var(--space-4);
+    overflow-x: auto;
+    white-space: nowrap;
+    gap: var(--space-4);
+    align-items: center;
+  }
+
+  .navItem {
+    padding: var(--space-3) 0;
+    border-radius: 0;
+    border-bottom: 2px solid transparent;
+  }
+
+  .navItemActive {
+    background: transparent;
+    color: var(--color-accent);
+    border-bottom: 2px solid var(--color-accent);
+    box-shadow: none;
+  }
+
+  .navItemActive:hover {
+    background: transparent;
+    color: var(--color-accent);
+  }
+
+  .navIcon {
+    display: none; /* Hide icons on mobile for cleaner text tabs */
   }
 }

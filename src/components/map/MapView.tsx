@@ -129,7 +129,7 @@ function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChang
                     {market.description[locale] || market.description.ko || market.description.en || '소개글이 없습니다.'}
                   </div>
                   <div style={{ fontSize: '12px', color: '#0284c7', fontWeight: 500 }}>
-                    일정: {market.date}
+                    일정: {market.date.replace(/20(\d{2})/g, '$1').replace(/-/g, '.')}
                   </div>
                   <button 
                     style={{ marginTop: '8px', width: '100%', padding: '6px', background: '#0284c7', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}

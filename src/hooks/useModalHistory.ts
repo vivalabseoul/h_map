@@ -15,10 +15,12 @@ export function useModalHistory(isOpen: boolean, onClose: () => void) {
 
     return () => {
       window.removeEventListener('popstate', handlePopState);
-      // If we close the modal through a button (not back button),
-      // the dummy state is still in history. We should clean it up.
       if (window.history.state?.modalOpen) {
+        (window as any)._ignoreNextPopState = true;
         window.history.back();
+        setTimeout(() => {
+          (window as any)._ignoreNextPopState = false;
+        }, 100);
       }
     };
   }, [isOpen, onClose]);

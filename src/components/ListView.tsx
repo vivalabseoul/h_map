@@ -1,6 +1,7 @@
 'use client';
 import React, { useMemo } from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
+import { getFallbackImage } from '@/lib/imageUtils';
 import type { Workshop, FleaMarket, Locale } from '@/types';
 import { REGIONS } from '@/types';
 import { useLanguage } from '@/context/LanguageContext';
@@ -139,7 +140,7 @@ export default function ListView({
 
   return (
     <div className={styles.listContainer}>
-      {/* Mobile Bottom Sheet Toggle Button */}
+      {/* Mobile Bottom Sheet Toggle Button - Sticky at top */}
       <div className={styles.mobileToggleWrapper}>
         <button
           className={styles.mobileToggleButton}
@@ -152,30 +153,11 @@ export default function ListView({
         </button>
       </div>
 
-      {/* Main List Summary Banner */}
-      <div className={styles.listHeaderSummary}>
-        <h1 className={styles.listMainTitle}>
-          {locale === 'ko' ? '대한민국 지역별 축제 & 공방' : 'Korea Local Festivals & Studios'}
-        </h1>
-        <p className={styles.listSubTitle}>
-          {locale === 'ko'
-            ? '각 지역별로 등록된 축제, 플리마켓, 핸드메이드 공방 정보를 한눈에 확인하세요.'
-            : 'Explore festivals, flea markets, and craft studios grouped by Korean region.'}
-        </p>
-      </div>
+
 
       {groupedRegions.map((group) => {
         const totalItems = group.fleaMarkets.length + group.workshops.length;
         if (totalItems === 0) return null;
-
-        const countsParts: string[] = [];
-        if (group.fleaMarkets.length > 0) {
-          countsParts.push(locale === 'ko' ? `축제 ${group.fleaMarkets.length}` : `Festivals ${group.fleaMarkets.length}`);
-        }
-        if (group.workshops.length > 0) {
-          countsParts.push(locale === 'ko' ? `공방 ${group.workshops.length}` : `Studios ${group.workshops.length}`);
-        }
-        const countsText = countsParts.join(', ');
 
         return (
           <div key={group.regionName} className={styles.regionGroupBlock}>
@@ -183,7 +165,7 @@ export default function ListView({
             <div className={styles.regionHeader}>
               <h2 className={styles.regionTitle}>
                 <span>{group.regionName}</span>
-                <span className={styles.regionCounts}>({countsText})</span>
+                <span className={styles.regionCounts}>{totalItems}</span>
               </h2>
             </div>
 
@@ -202,20 +184,20 @@ export default function ListView({
                     return (
                       <div key={market.id} className={styles.card} onClick={() => onFleaMarketClick(market)}>
                         <div className={styles.imageArea}>
-                          {hasImage ? (
-                            /* eslint-disable-next-line @next/next/no-img-element */
-                            <img src={market.posterUrl} alt={name} className={styles.image} />
-                          ) : (
-                            <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', gap: '4px' }}>
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src="/logo.png" alt="Art Flow Map" style={{ width: '36px', height: '36px', objectFit: 'contain', opacity: 0.85 }} />
-                              <span style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 600 }}>Art Flow Map</span>
-                            </div>
-                          )}
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img 
+                            src={market.posterUrl && market.posterUrl !== 'null' && market.posterUrl !== 'undefined' ? market.posterUrl : getFallbackImage(name + ' ' + desc)} 
+                            alt={name} 
+                            className={styles.image} 
+                            onError={(e) => { 
+                              e.currentTarget.onerror = null; 
+                              e.currentTarget.src = getFallbackImage('default'); 
+                            }}
+                          />
                         </div>
                         <div className={styles.contentArea}>
                           <h3 className={styles.title}>{name}</h3>
-                          <div className={styles.subtitle}>{market.date}</div>
+                          <div className={styles.subtitle}>{market.date.replace(/20(\d{2})/g, '$1').replace(/-/g, '.')}</div>
 
                           <div className={styles.meta}>
                             <div className={styles.metaItem}>
@@ -245,16 +227,16 @@ export default function ListView({
                     return (
                       <div key={workshop.id} className={styles.card} onClick={() => onWorkshopClick(workshop)}>
                         <div className={styles.imageArea}>
-                          {hasImage ? (
-                            /* eslint-disable-next-line @next/next/no-img-element */
-                            <img src={workshop.images[0]} alt={name} className={styles.image} />
-                          ) : (
-                            <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', gap: '4px' }}>
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src="/logo.png" alt="Art Flow Map" style={{ width: '36px', height: '36px', objectFit: 'contain', opacity: 0.85 }} />
-                              <span style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 600 }}>Art Flow Map</span>
-                            </div>
-                          )}
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img 
+                            src={(workshop.images && workshop.images[0] && workshop.images[0] !== 'null' && workshop.images[0] !== 'undefined') ? workshop.images[0] : getFallbackImage(workshop.category)} 
+                            alt={name} 
+                            className={styles.image} 
+                            onError={(e) => { 
+                              e.currentTarget.onerror = null; 
+                              e.currentTarget.src = getFallbackImage('default'); 
+                            }}
+                          />
                         </div>
                         <div className={styles.contentArea}>
                           <h3 className={styles.title}>{name}</h3>

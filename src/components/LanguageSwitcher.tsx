@@ -7,9 +7,9 @@ import styles from './LanguageSwitcher.module.css';
 
 const LANGUAGES: { key: Locale; label: string; flag: string }[] = [
   { key: 'en', label: 'English', flag: '🇺🇸' },
-  { key: 'ja', label: '日本語', flag: '🇯🇵' },
-  { key: 'zh', label: '中文', flag: '🇨🇳' },
   { key: 'ko', label: '한국어', flag: '🇰🇷' },
+  { key: 'ja', label: '日本語', flag: '🇯🇵' },
+  { key: 'zh', label: '簡體中文', flag: '🇨🇳' },
 ];
 
 export default function LanguageSwitcher() {
@@ -43,6 +43,22 @@ export default function LanguageSwitcher() {
 
       {open && (
         <div className={styles.dropdown} role="listbox">
+          <div
+            style={{
+              padding: '8px 12px',
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              color: 'var(--color-text-muted)',
+              borderBottom: '1px solid var(--color-border)',
+              marginBottom: '4px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+          >
+            <Globe size={14} />
+            <span>Select Language</span>
+          </div>
           {LANGUAGES.map((lang) => (
             <button
               key={lang.key}

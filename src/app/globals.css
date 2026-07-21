@@ -10,8 +10,10 @@
 :root {
   /* Brand Colors */
   --color-bg: #ffffff;
+  --color-bg-alpha: rgba(255, 255, 255, 0.95);
   --color-bg-alt: #f5f5f5;
   --color-surface: #ffffff;
+  --color-surface-alpha: rgba(255, 255, 255, 0.8);
   --color-surface-hover: #f9f9f9;
   --color-accent: #ff5500;
   --color-accent-hover: #e64d00;
@@ -29,9 +31,9 @@
   --color-border-light: #f0f0f0;
 
   /* Text */
-  --color-text-primary: #000000;
-  --color-text-secondary: #333333;
-  --color-text-muted: #888888;
+  --color-text-primary: #1A202C;
+  --color-text-secondary: #2D3748;
+  --color-text-muted: #718096;
   --color-text-inverse: #ffffff;
 
   /* Status */
@@ -108,6 +110,8 @@
   --bottom-sheet-max: 70vh;
   --container-max: 1200px;
 }
+
+
 
 /* ---------- Reset & Base ---------- */
 *,

@@ -51,13 +51,41 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   
   const currentLocale = (params?.locale as Locale) || 'en';
 
+  // Auto-detect browser/OS language on first visit if no explicit saved locale preference
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const savedLocale = localStorage.getItem('artflow_user_locale');
+    if (!savedLocale && navigator.language) {
+      const navLang = navigator.language.toLowerCase();
+      let detected: Locale = 'en';
+      if (navLang.startsWith('ko')) detected = 'ko';
+      else if (navLang.startsWith('ja')) detected = 'ja';
+      else if (navLang.startsWith('zh')) detected = 'zh';
+
+      if (detected !== currentLocale && (pathname === '/' || pathname === `/${currentLocale}`)) {
+        localStorage.setItem('artflow_user_locale', detected);
+        const segments = (pathname || '/').split('/');
+        if (segments.length > 1 && ['en', 'ko', 'ja', 'zh'].includes(segments[1])) {
+          segments[1] = detected;
+        } else {
+          segments.unshift(detected);
+        }
+        const newPath = segments.join('/') || `/${detected}`;
+        router.replace(newPath);
+      }
+    }
+  }, [currentLocale, pathname, router]);
+
   const setLocale = useCallback((newLocale: Locale) => {
     if (!pathname) return;
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('artflow_user_locale', newLocale);
+    }
     
     // Replace current locale in pathname with new locale
     const segments = pathname.split('/');
-    if (segments.length > 1) {
-      segments[1] = newLocale; // Assumes structure is always /[locale]/...
+    if (segments.length > 1 && ['en', 'ko', 'ja', 'zh'].includes(segments[1])) {
+      segments[1] = newLocale; // Assumes structure is /[locale]/...
     }
     
     const newPath = segments.join('/') || `/${newLocale}`;

@@ -21,5 +21,13 @@ export default function LocalizedLink({ href, ...props }: LocalizedLinkProps) {
     }
   }
 
+  // Force hard navigation for static pages to ensure reliable routing
+  const staticPaths = ['/about', '/terms', '/privacy', '/faq', '/contact', '/notices'];
+  const isStatic = typeof href === 'string' && staticPaths.some(p => href.startsWith(p));
+
+  if (isStatic) {
+    return <a href={localizedHref} {...props} />;
+  }
+
   return <Link href={localizedHref} {...props} />;
 }

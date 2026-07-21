@@ -77,13 +77,14 @@
     opacity: 1;
     pointer-events: auto;
     padding-top: 0;
+    overflow-y: visible; /* Prevent clipping the top handle */
     /* Let the handle breathe */
   }
 
   .listHidden {
     opacity: 1;
-    /* Peek state: shows only top ~130px */
-    transform: translateY(calc(100% - 80px));
+    /* Peek state: shows 1/4 (25%) of the list box height */
+    transform: translateY(75%);
     pointer-events: auto;
     overflow-y: hidden;
   }

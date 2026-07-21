@@ -16,10 +16,10 @@ export default function InstructorLayout({ children }: { children: React.ReactNo
           subtitle="Manage your workshops"
           items={[
             { href: '/instructor', label: t('instructor.dashboard'), icon: <LayoutDashboard size={18} /> },
-            { href: '/instructor/profile', label: '프로필 (Profile)', icon: <User size={18} /> },
-            { href: '/instructor/workshops', label: '스튜디오 (Studio)', icon: <Store size={18} /> },
+            { href: '/instructor/profile', label: '프로필', icon: <User size={18} /> },
+            { href: '/instructor/workshops', label: '스튜디오', icon: <Store size={18} /> },
             { href: '/instructor/courses', label: t('instructor.my_courses'), icon: <BookOpen size={18} /> },
-            { href: '/instructor/bookings', label: '예약 현황 (Bookings)', icon: <Calendar size={18} /> },
+            { href: '/instructor/bookings', label: '예약 현황', icon: <Calendar size={18} /> },
           ]}
         />
         <div className="dashboard-content">{children}</div>

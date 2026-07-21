@@ -1,0 +1,20 @@
+<svg width="400" height="250" viewBox="0 0 400 250" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="250" rx="12" fill="#18181B"/>
+  <image href="https://images.unsplash.com/photo-1583165498843-e6992a8a4b62?auto=format&amp;fit=crop&amp;w=600&amp;q=80" width="400" height="250" preserveAspectRatio="xMidYMid slice" clip-path="url(#clip-culture)"/>
+  <rect width="400" height="250" fill="url(#overlay-culture)" rx="12"/>
+  
+  <circle cx="200" cy="95" r="36" fill="#18181B" opacity="0.8"/>
+  <path d="M175 80C175 80 187 72 200 72C213 72 225 80 225 80V110C225 110 213 118 200 118C187 118 175 110 175 110V80Z" fill="#E11D48" opacity="0.9"/>
+  <path d="M175 95C175 95 187 103 200 103C213 103 225 95 225 95V110C225 110 213 118 200 118C187 118 175 110 175 110V95Z" fill="#2563EB" opacity="0.9"/>
+  
+  <text x="50%" y="168" dominant-baseline="middle" text-anchor="middle" fill="#FDA4AF" font-family="sans-serif" font-size="12" font-weight="700" letter-spacing="1.5">TRADITION &amp; CULTURE</text>
+  <text x="50%" y="192" dominant-baseline="middle" text-anchor="middle" fill="#FFFFFF" font-family="sans-serif" font-size="15" font-weight="600">전통 · 문화 축제</text>
+
+  <defs>
+    <clipPath id="clip-culture"><rect width="400" height="250" rx="12"/></clipPath>
+    <linearGradient id="overlay-culture" x1="0" y1="0" x2="0" y2="250" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#18181B" stop-opacity="0.3"/>
+      <stop offset="1" stop-color="#18181B" stop-opacity="0.92"/>
+    </linearGradient>
+  </defs>
+</svg>

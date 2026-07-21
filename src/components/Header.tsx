@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Link from '@/components/LocalizedLink';
 import { useModalHistory } from '@/hooks/useModalHistory';
 import { usePathname, useRouter } from 'next/navigation';
-import { Menu, Search, ArrowLeft, Map, LayoutDashboard, BookOpen, Shield, X, LogOut } from 'lucide-react';
+import { Menu, Search, ArrowLeft, Map, LayoutDashboard, BookOpen, Shield, X, LogOut, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { useFilter } from '@/context/FilterContext';
@@ -26,10 +26,19 @@ export default function Header() {
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [isMobileScreen, setIsMobileScreen] = useState(false);
+  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
 
-  // Close mobile menu on route change
+  const toggleAccordion = useCallback((key: string) => {
+    setExpandedMenus(prev => ({ ...prev, [key]: !prev[key] }));
+  }, []);
+
+  // Close mobile menu on route change & auto expand active menu
   useEffect(() => {
     setIsMobileMenuOpen(false);
+    if (pathname.startsWith('/instructor')) setExpandedMenus(prev => ({ ...prev, instructor: true }));
+    else if (pathname.startsWith('/admin')) setExpandedMenus(prev => ({ ...prev, admin: true }));
+    else if (pathname.startsWith('/market_coordinator')) setExpandedMenus(prev => ({ ...prev, market_coordinator: true }));
+    else if (pathname.startsWith('/my')) setExpandedMenus(prev => ({ ...prev, my: true }));
   }, [pathname]);
 
   // Track mobile screen size for responsive rendering
@@ -71,104 +80,67 @@ export default function Header() {
       </Link>
 
       {isInstructor(userRole) && (
-        <>
+        <div className={styles.mobileAccordionHeader}>
           <Link
             href="/instructor"
             className={`${isMobile ? styles.mobileNavLink : styles.navLink} ${pathname.startsWith('/instructor') ? (isMobile ? styles.mobileNavLinkActive : styles.navLinkActive) : ''}`}
-            onClick={() => { if (isMobile && pathname === '/instructor') setIsMobileMenuOpen(false); }}
+            onClick={() => setTimeout(() => setIsMobileMenuOpen(false), 150)}
           >
             <BookOpen size={16} />
             {t('nav.instructor')}
           </Link>
-          {isMobile && pathname.startsWith('/instructor') && (
-            <div className={styles.mobileSubMenuContainer}>
-              <Link href="/instructor" className={styles.mobileSubNavLink} onClick={() => setIsMobileMenuOpen(false)}>└ 대시보드</Link>
-              <Link href="/instructor/profile" className={styles.mobileSubNavLink} onClick={() => setIsMobileMenuOpen(false)}>└ 프로필 (Profile)</Link>
-              <Link href="/instructor/workshops" className={styles.mobileSubNavLink} onClick={() => setIsMobileMenuOpen(false)}>└ 스튜디오 (Studio)</Link>
-              <Link href="/instructor/courses" className={styles.mobileSubNavLink} onClick={() => setIsMobileMenuOpen(false)}>└ 워크샵 (Courses)</Link>
-              <Link href="/instructor/bookings" className={styles.mobileSubNavLink} onClick={() => setIsMobileMenuOpen(false)}>└ 예약 현황 (Bookings)</Link>
-            </div>
-          )}
-        </>
+        </div>
       )}
 
       {isAdmin(userRole) && (
-        <>
+        <div className={styles.mobileAccordionHeader}>
           <Link
             href="/admin"
             className={`${isMobile ? styles.mobileNavLink : styles.navLink} ${pathname.startsWith('/admin') ? (isMobile ? styles.mobileNavLinkActive : styles.navLinkActive) : ''}`}
-            onClick={() => { if (isMobile && pathname === '/admin') setIsMobileMenuOpen(false); }}
+            onClick={() => setTimeout(() => setIsMobileMenuOpen(false), 150)}
           >
             <Shield size={16} />
             {t('nav.admin')}
           </Link>
-          {isMobile && pathname.startsWith('/admin') && (
-            <div className={styles.mobileSubMenuContainer}>
-              <Link href="/admin" className={styles.mobileSubNavLink} onClick={() => setIsMobileMenuOpen(false)}>└ 대시보드</Link>
-              <Link href="/admin/members" className={styles.mobileSubNavLink} onClick={() => setIsMobileMenuOpen(false)}>└ 회원 관리</Link>
-              <Link href="/admin/role_requests" className={styles.mobileSubNavLink} onClick={() => setIsMobileMenuOpen(false)}>└ 등급 승인 관리</Link>
-              <Link href="/admin/workshops" className={styles.mobileSubNavLink} onClick={() => setIsMobileMenuOpen(false)}>└ 스튜디오 관리</Link>
-              <Link href="/admin/courses" className={styles.mobileSubNavLink} onClick={() => setIsMobileMenuOpen(false)}>└ 워크샵 관리</Link>
-              <Link href="/admin/flea_markets" className={styles.mobileSubNavLink} onClick={() => setIsMobileMenuOpen(false)}>└ 플리마켓 관리</Link>
-              <Link href="/admin/reviews" className={styles.mobileSubNavLink} onClick={() => setIsMobileMenuOpen(false)}>└ 리뷰 관리</Link>
-              <Link href="/admin/inquiries" className={styles.mobileSubNavLink} onClick={() => setIsMobileMenuOpen(false)}>└ 문의 관리</Link>
-              <Link href="/admin/notices" className={styles.mobileSubNavLink} onClick={() => setIsMobileMenuOpen(false)}>└ 공지사항 관리</Link>
-            </div>
-          )}
-        </>
+        </div>
       )}
 
       {isMarketCoordinator(userRole) && (
-        <>
+        <div className={styles.mobileAccordionHeader}>
           <Link
             href="/market_coordinator"
             className={`${isMobile ? styles.mobileNavLink : styles.navLink} ${pathname.startsWith('/market_coordinator') ? (isMobile ? styles.mobileNavLinkActive : styles.navLinkActive) : ''}`}
-            onClick={() => { if (isMobile && pathname === '/market_coordinator') setIsMobileMenuOpen(false); }}
+            onClick={() => setTimeout(() => setIsMobileMenuOpen(false), 150)}
           >
             {t('nav.market') || 'Flea Market'}
           </Link>
-          {isMobile && pathname.startsWith('/market_coordinator') && (
-            <div className={styles.mobileSubMenuContainer}>
-              <Link href="/market_coordinator" className={styles.mobileSubNavLink} onClick={() => setIsMobileMenuOpen(false)}>└ 대시보드</Link>
-              <Link href="/market_coordinator/flea_markets" className={styles.mobileSubNavLink} onClick={() => setIsMobileMenuOpen(false)}>└ 플리마켓 관리</Link>
-              <Link href="/market_coordinator/new" className={styles.mobileSubNavLink} onClick={() => setIsMobileMenuOpen(false)}>└ 플리마켓 등록</Link>
-            </div>
-          )}
-        </>
+        </div>
       )}
 
       {userRole && (
-        <>
+        <div className={styles.mobileAccordionHeader}>
           <Link
             href="/my"
             className={`${isMobile ? styles.mobileNavLink : styles.navLink} ${pathname.startsWith('/my') ? (isMobile ? styles.mobileNavLinkActive : styles.navLinkActive) : ''}`}
-            onClick={() => { if (isMobile && pathname === '/my') setIsMobileMenuOpen(false); }}
+            onClick={() => setTimeout(() => setIsMobileMenuOpen(false), 150)}
           >
             <LayoutDashboard size={16} />
             {t('nav.my_page')}
           </Link>
-          {isMobile && pathname.startsWith('/my') && (
-            <div className={styles.mobileSubMenuContainer}>
-              <Link href="/my" className={styles.mobileSubNavLink} onClick={() => setIsMobileMenuOpen(false)}>└ 대시보드</Link>
-              <Link href="/my/bookings" className={styles.mobileSubNavLink} onClick={() => setIsMobileMenuOpen(false)}>└ {t('my.bookings')}</Link>
-              <Link href="/my/reviews" className={styles.mobileSubNavLink} onClick={() => setIsMobileMenuOpen(false)}>└ {t('my.reviews')}</Link>
-              <Link href="/my/profile" className={styles.mobileSubNavLink} onClick={() => setIsMobileMenuOpen(false)}>└ 프로필 설정</Link>
-            </div>
-          )}
-        </>
+        </div>
       )}
 
       {isMobile && (
         <div style={{ marginTop: 'auto', paddingTop: '16px', paddingBottom: '16px', borderTop: '1px solid var(--color-border)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-            <Link href="/notices" style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', textAlign: 'left', textDecoration: 'none' }} onClick={() => setIsMobileMenuOpen(false)}>Notice</Link>
-            <Link href="/faq" style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', textAlign: 'left', textDecoration: 'none' }} onClick={() => setIsMobileMenuOpen(false)}>FAQ</Link>
-            <Link href="/contact" style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', textAlign: 'left', textDecoration: 'none' }} onClick={() => setIsMobileMenuOpen(false)}>Contact Us</Link>
+            <Link href="/notices" style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', textAlign: 'left', textDecoration: 'none' }} onClick={() => setTimeout(() => setIsMobileMenuOpen(false), 150)}>Notice</Link>
+            <Link href="/faq" style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', textAlign: 'left', textDecoration: 'none' }} onClick={() => setTimeout(() => setIsMobileMenuOpen(false), 150)}>FAQ</Link>
+            <Link href="/contact" style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', textAlign: 'left', textDecoration: 'none' }} onClick={() => setTimeout(() => setIsMobileMenuOpen(false), 150)}>Contact Us</Link>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-            <Link href="/about" style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', textAlign: 'left', textDecoration: 'none' }} onClick={() => setIsMobileMenuOpen(false)}>About</Link>
-            <Link href="/terms" style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', textAlign: 'left', textDecoration: 'none' }} onClick={() => setIsMobileMenuOpen(false)}>Terms</Link>
-            <Link href="/privacy" style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', textAlign: 'left', textDecoration: 'none' }} onClick={() => setIsMobileMenuOpen(false)}>Privacy</Link>
+            <Link href="/about" style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', textAlign: 'left', textDecoration: 'none' }} onClick={() => setTimeout(() => setIsMobileMenuOpen(false), 150)}>About</Link>
+            <Link href="/terms" style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', textAlign: 'left', textDecoration: 'none' }} onClick={() => setTimeout(() => setIsMobileMenuOpen(false), 150)}>Terms</Link>
+            <Link href="/privacy" style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', textAlign: 'left', textDecoration: 'none' }} onClick={() => setTimeout(() => setIsMobileMenuOpen(false), 150)}>Privacy</Link>
           </div>
         </div>
       )}
@@ -185,7 +157,7 @@ export default function Header() {
           <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontFamily: 'var(--font-heading)', fontWeight: 700, color: 'var(--color-text-primary)' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.png" alt="Logo" style={{ width: '18px', height: '18px', objectFit: 'contain' }} />
-            Art flow map
+            Art flow map <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--color-text-secondary)' }}>| Local Craft & Festival</span>
           </span>
           <br />
           &copy; {new Date().getFullYear()} All rights reserved.
@@ -210,7 +182,12 @@ export default function Header() {
         </div>
       ) : (
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: 'var(--color-text-primary)' }}>
-          <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '1.1rem' }}>Art flow map</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="Logo" style={{ width: '22px', height: '22px', objectFit: 'contain', borderRadius: '4px' }} />
+          <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            Art flow map
+            <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--color-text-secondary)' }}>| Local Craft & Festival</span>
+          </span>
         </Link>
       )}
 

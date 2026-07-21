@@ -1,0 +1,21 @@
+<svg width="400" height="250" viewBox="0 0 400 250" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="250" rx="12" fill="#064E3B"/>
+  <image href="https://images.unsplash.com/photo-1528164344705-475426879e0d?auto=format&amp;fit=crop&amp;w=600&amp;q=80" width="400" height="250" preserveAspectRatio="xMidYMid slice" clip-path="url(#clip-nature)"/>
+  <rect width="400" height="250" fill="url(#overlay-nature)" rx="12"/>
+  
+  <circle cx="200" cy="95" r="36" fill="#022C22" opacity="0.8"/>
+  <path d="M170 115L188 85L206 115H170Z" fill="#10B981"/>
+  <path d="M194 115L212 78L230 115H194Z" fill="#34D399"/>
+  <circle cx="180" cy="80" r="4" fill="#F472B6"/>
+
+  <text x="50%" y="168" dominant-baseline="middle" text-anchor="middle" fill="#6EE7B7" font-family="sans-serif" font-size="12" font-weight="700" letter-spacing="1.5">NATURE &amp; SEASON</text>
+  <text x="50%" y="192" dominant-baseline="middle" text-anchor="middle" fill="#FFFFFF" font-family="sans-serif" font-size="15" font-weight="600">자연 · 생태 · 계절 축제</text>
+
+  <defs>
+    <clipPath id="clip-nature"><rect width="400" height="250" rx="12"/></clipPath>
+    <linearGradient id="overlay-nature" x1="0" y1="0" x2="0" y2="250" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#022C22" stop-opacity="0.3"/>
+      <stop offset="1" stop-color="#022C22" stop-opacity="0.92"/>
+    </linearGradient>
+  </defs>
+</svg>

@@ -5,6 +5,7 @@
   height: 100%;
   overflow-y: auto;
   background-color: var(--color-background);
+  position: relative;
 }
 
 .listHeaderSummary {
@@ -34,11 +35,11 @@
 /* Region Group Styles */
 .regionGroupBlock {
   margin-bottom: var(--space-8);
-  background: var(--color-surface, #ffffff);
+  background: var(--color-surface);
   border-radius: var(--radius-xl, 16px);
   padding: var(--space-5);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-  border: 1px solid var(--color-border-light, #e5e7eb);
+  border: 1px solid var(--color-border-light);
 }
 
 .regionHeader {
@@ -50,7 +51,7 @@
 }
 
 .regionTitle {
-  font-size: 1.3rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: var(--color-text, #111827);
   margin: 0;
@@ -60,7 +61,7 @@
 }
 
 .regionCounts {
-  font-size: 0.95rem;
+  font-size: 0.7rem;
   font-weight: 500;
   color: #6b7280;
 }
@@ -97,7 +98,7 @@
 }
 
 .card {
-  background: white;
+  background: var(--color-surface);
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
@@ -116,7 +117,7 @@
 .imageArea {
   width: 100%;
   height: 160px;
-  background-color: #f3f4f6;
+  background-color: var(--color-bg-alt);
   position: relative;
   flex-shrink: 0;
 }
@@ -239,6 +240,9 @@
     display: flex;
     justify-content: center;
     padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 50;
     margin-bottom: 12px;
   }
 
@@ -248,8 +252,7 @@
     justify-content: center;
     width: 100px;
     height: 30px;
-    background-color: #ffffff;
-    /* 배경 화이트 */
+    background-color: var(--color-surface);
     color: var(--color-text-primary);
     border: 1px solid var(--color-border);
     border-top: none;

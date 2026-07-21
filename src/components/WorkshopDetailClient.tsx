@@ -6,6 +6,7 @@ import { ArrowLeft, Navigation, Share2, MapPin, Phone, Globe, Star, MessageCircl
 import { FaInstagram, FaFacebook, FaYoutube } from 'react-icons/fa';
 import { useLanguage } from '@/context/LanguageContext';
 import { getDynamicCategories } from '@/lib/categoryUtils';
+import { getFallbackImage } from '@/lib/imageUtils';
 import type { Workshop, Course, AppUser, FleaMarket } from '@/types';
 import { getCoursesByWorkshop, getUserProfile, getWorkshopById, incrementWorkshopLinkClick, getWorkshops, getFleaMarkets } from '@/lib/database';
 import { useAuth } from '@/context/AuthContext';
@@ -101,7 +102,7 @@ export default function WorkshopDetailClient({ workshop }: WorkshopDetailClientP
           type: 'festival' as const,
           name,
           description: desc,
-          subtitle: m.date ? `${m.date}` : (locale === 'ko' ? '지역 축제' : 'Festival'),
+          subtitle: m.date ? `${m.date.replace(/20(\d{2})/g, '$1').replace(/-/g, '.')}` : (locale === 'ko' ? '지역 축제' : 'Festival'),
           imageUrl: m.posterUrl,
           linkUrl: `/${locale}/fleamarkets/${m.id}`,
           badgeText: locale === 'ko' ? '축제' : 'Festival',
@@ -217,22 +218,15 @@ export default function WorkshopDetailClient({ workshop }: WorkshopDetailClientP
         {/* Left Column: Images */}
         <div className={styles.leftColumn}>
           {/* Main Image (Representative Photo) */}
-          {workshop.images && workshop.images.length > 0 ? (
-            <div className={styles.imageCarousel}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={workshop.images[0]}
-                alt={`${workshop.name.ko || workshop.name.en} - main image`}
-                className={styles.workshopImage}
-              />
-            </div>
-          ) : (
-            <div className={styles.imageCarousel} style={{ width: '100%', minHeight: '280px', borderRadius: 'var(--radius-lg)', background: '#f8fafc', border: '1px solid var(--color-border-light, #e5e7eb)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.png" alt="Art Flow Map Logo" style={{ width: '72px', height: '72px', objectFit: 'contain', opacity: 0.85 }} />
-              <span style={{ fontSize: '13px', fontWeight: 600, color: '#64748b' }}>Art Flow Map</span>
-            </div>
-          )}
+          <div className={styles.imageCarousel}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={(workshop.images && workshop.images[0]) || getFallbackImage(workshop.category)}
+              alt={`${workshop.name.ko || workshop.name.en} - main image`}
+              className={styles.workshopImage}
+              onError={(e) => { e.currentTarget.src = getFallbackImage('default'); }}
+            />
+          </div>
 
           {/* Studio Photos (Secondary Images) */}
           {workshop.images && workshop.images.length > 1 && (
@@ -245,6 +239,10 @@ export default function WorkshopDetailClient({ workshop }: WorkshopDetailClientP
                   alt={`${workshop.name.ko || workshop.name.en} - studio image ${idx + 1}`}
                   className={styles.workshopImage}
                   style={{ marginBottom: 'var(--space-2)' }}
+                  onError={(e) => { 
+                    e.currentTarget.onerror = null; 
+                    e.currentTarget.src = getFallbackImage('default'); 
+                  }}
                 />
               ))}
             </div>
@@ -435,16 +433,16 @@ export default function WorkshopDetailClient({ workshop }: WorkshopDetailClientP
                 className={styles.nearbyCard}
               >
                 <div className={styles.nearbyImageArea}>
-                  {place.imageUrl ? (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img src={place.imageUrl} alt={place.name} className={styles.nearbyImage} />
-                  ) : (
-                    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', gap: '4px' }}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src="/logo.png" alt="Art Flow Map" style={{ width: '36px', height: '36px', objectFit: 'contain', opacity: 0.85 }} />
-                      <span style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 600 }}>Art Flow Map</span>
-                    </div>
-                  )}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img 
+                    src={(place.imageUrl && place.imageUrl !== 'null' && place.imageUrl !== 'undefined') ? place.imageUrl : getFallbackImage(place.name + ' ' + place.description)} 
+                    alt={place.name} 
+                    className={styles.nearbyImage} 
+                    onError={(e) => { 
+                      e.currentTarget.onerror = null; 
+                      e.currentTarget.src = getFallbackImage('default'); 
+                    }}
+                  />
                   <span className={styles.nearbyBadge} style={{ background: place.badgeBg, color: place.badgeColor }}>
                     {place.badgeText}
                   </span>
