@@ -14,11 +14,11 @@ export default function Footer() {
           <span className={styles.brandName} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.png" alt="Logo" style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
-            Art flow map
+            ART FLOW MAP
           </span>
-          <span className={styles.hideMobile} style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span>&copy; {new Date().getFullYear()} Moonga Corp.</span>
-            <span style={{ fontWeight: 600 }}>Powered by TourAPI</span>
+          <span className={styles.hideMobile} style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span>&copy; {new Date().getFullYear()} MOONGA CORP.</span>
+            <span style={{ fontWeight: 600 }}>POWERED BY TOURAPI</span>
           </span>
         </div>
 
