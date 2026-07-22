@@ -92,6 +92,7 @@ function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChang
         if (container && container._leaflet_id) {
           delete container._leaflet_id;
         }
+        containerRef.current.innerHTML = '';
       }
     };
   }, []);

@@ -10,6 +10,7 @@ import styles from './ListView.module.css';
 interface ListViewProps {
   workshops: Workshop[];
   fleaMarkets: FleaMarket[];
+  mapBounds?: { north: number; south: number; east: number; west: number } | null;
   onWorkshopClick: (workshop: Workshop) => void;
   onFleaMarketClick: (market: FleaMarket) => void;
   viewMode?: 'map' | 'list';
@@ -96,12 +97,21 @@ function getRegionName(item: Workshop | FleaMarket, locale: Locale): string {
 export default function ListView({
   workshops,
   fleaMarkets,
+  mapBounds,
   onWorkshopClick,
   onFleaMarketClick,
   viewMode,
   onViewModeChange,
 }: ListViewProps) {
   const { locale } = useLanguage();
+
+  const mapCenter = useMemo(() => {
+    if (!mapBounds) return null;
+    return {
+      lat: (mapBounds.north + mapBounds.south) / 2,
+      lng: (mapBounds.east + mapBounds.west) / 2,
+    };
+  }, [mapBounds]);
 
   const groupedRegions = useMemo(() => {
     const groupsMap = new Map<string, { fleaMarkets: FleaMarket[]; workshops: Workshop[] }>();
@@ -122,21 +132,43 @@ export default function ListView({
       groupsMap.get(regionName)!.workshops.push(workshop);
     });
 
-    const groups = Array.from(groupsMap.entries()).map(([regionName, data]) => ({
-      regionName,
-      fleaMarkets: data.fleaMarkets,
-      workshops: data.workshops,
-    }));
+    const groups = Array.from(groupsMap.entries()).map(([regionName, data]) => {
+      const allItems = [...data.workshops, ...data.fleaMarkets];
+      let minDistance = Infinity;
 
-    // Sort by total items count descending
+      if (mapCenter && allItems.length > 0) {
+        allItems.forEach((item) => {
+          if (typeof item.lat === 'number' && typeof item.lng === 'number') {
+            const dLat = item.lat - mapCenter.lat;
+            const dLng = item.lng - mapCenter.lng;
+            const distSq = dLat * dLat + dLng * dLng;
+            if (distSq < minDistance) {
+              minDistance = distSq;
+            }
+          }
+        });
+      }
+
+      return {
+        regionName,
+        fleaMarkets: data.fleaMarkets,
+        workshops: data.workshops,
+        minDistance,
+      };
+    });
+
+    // Sort groups
     groups.sort((a, b) => {
+      if (mapCenter && a.minDistance !== b.minDistance) {
+        return a.minDistance - b.minDistance;
+      }
       const totalA = a.fleaMarkets.length + a.workshops.length;
       const totalB = b.fleaMarkets.length + b.workshops.length;
       return totalB - totalA;
     });
 
     return groups;
-  }, [workshops, fleaMarkets, locale]);
+  }, [workshops, fleaMarkets, locale, mapCenter]);
 
   return (
     <div className={`${styles.listContainer} ${viewMode === 'list' ? styles.fullListView : ''}`}>
@@ -153,8 +185,6 @@ export default function ListView({
         </button>
       </div>
 
-
-
       {groupedRegions.map((group) => {
         const totalItems = group.fleaMarkets.length + group.workshops.length;
         if (totalItems === 0) return null;
@@ -169,50 +199,7 @@ export default function ListView({
               </h2>
             </div>
 
-            {/* 1. Region Festivals */}
-            {group.fleaMarkets.length > 0 && (
-              <div className={styles.subCategorySection}>
-                <h3 className={styles.subCategoryTitle}>
-                  {locale === 'ko' ? '지역 축제 & 플리마켓' : 'Local Festivals & Flea Markets'}
-                </h3>
-                <div className={styles.grid}>
-                  {group.fleaMarkets.map((market) => {
-                    const name = market.name[locale] || market.name.ko || market.name.en || '';
-                    const desc = market.description[locale] || market.description.ko || market.description.en || '';
-                    const hasImage = !!market.posterUrl;
-
-                    return (
-                      <div key={market.id} className={styles.card} onClick={() => onFleaMarketClick(market)}>
-                        <div className={styles.imageArea}>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img 
-                            src={market.posterUrl && market.posterUrl !== 'null' && market.posterUrl !== 'undefined' ? market.posterUrl : getFallbackImage(name + ' ' + desc)} 
-                            alt={name} 
-                            className={styles.image} 
-                            onError={(e) => { 
-                              e.currentTarget.onerror = null; 
-                              e.currentTarget.src = getFallbackImage('default'); 
-                            }}
-                          />
-                        </div>
-                        <div className={styles.contentArea}>
-                          <h3 className={styles.title}>{name}</h3>
-                          <div className={styles.subtitle}>{market.date.replace(/20(\d{2})/g, '$1').replace(/-/g, '.')}</div>
-
-                          <div className={styles.meta}>
-                            <div className={styles.metaItem}>
-                              <span style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{desc}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* 2. Region Workshops */}
+            {/* 1. Region Workshops (Placed First) */}
             {group.workshops.length > 0 && (
               <div className={styles.subCategorySection}>
                 <h3 className={styles.subCategoryTitle}>
@@ -222,7 +209,6 @@ export default function ListView({
                   {group.workshops.map((workshop) => {
                     const name = workshop.name[locale] || workshop.name.ko || workshop.name.en || '';
                     const desc = workshop.description[locale] || workshop.description.ko || workshop.description.en || '';
-                    const hasImage = workshop.images && workshop.images.length > 0;
 
                     return (
                       <div key={workshop.id} className={styles.card} onClick={() => onWorkshopClick(workshop)}>
@@ -241,6 +227,48 @@ export default function ListView({
                         <div className={styles.contentArea}>
                           <h3 className={styles.title}>{name}</h3>
                           <div className={styles.subtitle} style={{ color: '#ff6b35' }}>⭐ {workshop.rating} ({workshop.reviewCount})</div>
+
+                          <div className={styles.meta}>
+                            <div className={styles.metaItem}>
+                              <span style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{desc}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* 2. Region Festivals (Placed Second) */}
+            {group.fleaMarkets.length > 0 && (
+              <div className={styles.subCategorySection}>
+                <h3 className={styles.subCategoryTitle}>
+                  {locale === 'ko' ? '지역 축제 & 플리마켓' : 'Local Festivals & Flea Markets'}
+                </h3>
+                <div className={styles.grid}>
+                  {group.fleaMarkets.map((market) => {
+                    const name = market.name[locale] || market.name.ko || market.name.en || '';
+                    const desc = market.description[locale] || market.description.ko || market.description.en || '';
+
+                    return (
+                      <div key={market.id} className={styles.card} onClick={() => onFleaMarketClick(market)}>
+                        <div className={styles.imageArea}>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img 
+                            src={market.posterUrl && market.posterUrl !== 'null' && market.posterUrl !== 'undefined' ? market.posterUrl : getFallbackImage(name + ' ' + desc)} 
+                            alt={name} 
+                            className={styles.image} 
+                            onError={(e) => { 
+                              e.currentTarget.onerror = null; 
+                              e.currentTarget.src = getFallbackImage('default'); 
+                            }}
+                          />
+                        </div>
+                        <div className={styles.contentArea}>
+                          <h3 className={styles.title}>{name}</h3>
+                          <div className={styles.subtitle}>{market.date.replace(/20(\d{2})/g, '$1').replace(/-/g, '.')}</div>
 
                           <div className={styles.meta}>
                             <div className={styles.metaItem}>

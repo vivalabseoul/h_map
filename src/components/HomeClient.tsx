@@ -41,12 +41,22 @@ export default function HomeClient({ initialWorkshopId }: { initialWorkshopId?: 
   const [mapBounds, setMapBounds] = useState<{ north: number; south: number; east: number; west: number } | null>(null);
   const router = useLocalizedRouter();
 
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+
   useEffect(() => {
-    // 반응형 기본 화면 설정: 모바일(760px 이하)이면 지도 먼저, 데스크탑이면 리스트 먼저
-    if (typeof window !== 'undefined' && window.innerWidth <= 760) {
-      setViewMode('map');
-    }
-    
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 760;
+      setIsMobile(mobile);
+      if (mobile) {
+        setViewMode('map');
+      }
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [setViewMode]);
+
+  useEffect(() => {
     getWorkshops().then(async (data) => {
       let fullData = data;
       let target = data.find(w => w.id === initialWorkshopId);
@@ -62,11 +72,9 @@ export default function HomeClient({ initialWorkshopId }: { initialWorkshopId?: 
       }
 
       setWorkshops(fullData);
-      
-      setWorkshops(fullData);
     });
     getFleaMarkets().then(setFleaMarkets);
-  }, [initialWorkshopId, setViewMode]);
+  }, [initialWorkshopId]);
 
   const { user } = useAuth();
   
@@ -98,7 +106,7 @@ export default function HomeClient({ initialWorkshopId }: { initialWorkshopId?: 
 
   const viewportWorkshops = useMemo(() => {
     if (searchQuery.trim() !== '') return globalWorkshops;
-    if (viewMode === 'list') return globalWorkshops;
+    if (!isMobile && viewMode === 'list') return globalWorkshops;
     if (mapBounds) {
       return globalWorkshops.filter(w => {
         return w.lat <= mapBounds.north && w.lat >= mapBounds.south &&
@@ -106,11 +114,12 @@ export default function HomeClient({ initialWorkshopId }: { initialWorkshopId?: 
       });
     }
     return globalWorkshops;
-  }, [globalWorkshops, mapBounds, searchQuery, viewMode]);
+  }, [globalWorkshops, mapBounds, searchQuery, isMobile, viewMode]);
 
   const globalFleaMarkets = useMemo(() => {
     return fleaMarkets.filter((m) => {
       if (m.status === 'inactive') return false;
+      if (selectedRegion !== 'all' && (m as any).region && (m as any).region !== selectedRegion) return false;
       if (searchQuery.trim() !== '') {
         const q = searchQuery.toLowerCase();
         const matchesName = Object.values(m.name || {}).some(n => n?.toLowerCase().includes(q));
@@ -120,10 +129,10 @@ export default function HomeClient({ initialWorkshopId }: { initialWorkshopId?: 
       }
       return true;
     });
-  }, [fleaMarkets, searchQuery]);
+  }, [fleaMarkets, searchQuery, selectedRegion]);
 
   const viewportFleaMarkets = useMemo(() => {
-    if (viewMode === 'list') return globalFleaMarkets;
+    if (!isMobile && viewMode === 'list') return globalFleaMarkets;
     if (mapBounds) {
       return globalFleaMarkets.filter(m => {
         return m.lat <= mapBounds.north && m.lat >= mapBounds.south &&
@@ -131,7 +140,7 @@ export default function HomeClient({ initialWorkshopId }: { initialWorkshopId?: 
       });
     }
     return globalFleaMarkets;
-  }, [globalFleaMarkets, mapBounds, viewMode]);
+  }, [globalFleaMarkets, mapBounds, isMobile, viewMode]);
 
   const handleMarkerClick = useCallback((workshop: Workshop) => {
     incrementWorkshopLinkClick(workshop.id, 'map_pin').catch(console.error);
@@ -178,6 +187,7 @@ export default function HomeClient({ initialWorkshopId }: { initialWorkshopId?: 
           <ListView
             workshops={viewportWorkshops}
             fleaMarkets={viewportFleaMarkets}
+            mapBounds={mapBounds}
             onWorkshopClick={handleListItemClick}
             onFleaMarketClick={handleFleaMarketClick}
             viewMode={viewMode}

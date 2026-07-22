@@ -94,8 +94,8 @@
 
   .listHidden {
     opacity: 1;
-    /* Peek state: shows 1/4 (25%) of the list box height */
-    transform: translateY(75%);
+    /* Peek state: shows 2 rows of cards (2x2 grid) */
+    transform: translateY(60%);
     pointer-events: auto;
     overflow-y: hidden;
   }
