@@ -144,13 +144,9 @@ export default function Header() {
       )}
 
       {isMobile && (
-        <div style={{ paddingTop: '12px', paddingBottom: '8px', fontSize: '0.78rem', color: 'var(--color-text-muted)', lineHeight: '1.5' }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700, color: 'var(--color-text-primary)' }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="Logo" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
-            Art flow map
-          </span>
-          &copy; {new Date().getFullYear()} All rights reserved.
+        <div style={{ paddingTop: '12px', paddingBottom: '8px', fontSize: '0.78rem', color: 'var(--color-text-secondary)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <span>&copy; {new Date().getFullYear()} Moonga Corp.</span>
+          <span style={{ fontWeight: 600 }}>Powered by TourAPI</span>
         </div>
       )}
     </>
