@@ -25,22 +25,20 @@
 .left {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  flex-shrink: 0;
 }
 
-.brandName {
-  font-family: var(--font-heading);
-  font-weight: 700;
-  font-style: normal;
-  font-size: 1.05rem;
-  color: #ffffff;
+.right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.8rem;
+  color: #9ca3af;
 }
 
 .links {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-4);
   overflow-x: auto;
   white-space: nowrap;
   /* 모바일에서 스크롤바 숨기기 */

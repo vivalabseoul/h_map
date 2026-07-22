@@ -11,18 +11,6 @@ export default function Footer() {
     <footer className={styles.footer}>
       <div className={styles.container}>
         <div className={styles.left}>
-          <span className={styles.brandName} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="Logo" style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
-            Art flow map
-          </span>
-          <span className={styles.hideMobile} style={{ fontSize: '0.8rem', color: '#9ca3af', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span>&copy; {new Date().getFullYear()} Moonga Corp.</span>
-            <span style={{ fontWeight: 600 }}>Powered by TourAPI</span>
-          </span>
-        </div>
-
-        <div className={styles.hideMobile}>
           <div className={styles.links}>
             <Link href="/about" className={styles.link}>{t('About') || 'About'}</Link>
             <Link href="/faq" className={styles.link}>{t('Faq') || 'FAQ'}</Link>
@@ -30,6 +18,11 @@ export default function Footer() {
             <Link href="/privacy" className={styles.link}>{t('Privacy') || 'Privacy'}</Link>
             <Link href="/contact" className={styles.link}>{t('Contact') || 'Contact Us'}</Link>
           </div>
+        </div>
+
+        <div className={styles.right}>
+          <span>&copy; {new Date().getFullYear()} Moonga Corp.</span>
+          <span style={{ fontWeight: 600 }}>Powered by TourAPI</span>
         </div>
       </div>
     </footer>
