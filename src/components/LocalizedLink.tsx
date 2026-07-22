@@ -26,7 +26,9 @@ export default function LocalizedLink({ href, ...props }: LocalizedLinkProps) {
   const isStatic = typeof href === 'string' && staticPaths.some(p => href.startsWith(p));
 
   if (isStatic) {
-    return <a href={localizedHref} {...props} />;
+    const hrefStr = typeof localizedHref === 'string' ? localizedHref : (localizedHref ? String(localizedHref) : undefined);
+    const { passHref, legacyBehavior, prefetch, replace, scroll, shallow, locale: linkLocale, ...anchorProps } = props as any;
+    return <a href={hrefStr} {...anchorProps} />;
   }
 
   return <Link href={localizedHref} {...props} />;
