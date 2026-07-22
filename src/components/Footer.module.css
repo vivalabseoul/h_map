@@ -16,13 +16,14 @@
   margin: 0 auto;
   padding: 0 var(--space-4);
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: var(--space-6, 24px);
   text-align: center;
   font-size: 0.88rem;
   color: #9ca3af;
+  flex-wrap: wrap;
 }
 
 .left {
