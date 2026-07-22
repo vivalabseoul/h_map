@@ -56,7 +56,6 @@ export default function Header() {
   const closeMobileMenu = useCallback(() => setIsMobileMenuOpen(false), []);
   const closeRegisterModal = useCallback(() => setShowRegisterModal(false), []);
 
-  useModalHistory(isMobileMenuOpen, closeMobileMenu);
   useModalHistory(showRegisterModal, closeRegisterModal);
 
   const navLinks = (isMobile: boolean) => (
@@ -74,7 +73,7 @@ export default function Header() {
       <Link
         href="/"
         className={`${isMobile ? styles.mobileNavLink : styles.navLink} ${pathname === '/' ? (isMobile ? styles.mobileNavLinkActive : styles.navLinkActive) : ''}`}
-        onClick={() => isMobile && setTimeout(() => setIsMobileMenuOpen(false), 150)}
+        onClick={closeMobileMenu}
       >
         <Map size={16} />
         {t('nav.map')}
@@ -84,7 +83,7 @@ export default function Header() {
         <Link
           href="/instructor"
           className={`${isMobile ? styles.mobileNavLink : styles.navLink} ${pathname.startsWith('/instructor') ? (isMobile ? styles.mobileNavLinkActive : styles.navLinkActive) : ''}`}
-          onClick={() => isMobile && setTimeout(() => setIsMobileMenuOpen(false), 150)}
+          onClick={closeMobileMenu}
         >
           <BookOpen size={16} />
           {t('nav.instructor')}
@@ -95,7 +94,7 @@ export default function Header() {
         <Link
           href="/admin"
           className={`${isMobile ? styles.mobileNavLink : styles.navLink} ${pathname.startsWith('/admin') ? (isMobile ? styles.mobileNavLinkActive : styles.navLinkActive) : ''}`}
-          onClick={() => isMobile && setTimeout(() => setIsMobileMenuOpen(false), 150)}
+          onClick={closeMobileMenu}
         >
           <Shield size={16} />
           {t('nav.admin')}
@@ -106,7 +105,7 @@ export default function Header() {
         <Link
           href="/market_coordinator"
           className={`${isMobile ? styles.mobileNavLink : styles.navLink} ${pathname.startsWith('/market_coordinator') ? (isMobile ? styles.mobileNavLinkActive : styles.navLinkActive) : ''}`}
-          onClick={() => isMobile && setTimeout(() => setIsMobileMenuOpen(false), 150)}
+          onClick={closeMobileMenu}
         >
           {t('nav.market') || 'Flea Market'}
         </Link>
@@ -116,7 +115,7 @@ export default function Header() {
         <Link
           href="/my"
           className={`${isMobile ? styles.mobileNavLink : styles.navLink} ${pathname.startsWith('/my') ? (isMobile ? styles.mobileNavLinkActive : styles.navLinkActive) : ''}`}
-          onClick={() => isMobile && setTimeout(() => setIsMobileMenuOpen(false), 150)}
+          onClick={closeMobileMenu}
         >
           <LayoutDashboard size={16} />
           {t('nav.my_page')}
@@ -126,12 +125,12 @@ export default function Header() {
       {isMobile && (
         <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid var(--color-border)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px 8px' }}>
-            <Link href="/about" style={{ fontSize: '0.78rem', color: 'var(--color-text-secondary)', textDecoration: 'none' }} onClick={() => setTimeout(() => setIsMobileMenuOpen(false), 150)}>About</Link>
-            <Link href="/faq" style={{ fontSize: '0.78rem', color: 'var(--color-text-secondary)', textDecoration: 'none' }} onClick={() => setTimeout(() => setIsMobileMenuOpen(false), 150)}>FAQ</Link>
-            <Link href="/notices" style={{ fontSize: '0.78rem', color: 'var(--color-text-secondary)', textDecoration: 'none' }} onClick={() => setTimeout(() => setIsMobileMenuOpen(false), 150)}>Notice</Link>
-            <Link href="/terms" style={{ fontSize: '0.78rem', color: 'var(--color-text-secondary)', textDecoration: 'none' }} onClick={() => setTimeout(() => setIsMobileMenuOpen(false), 150)}>Terms</Link>
-            <Link href="/privacy" style={{ fontSize: '0.78rem', color: 'var(--color-text-secondary)', textDecoration: 'none' }} onClick={() => setTimeout(() => setIsMobileMenuOpen(false), 150)}>Privacy</Link>
-            <Link href="/contact" style={{ fontSize: '0.78rem', color: 'var(--color-text-secondary)', textDecoration: 'none' }} onClick={() => setTimeout(() => setIsMobileMenuOpen(false), 150)}>Contact</Link>
+            <Link href="/about" style={{ fontSize: '0.78rem', color: 'var(--color-text-secondary)', textDecoration: 'none' }} onClick={closeMobileMenu}>About</Link>
+            <Link href="/faq" style={{ fontSize: '0.78rem', color: 'var(--color-text-secondary)', textDecoration: 'none' }} onClick={closeMobileMenu}>FAQ</Link>
+            <Link href="/notices" style={{ fontSize: '0.78rem', color: 'var(--color-text-secondary)', textDecoration: 'none' }} onClick={closeMobileMenu}>Notice</Link>
+            <Link href="/terms" style={{ fontSize: '0.78rem', color: 'var(--color-text-secondary)', textDecoration: 'none' }} onClick={closeMobileMenu}>Terms</Link>
+            <Link href="/privacy" style={{ fontSize: '0.78rem', color: 'var(--color-text-secondary)', textDecoration: 'none' }} onClick={closeMobileMenu}>Privacy</Link>
+            <Link href="/contact" style={{ fontSize: '0.78rem', color: 'var(--color-text-secondary)', textDecoration: 'none' }} onClick={closeMobileMenu}>Contact</Link>
           </div>
         </div>
       )}
