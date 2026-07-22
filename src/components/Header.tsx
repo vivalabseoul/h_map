@@ -144,7 +144,7 @@ export default function Header() {
       )}
 
       {isMobile && (
-        <div style={{ paddingTop: '12px', paddingBottom: '8px', fontSize: '0.78rem', color: 'var(--color-text-secondary)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <div style={{ paddingTop: '12px', paddingBottom: '8px', fontSize: '0.78rem', color: 'var(--color-text-secondary)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: '4px' }}>
           <span>&copy; {new Date().getFullYear()} Moonga Corp.</span>
           <span style={{ fontWeight: 600 }}>Powered by TourAPI</span>
         </div>
