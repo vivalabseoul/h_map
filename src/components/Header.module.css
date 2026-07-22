@@ -335,8 +335,11 @@
 
 .mobileMenuHeader {
   display: flex;
-  justify-content: flex-end;
-  margin-bottom: var(--space-4);
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: var(--space-3);
+  margin-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
 }
 
@@ -345,13 +348,16 @@
   border: none;
   cursor: pointer;
   color: var(--color-text-primary);
-  padding: 4px;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .mobileNavLinks {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: 6px;
   flex: 1;
   overflow-y: auto;
   min-height: 0;
@@ -363,51 +369,29 @@
   display: none;
 }
 
-.mobileAccordionHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.accordionToggleBtn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px;
-  color: var(--color-text-secondary);
-  border-radius: var(--radius-sm);
-  transition: background-color 0.2s;
-}
-
-.accordionToggleBtn:hover {
-  background: var(--color-bg-alt);
-}
-
 .mobileNavLink {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3);
-  font-size: var(--font-size-md);
+  gap: 12px;
+  padding: 12px 16px;
+  font-size: 0.95rem;
   font-weight: 500;
   color: var(--color-text-primary);
-  border-radius: var(--radius-md);
+  border-radius: 10px;
   text-decoration: none;
-  flex: 1;
+  width: 100%;
+  box-sizing: border-box;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .mobileNavLink:hover {
-  background: #f5f5f5;
+  background: var(--color-bg-alt);
 }
 
 .mobileNavLinkActive {
-  background: #000000;
+  background: #111111;
   color: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
 .mobileBottomActions {
