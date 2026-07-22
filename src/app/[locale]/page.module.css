@@ -53,7 +53,18 @@
   pointer-events: auto;
 }
 
-@media (min-width: 769px) {
+@media (min-width: 1025px) {
+  .listHidden {
+    width: 520px;
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+    border-left: 1px solid var(--color-border);
+    box-shadow: -4px 0 15px rgba(0, 0, 0, 0.05);
+  }
+}
+
+@media (min-width: 761px) and (max-width: 1024px) {
   .listHidden {
     width: 400px;
     opacity: 1;
@@ -64,7 +75,7 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 760px) {
   .listWrapper {
     top: auto;
     bottom: 0;

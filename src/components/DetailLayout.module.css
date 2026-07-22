@@ -321,10 +321,10 @@
   margin-top: var(--space-4);
 }
 
-@media (min-width: 768px) {
+@media (min-width: 761px) {
   .nearbyGrid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-5);
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-4);
   }
 }
 

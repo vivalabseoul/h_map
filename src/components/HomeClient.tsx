@@ -24,7 +24,7 @@ const MapView = dynamic(() => import('@/components/map/MapView'), {
       fontFamily: 'Inter, sans-serif',
     }}>
       <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: '3rem', marginBottom: '1rem', animation: 'pulse 1.5s infinite' }}>🧶</div>
+        <img src="/logo.png" alt="Logo" style={{ width: '48px', height: '48px', objectFit: 'contain', marginBottom: '1rem', animation: 'pulse 1.5s infinite' }} />
         <p style={{ color: '#6b5b54', fontSize: '0.9rem' }}>Loading map...</p>
       </div>
     </div>
@@ -42,8 +42,8 @@ export default function HomeClient({ initialWorkshopId }: { initialWorkshopId?: 
   const router = useLocalizedRouter();
 
   useEffect(() => {
-    // 반응형 기본 화면 설정: 모바일(768px 이하)이면 지도 먼저, 데스크탑이면 리스트 먼저
-    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+    // 반응형 기본 화면 설정: 모바일(760px 이하)이면 지도 먼저, 데스크탑이면 리스트 먼저
+    if (typeof window !== 'undefined' && window.innerWidth <= 760) {
       setViewMode('map');
     }
     

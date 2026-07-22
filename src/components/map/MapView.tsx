@@ -37,11 +37,14 @@ function MapUpdater({ center, zoom }: { center: [number, number]; zoom: number }
 }
 
 function MapEvents({ onBoundsChanged }: { onBoundsChanged?: (bounds: { north: number; south: number; east: number; west: number }) => void }) {
+  const onBoundsChangedRef = React.useRef(onBoundsChanged);
+  onBoundsChangedRef.current = onBoundsChanged;
+
   const map = useMapEvents({
     moveend: () => {
-      if (onBoundsChanged) {
+      if (onBoundsChangedRef.current) {
         const bounds = map.getBounds();
-        onBoundsChanged({
+        onBoundsChangedRef.current({
           north: bounds.getNorth(),
           south: bounds.getSouth(),
           east: bounds.getEast(),
@@ -50,9 +53,9 @@ function MapEvents({ onBoundsChanged }: { onBoundsChanged?: (bounds: { north: nu
       }
     },
     zoomend: () => {
-      if (onBoundsChanged) {
+      if (onBoundsChangedRef.current) {
         const bounds = map.getBounds();
-        onBoundsChanged({
+        onBoundsChangedRef.current({
           north: bounds.getNorth(),
           south: bounds.getSouth(),
           east: bounds.getEast(),
@@ -63,16 +66,16 @@ function MapEvents({ onBoundsChanged }: { onBoundsChanged?: (bounds: { north: nu
   });
 
   React.useEffect(() => {
-    if (onBoundsChanged && map) {
+    if (onBoundsChangedRef.current && map) {
       const bounds = map.getBounds();
-      onBoundsChanged({
+      onBoundsChangedRef.current({
         north: bounds.getNorth(),
         south: bounds.getSouth(),
         east: bounds.getEast(),
         west: bounds.getWest()
       });
     }
-  }, [map, onBoundsChanged]);
+  }, [map]);
 
   return null;
 }
@@ -80,10 +83,22 @@ function MapEvents({ onBoundsChanged }: { onBoundsChanged?: (bounds: { north: nu
 function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChange, onMarkerClick, onFleaMarketClick, onBoundsChanged }: MapViewProps) {
   const { locale, t } = useLanguage();
   const regionData = REGIONS.find((r) => r.key === selectedRegion) || REGIONS[0];
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    return () => {
+      if (containerRef.current) {
+        const container = containerRef.current.querySelector('.leaflet-container') as any;
+        if (container && container._leaflet_id) {
+          delete container._leaflet_id;
+        }
+      }
+    };
+  }, []);
 
   return (
     <>
-      <div className={styles.mapContainer}>
+      <div ref={containerRef} className={styles.mapContainer}>
         <MapContainer
           center={regionData.center}
           zoom={regionData.zoom}

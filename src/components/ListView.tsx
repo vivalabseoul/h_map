@@ -139,7 +139,7 @@ export default function ListView({
   }, [workshops, fleaMarkets, locale]);
 
   return (
-    <div className={styles.listContainer}>
+    <div className={`${styles.listContainer} ${viewMode === 'list' ? styles.fullListView : ''}`}>
       {/* Mobile Bottom Sheet Toggle Button - Sticky at top */}
       <div className={styles.mobileToggleWrapper}>
         <button

@@ -404,17 +404,41 @@ export default function WorkshopDetailClient({ workshop }: WorkshopDetailClientP
             </button>
           </div>
 
-          {/* Courses */}
-          {visibleCourses.length > 0 && (
-            <>
-              <h3 className={styles.sectionTitle}>{t('workshop.courses')}</h3>
+          {/* Courses / Workshops */}
+          <div style={{ marginTop: 'var(--space-6)', marginBottom: 'var(--space-6)' }}>
+            <h3 className={styles.sectionTitle}>
+              {locale === 'ko' ? '수강 가능한 워크샵 & 클래스' : (t('workshop.courses') || 'Available Workshops')}
+            </h3>
+            {visibleCourses.length > 0 ? (
               <div className={styles.courseList}>
                 {visibleCourses.map(course => (
                   <CourseCard key={course.id} course={{ ...course, workshopName: workshop.name }} region={workshop.region} />
                 ))}
               </div>
-            </>
-          )}
+            ) : (
+              <div style={{
+                padding: 'var(--space-6) var(--space-4)',
+                background: 'var(--color-bg-alt)',
+                borderRadius: 'var(--radius-lg, 12px)',
+                textAlign: 'center',
+                color: 'var(--color-text-muted)',
+                border: '1px dashed var(--color-border)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}>
+                <img src="/logo.png" alt="ArtFlowMap Symbol" style={{ width: '36px', height: '36px', objectFit: 'contain', opacity: 0.8 }} />
+                <p style={{ margin: 0, fontWeight: 600, fontSize: '0.95rem', color: 'var(--color-text-secondary)' }}>
+                  {locale === 'ko' ? '워크샵 개설 준비중' : 'Workshops Opening Soon'}
+                </p>
+                <span style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
+                  {locale === 'ko' ? '곧 새로운 원데이 클래스와 워크샵이 열릴 예정입니다.' : 'New one-day classes and workshops will be available soon.'}
+                </span>
+              </div>
+            )}
+          </div>
 
           {/* Reviews */}
           <ReviewSection workshopId={workshop.id} onReviewAdded={handleReviewAdded} />
