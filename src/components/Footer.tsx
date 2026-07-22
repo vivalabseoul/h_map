@@ -16,7 +16,7 @@ export default function Footer() {
             <img src="/logo.png" alt="Logo" style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
             Art flow map
           </span>
-          <span className={styles.hideMobile} style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span className={styles.hideMobile} style={{ fontSize: '0.8rem', color: '#9ca3af', display: 'flex', alignItems: 'center', gap: '12px' }}>
             <span>&copy; {new Date().getFullYear()} Moonga Corp.</span>
             <span style={{ fontWeight: 600 }}>Powered by TourAPI</span>
           </span>
