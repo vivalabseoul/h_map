@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import { App } from '@capacitor/app';
 import Toast from './Toast';
 
 export default function MobileBackHandler() {
@@ -44,9 +45,6 @@ export default function MobileBackHandler() {
       if (now - lastBackTimeRef.current < 2000) {
         // Exit app if double pressed within 2 seconds
         try {
-          // Dynamic import via Function constructor to bypass ts-node/static bundler lookup if plugin not installed
-          const getCapacitorApp = new Function('return import("@capacitor/app")');
-          const { App } = await getCapacitorApp();
           await App.exitApp();
         } catch {
           // Pure browser fallback
@@ -60,8 +58,6 @@ export default function MobileBackHandler() {
     // 1. Capacitor App back button listener
     const initCapacitor = async () => {
       try {
-        const getCapacitorApp = new Function('return import("@capacitor/app")');
-        const { App } = await getCapacitorApp();
         const listener = await App.addListener('backButton', (data: { canGoBack: boolean }) => {
           handleBackAction();
         });
