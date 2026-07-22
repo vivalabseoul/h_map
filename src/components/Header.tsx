@@ -166,13 +166,13 @@ export default function Header() {
           />
         </div>
       ) : (
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: 'var(--color-text-primary)' }}>
+        <Link href="/" className={styles.headerBrandLink}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="Logo" style={{ width: '22px', height: '22px', objectFit: 'contain', borderRadius: '4px' }} />
-          <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            Art flow map
-            <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--color-text-secondary)' }}>| Local Craft & Festival</span>
-          </span>
+          <img src="/logo.png" alt="Logo" className={styles.headerBrandLogo} />
+          <div className={styles.headerBrandText}>
+            <span className={styles.headerBrandTitle}>Art flow map</span>
+            <span className={styles.headerBrandSubtitle}>Local Craft & Festival</span>
+          </div>
         </Link>
       )}
 

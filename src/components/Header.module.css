@@ -17,6 +17,68 @@
   width: 100%;
 }
 
+.headerBrandLink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--color-text-primary);
+}
+
+.headerBrandLogo {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.headerBrandText {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.headerBrandTitle {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--color-text-primary);
+  line-height: 1.2;
+}
+
+.headerBrandSubtitle {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.headerBrandSubtitle::before {
+  content: "| ";
+  margin-right: 2px;
+}
+
+@media (max-width: 760px) {
+  .headerBrandText {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1px;
+  }
+
+  .headerBrandTitle {
+    font-size: 0.96rem;
+  }
+
+  .headerBrandSubtitle {
+    font-size: 0.7rem;
+    line-height: 1;
+  }
+
+  .headerBrandSubtitle::before {
+    content: "";
+  }
+}
+
 .headerSearchContainer {
   display: flex;
   align-items: center;
