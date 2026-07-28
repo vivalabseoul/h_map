@@ -1,22 +1,29 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import Link from '@/components/LocalizedLink';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
 import { getWorkshopsByOwner, deleteWorkshop } from '@/lib/database';
 import { CATEGORIES } from '@/types';
 import type { Workshop } from '@/types';
 
+const ITEMS_PER_PAGE = 10;
+
 export default function InstructorWorkshopsPage() {
   const { locale, t } = useLanguage();
   const { user } = useAuth();
   const [workshops, setWorkshops] = useState<Workshop[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     if (user) getWorkshopsByOwner(user.id).then(setWorkshops);
   }, [user]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   const handleDelete = async (id: string) => {
     if (confirm(t('instructor.confirm_delete') || '정말 삭제하시겠습니까?')) {
@@ -38,6 +45,12 @@ export default function InstructorWorkshopsPage() {
     const catMatch = w.category.toLowerCase().includes(q) || t(`filters.${w.category}`).toLowerCase().includes(q);
     return nameMatch || descMatch || catMatch;
   });
+
+  const totalPages = Math.ceil(filteredWorkshops.length / ITEMS_PER_PAGE) || 1;
+  const paginatedWorkshops = filteredWorkshops.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   return (
     <div>
@@ -91,7 +104,7 @@ export default function InstructorWorkshopsPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredWorkshops.map((w) => {
+              {paginatedWorkshops.map((w) => {
                 const cat = CATEGORIES.find((c) => c.key === w.category);
                 return (
                   <tr key={w.id}>
@@ -116,6 +129,26 @@ export default function InstructorWorkshopsPage() {
               })}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {filteredWorkshops.length > 0 && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: 'var(--space-4)', fontSize: '0.85rem' }}>
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            style={{ padding: '4px 8px', border: '1px solid var(--color-border)', borderRadius: '4px', background: 'var(--color-surface)', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.5 : 1 }}
+          >
+            <ChevronLeft size={16} />
+          </button>
+          <span>{currentPage} / {totalPages} 페이지</span>
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            style={{ padding: '4px 8px', border: '1px solid var(--color-border)', borderRadius: '4px', background: 'var(--color-surface)', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.5 : 1 }}
+          >
+            <ChevronRight size={16} />
+          </button>
         </div>
       )}
     </div>

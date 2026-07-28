@@ -1,6 +1,7 @@
 // ==========================================
 // Supabase CRUD Operations
 // ==========================================
+import { cache } from 'react';
 import { supabase, isSupabaseConfigured } from './supabase';
 import type {
   Workshop,
@@ -178,25 +179,21 @@ export async function getWorkshopById(id: string): Promise<Workshop | null> {
   return data ? mapWorkshop(data) : null;
 }
 
-export async function getWorkshopBySlug(slug: string): Promise<Workshop | null> {
-  if (!supabase || !isSupabaseConfigured) return getLocalWorkshops().find(w => w.slug === slug) || null;
-  
-  const { data, error } = await supabase.from('workshops').select('*').eq('slug', slug).single();
-  
-  if (data) return mapWorkshop(data);
-  
-  // FALLBACK: If slug column doesn't exist (error 42703) or query fails, fetch all and match
-  const { data: allData } = await supabase.from('workshops').select('*');
-  if (allData) {
-    const matched = allData.find(d => {
-      const w = mapWorkshop(d);
-      return (w.slug && w.slug.toLowerCase() === slug.toLowerCase()) || w.id === slug;
-    });
-    if (matched) return mapWorkshop(matched);
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export const getWorkshopBySlug = cache(async (slugOrId: string): Promise<Workshop | null> => {
+  if (!supabase || !isSupabaseConfigured) {
+    return getLocalWorkshops().find(w => w.slug === slugOrId || w.id === slugOrId) || null;
   }
-  
-  return getLocalWorkshops().find(w => w.slug && w.slug.toLowerCase() === slug.toLowerCase()) || null;
-}
+
+  if (UUID_RE.test(slugOrId)) {
+    const { data } = await supabase.from('workshops').select('*').eq('id', slugOrId).single();
+    if (data) return mapWorkshop(data);
+  }
+
+  const { data } = await supabase.from('workshops').select('*').eq('slug', slugOrId).single();
+  return data ? mapWorkshop(data) : null;
+});
 
 export async function createWorkshop(data: Omit<Workshop, 'id' | 'createdAt' | 'rating' | 'reviewCount'>): Promise<string> {
   if (!supabase || !isSupabaseConfigured) {
@@ -290,6 +287,15 @@ export async function deleteWorkshop(id: string): Promise<void> {
 }
 
 export async function incrementWorkshopLinkClick(workshopId: string, linkType: string): Promise<void> {
+  // Deduplicate internal map_pin and list_item clicks within the same session
+  if (typeof window !== 'undefined' && (linkType === 'map_pin' || linkType === 'list_item')) {
+    const sessionKey = `clk_${workshopId}_${linkType}`;
+    if (sessionStorage.getItem(sessionKey)) {
+      return;
+    }
+    sessionStorage.setItem(sessionKey, '1');
+  }
+
   if (!supabase) {
     const local = getLocalWorkshops();
     const idx = local.findIndex(w => w.id === workshopId);
@@ -309,6 +315,127 @@ export async function incrementWorkshopLinkClick(workshopId: string, linkType: s
     return;
   }
   await supabase.rpc('increment_workshop_click', { p_workshop_id: workshopId, p_link_type: linkType });
+}
+
+const VISITOR_ID_KEY = 'afm_visitor_id';
+
+function getOrCreateVisitorId(): string {
+  if (typeof window === 'undefined') return '';
+  let id = localStorage.getItem(VISITOR_ID_KEY);
+  if (!id) {
+    id = crypto.randomUUID();
+    localStorage.setItem(VISITOR_ID_KEY, id);
+  }
+  return id;
+}
+
+/**
+ * Records a page view against the real page_views table (site-wide, or scoped to a workshop).
+ */
+export async function recordPageView(path: string, workshopId?: string): Promise<void> {
+  if (typeof window === 'undefined' || !supabase || !isSupabaseConfigured) return;
+  const visitorId = getOrCreateVisitorId();
+  await supabase.from('page_views').insert({
+    path,
+    workshop_id: workshopId || null,
+    visitor_id: visitorId,
+  });
+}
+
+export interface VisitorTrendItem {
+  date: string;
+  label: string;
+  pv: number;
+  uv: number;
+}
+
+function groupPageViewsByDay(
+  rows: { created_at: string; visitor_id: string }[],
+  startDate: string,
+  endDate: string
+): VisitorTrendItem[] {
+  const grouped: Record<string, { pv: number; visitors: Set<string> }> = {};
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    grouped[d.toISOString().split('T')[0]] = { pv: 0, visitors: new Set() };
+  }
+  for (const row of rows) {
+    const dateKey = new Date(row.created_at).toISOString().split('T')[0];
+    if (!grouped[dateKey]) grouped[dateKey] = { pv: 0, visitors: new Set() };
+    grouped[dateKey].pv += 1;
+    grouped[dateKey].visitors.add(row.visitor_id);
+  }
+  return Object.entries(grouped)
+    .sort(([a], [b]) => b.localeCompare(a))
+    .map(([date, v]) => ({
+      date,
+      label: `${date.slice(5, 7)}/${date.slice(8, 10)}`,
+      pv: v.pv,
+      uv: v.visitors.size,
+    }));
+}
+
+/**
+ * Fetch site-wide daily PV/UV trend from the page_views table.
+ */
+export async function getVisitorTrends(startDate: string, endDate: string): Promise<VisitorTrendItem[]> {
+  if (!supabase || !isSupabaseConfigured) return [];
+  const { data, error } = await supabase
+    .from('page_views')
+    .select('created_at, visitor_id')
+    .gte('created_at', `${startDate}T00:00:00`)
+    .lte('created_at', `${endDate}T23:59:59`);
+
+  if (error || !data) {
+    console.warn('Failed to fetch visitor trends:', error);
+    return [];
+  }
+  return groupPageViewsByDay(data, startDate, endDate);
+}
+
+export async function getDailyVisitorStats(): Promise<{ todayPV: number; todayUV: number }> {
+  const today = new Date().toISOString().split('T')[0];
+  const trends = await getVisitorTrends(today, today);
+  const todayStats = trends[0];
+  return { todayPV: todayStats?.pv || 0, todayUV: todayStats?.uv || 0 };
+}
+
+/**
+ * Fetch per-workshop PV/UV for a set of workshop ids (e.g. an instructor's own workshops).
+ */
+export async function getWorkshopVisitorStats(
+  workshopIds: string[],
+  startDate: string,
+  endDate: string
+): Promise<Record<string, { pv: number; uv: number }>> {
+  if (!supabase || !isSupabaseConfigured || workshopIds.length === 0) return {};
+
+  const { data, error } = await supabase
+    .from('page_views')
+    .select('workshop_id, visitor_id')
+    .in('workshop_id', workshopIds)
+    .gte('created_at', `${startDate}T00:00:00`)
+    .lte('created_at', `${endDate}T23:59:59`);
+
+  if (error || !data) {
+    console.warn('Failed to fetch workshop visitor stats:', error);
+    return {};
+  }
+
+  const grouped: Record<string, { pv: number; visitors: Set<string> }> = {};
+  for (const row of data) {
+    if (!row.workshop_id) continue;
+    if (!grouped[row.workshop_id]) grouped[row.workshop_id] = { pv: 0, visitors: new Set() };
+    grouped[row.workshop_id].pv += 1;
+    grouped[row.workshop_id].visitors.add(row.visitor_id);
+  }
+
+  const result: Record<string, { pv: number; uv: number }> = {};
+  for (const [id, v] of Object.entries(grouped)) {
+    result[id] = { pv: v.pv, uv: v.visitors.size };
+  }
+  return result;
 }
 
 // ==========================================
@@ -643,11 +770,11 @@ export async function getFleaMarketsByCreator(creatorId: string): Promise<FleaMa
   return (data || []).map(mapFleaMarket);
 }
 
-export async function getFleaMarketById(id: string): Promise<FleaMarket | null> {
+export const getFleaMarketById = cache(async (id: string): Promise<FleaMarket | null> => {
   if (!supabase || !isSupabaseConfigured) return null;
   const { data } = await supabase.from('flea_markets').select('*').eq('id', id).single();
   return data ? mapFleaMarket(data) : null;
-}
+});
 
 export async function createFleaMarket(data: Omit<FleaMarket, 'id' | 'createdAt'>): Promise<string> {
   if (!supabase) throw new Error('Supabase not configured');
@@ -1019,7 +1146,7 @@ export async function getClickTrends(startDate: string, endDate: string): Promis
   }
 
   return Object.entries(grouped)
-    .sort(([a], [b]) => a.localeCompare(b))
+    .sort(([a], [b]) => b.localeCompare(a))
     .map(([date, counts]) => ({
       date,
       label: `${date.slice(5, 7)}/${date.slice(8, 10)}`,

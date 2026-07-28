@@ -8,30 +8,6 @@
   position: relative;
 }
 
-.listHeaderSummary {
-  margin-bottom: var(--space-6);
-  padding: var(--space-4) var(--space-5);
-  background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
-  border-radius: var(--radius-lg, 12px);
-  border: 1px solid #dbeafe;
-}
-
-.listMainTitle {
-  font-size: 1.35rem;
-  font-weight: 800;
-  color: var(--color-text, #111827);
-  margin: 0 0 6px 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.listSubTitle {
-  font-size: 0.88rem;
-  color: #4b5563;
-  margin: 0;
-}
-
 /* Region Group Styles */
 .regionGroupBlock {
   margin-bottom: var(--space-8);
@@ -70,20 +46,6 @@
   font-weight: 600;
   color: var(--color-text-secondary, #4b5563);
   margin-bottom: var(--space-3);
-}
-
-.section {
-  margin-bottom: var(--space-6);
-}
-
-.sectionTitle {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--color-text);
-  margin-bottom: var(--space-3);
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 .grid {
@@ -173,31 +135,6 @@
   display: flex;
   align-items: flex-start;
   gap: 4px;
-}
-
-.metaIcon {
-  margin-top: 2px;
-  flex-shrink: 0;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: var(--space-4);
-  margin-top: var(--space-6);
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--color-border-light);
-}
-
-.pageInfo {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-  font-weight: 500;
-}
-
-.mobileHandle {
-  display: none;
 }
 
 .mobileToggleWrapper {

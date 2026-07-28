@@ -8,7 +8,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { getDynamicCategories } from '@/lib/categoryUtils';
 import { getFallbackImage } from '@/lib/imageUtils';
 import type { Workshop, Course, AppUser, FleaMarket } from '@/types';
-import { getCoursesByWorkshop, getUserProfile, getWorkshopById, incrementWorkshopLinkClick, getWorkshops, getFleaMarkets } from '@/lib/database';
+import { getCoursesByWorkshop, getUserProfile, getWorkshopById, incrementWorkshopLinkClick, getWorkshops, getFleaMarkets, recordPageView } from '@/lib/database';
 import { useAuth } from '@/context/AuthContext';
 import CourseCard from './CourseCard';
 import ReviewSection from './ReviewSection';
@@ -40,6 +40,7 @@ export default function WorkshopDetailClient({ workshop }: WorkshopDetailClientP
     getUserProfile(workshop.ownerId).then(setInstructor);
     getWorkshops().then(setAllWorkshops);
     getFleaMarkets().then(setAllFleaMarkets);
+    recordPageView(`/workshops/${workshop.slug || workshop.id}`, workshop.id);
     setCurrentRating(workshop.rating);
     setCurrentReviewCount(workshop.reviewCount);
   }, [workshop]);

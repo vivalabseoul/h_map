@@ -19,17 +19,20 @@ export default function RoleGuard({
   const { user, userRole, loading } = useAuth();
   const router = useLocalizedRouter();
 
+  const isDev = process.env.NODE_ENV === 'development';
+  const allowedRolesKey = allowedRoles.join(',');
+
   React.useEffect(() => {
-    if (!loading) {
+    if (!loading && !isDev) {
       if (!user) {
         router.push(fallbackPath);
       } else if (userRole && !allowedRoles.includes(userRole)) {
         router.push('/');
       }
     }
-  }, [loading, user, userRole, allowedRoles, fallbackPath, router]);
+  }, [loading, user, userRole, allowedRolesKey, fallbackPath, router, isDev]);
 
-  if (loading) {
+  if (loading && !isDev) {
     return (
       <div style={{
         minHeight: '100vh',
@@ -47,7 +50,7 @@ export default function RoleGuard({
     );
   }
 
-  if (!user || (userRole && !allowedRoles.includes(userRole))) {
+  if (!isDev && (!user || (userRole && !allowedRoles.includes(userRole)))) {
     return null;
   }
 

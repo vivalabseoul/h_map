@@ -17,30 +17,6 @@
   bottom: 44px !important;
 }
 
-/* Custom marker styles */
-.markerIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 50% 50% 50% 0;
-  transform: rotate(-45deg);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-  border: 3px solid white;
-  transition: transform 0.2s ease;
-}
-
-.markerIcon:hover {
-  transform: rotate(-45deg) scale(1.15);
-}
-
-.markerEmoji {
-  transform: rotate(45deg);
-  font-size: 1.1rem;
-  line-height: 1;
-}
-
 .mapContainer :global(.festival-dot-marker) {
   display: flex;
   align-items: center;

@@ -44,10 +44,17 @@ function createMarkerIcon(category: string, workshop: Workshop): L.DivIcon {
   });
 }
 
-export default function WorkshopMarker({ workshop, onClick }: WorkshopMarkerProps) {
+const WorkshopMarker = React.memo(function WorkshopMarker({ workshop, onClick }: WorkshopMarkerProps) {
   const { locale, t } = useLanguage();
-  const icon = createMarkerIcon(workshop.category, workshop);
-  const dynamicCategories = getDynamicCategories([workshop]);
+  
+  const icon = React.useMemo(() => {
+    return createMarkerIcon(workshop.category, workshop);
+  }, [workshop.category, workshop.id]);
+
+  const categoryEmoji = React.useMemo(() => {
+    const dynamicCategories = getDynamicCategories([workshop]);
+    return dynamicCategories.find((c) => c.key === workshop.category)?.emoji || '📍';
+  }, [workshop]);
 
   return (
     <Marker
@@ -61,7 +68,7 @@ export default function WorkshopMarker({ workshop, onClick }: WorkshopMarkerProp
           <div style={{ color: '#000000', fontSize: '11px', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
             <span>⭐ {workshop.rating} · {workshop.reviewCount} reviews</span>
             <span style={{ textTransform: 'capitalize' }}>
-              {dynamicCategories.find((c) => c.key === workshop.category)?.emoji} {t(`filters.${workshop.category}`) !== `filters.${workshop.category}` ? t(`filters.${workshop.category}`) : workshop.category}
+              {categoryEmoji} {t(`filters.${workshop.category}`) !== `filters.${workshop.category}` ? t(`filters.${workshop.category}`) : workshop.category}
             </span>
             {workshop.tags.includes('English_Spoken') && (
               <span style={{ color: '#ff5500', fontWeight: 600 }}>🌐 {t('filters.English_Spoken')}</span>
@@ -71,4 +78,6 @@ export default function WorkshopMarker({ workshop, onClick }: WorkshopMarkerProp
       </Tooltip>
     </Marker>
   );
-}
+});
+
+export default WorkshopMarker;

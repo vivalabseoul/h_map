@@ -66,11 +66,6 @@
   color: var(--color-text-muted);
 }
 
-.spotsLow {
-  color: var(--color-danger);
-  font-weight: 600;
-}
-
 .applyBtn {
   padding: var(--space-2) var(--space-4);
   background: var(--color-accent);
@@ -90,8 +85,4 @@
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
-}
-
-.fullBtn {
-  background: var(--color-text-muted);
 }

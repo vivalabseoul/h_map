@@ -97,6 +97,22 @@ function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChang
     };
   }, []);
 
+  const apiDotIcon = React.useMemo(() => L.divIcon({
+    className: 'festival-dot-marker',
+    html: '<div style="width: 100%; height: 100%; border-radius: 50%; background: #f59e0b;"></div>',
+    iconSize: [18, 18],
+    iconAnchor: [9, 9],
+    popupAnchor: [0, -12],
+  }), []);
+
+  const userDotIcon = React.useMemo(() => L.divIcon({
+    className: 'festival-dot-marker',
+    html: '<div style="width: 100%; height: 100%; border-radius: 50%; background: #0284c7;"></div>',
+    iconSize: [18, 18],
+    iconAnchor: [9, 9],
+    popupAnchor: [0, -12],
+  }), []);
+
   return (
     <>
       <div ref={containerRef} className={styles.mapContainer}>
@@ -123,20 +139,13 @@ function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChang
           ))}
 
           {fleaMarkets.map((market) => {
-            const isApi = market.source === 'api';
-            const bgColor = isApi ? '#f59e0b' : '#0284c7';
+            const icon = market.source === 'api' ? apiDotIcon : userDotIcon;
             
             return (
               <Marker
                 key={market.id}
                 position={[market.lat, market.lng]}
-                icon={L.divIcon({
-                  className: 'festival-dot-marker',
-                  html: `<div style="width: 100%; height: 100%; border-radius: 50%; background: ${bgColor};"></div>`,
-                  iconSize: [18, 18],
-                  iconAnchor: [9, 9],
-                  popupAnchor: [0, -12],
-                })}
+                icon={icon}
               >
               <Popup>
                 <div style={{ fontFamily: 'Inter, sans-serif', width: '200px' }}>

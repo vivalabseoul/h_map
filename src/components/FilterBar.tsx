@@ -49,10 +49,10 @@ export default function FilterBar({
     setOpenDropdown(prev => prev === name ? null : name);
   };
 
-  const dynamicRegions = getDynamicRegions(workshops, [], locale);
-  const selectedRegionData = dynamicRegions.find(r => r.key === selectedRegion) || dynamicRegions[0] || REGIONS[0];
-  const dynamicCategories = getDynamicCategories(workshops);
-  const selectedCatData = dynamicCategories.find(c => c.key === activeCategory);
+  const dynamicRegions = React.useMemo(() => getDynamicRegions(workshops, [], locale), [workshops, locale]);
+  const selectedRegionData = React.useMemo(() => dynamicRegions.find(r => r.key === selectedRegion) || dynamicRegions[0] || REGIONS[0], [dynamicRegions, selectedRegion]);
+  const dynamicCategories = React.useMemo(() => getDynamicCategories(workshops), [workshops]);
+  const selectedCatData = React.useMemo(() => dynamicCategories.find(c => c.key === activeCategory), [dynamicCategories, activeCategory]);
 
   const getCatLabel = (key: string) => {
     const raw = t(`filters.${key}`);

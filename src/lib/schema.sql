@@ -270,3 +270,55 @@ CREATE TABLE public.withdrawal_requests (
 ALTER TABLE public.withdrawal_requests ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Enable all operations for all users" ON public.withdrawal_requests FOR ALL USING (true) WITH CHECK (true);
 
+-- ==========================================
+-- 12. Page Views Table (Real Visitor Analytics - PV/UV)
+-- ==========================================
+-- workshop_id is NULL for generic site pages, set for workshop detail page visits.
+-- visitor_id is a client-generated UUID persisted in localStorage, used to approximate unique visitors.
+CREATE TABLE public.page_views (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  workshop_id UUID REFERENCES public.workshops(id) ON DELETE CASCADE,
+  visitor_id TEXT NOT NULL,
+  path TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_page_views_created_at ON public.page_views(created_at);
+CREATE INDEX idx_page_views_workshop_id ON public.page_views(workshop_id);
+
+ALTER TABLE public.page_views ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Enable all operations for all users" ON public.page_views FOR ALL USING (true) WITH CHECK (true);
+
+-- ==========================================
+-- 13. Workshop Slug Backfill + Auto-generation
+-- ==========================================
+-- The live workshops table predates the `slug` column above, so add it here for
+-- existing installs, backfill existing rows, and auto-generate it for new ones
+-- (fast indexed slug lookups instead of scanning the whole table per page view).
+ALTER TABLE public.workshops ADD COLUMN IF NOT EXISTS slug TEXT UNIQUE;
+
+UPDATE public.workshops
+SET slug = LOWER(REGEXP_REPLACE(
+             COALESCE(NULLIF(name->>'en', ''), NULLIF(name->>'ko', ''), 'workshop'),
+             '[^a-zA-Z0-9]+', '-', 'g'
+           )) || '-' || SUBSTRING(id::text, 1, 8)
+WHERE slug IS NULL;
+
+CREATE OR REPLACE FUNCTION public.generate_workshop_slug()
+RETURNS trigger AS $$
+BEGIN
+  IF NEW.slug IS NULL THEN
+    NEW.slug := LOWER(REGEXP_REPLACE(
+                  COALESCE(NULLIF(NEW.name->>'en', ''), NULLIF(NEW.name->>'ko', ''), 'workshop'),
+                  '[^a-zA-Z0-9]+', '-', 'g'
+                )) || '-' || SUBSTRING(NEW.id::text, 1, 8);
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS set_workshop_slug ON public.workshops;
+CREATE TRIGGER set_workshop_slug
+  BEFORE INSERT ON public.workshops
+  FOR EACH ROW EXECUTE PROCEDURE public.generate_workshop_slug();
+

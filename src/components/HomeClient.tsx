@@ -44,17 +44,19 @@ export default function HomeClient({ initialWorkshopId }: { initialWorkshopId?: 
   const [isMobile, setIsMobile] = useState<boolean>(false);
 
   useEffect(() => {
-    const handleResize = () => {
+    if (typeof window !== 'undefined') {
       const mobile = window.innerWidth <= 760;
       setIsMobile(mobile);
       if (mobile) {
         setViewMode('map');
       }
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [setViewMode]);
+      const handleResize = () => {
+        setIsMobile(window.innerWidth <= 760);
+      };
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }
+  }, []);
 
   useEffect(() => {
     getWorkshops().then(async (data) => {
