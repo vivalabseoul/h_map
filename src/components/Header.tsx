@@ -2,7 +2,6 @@
 import { useLocalizedRouter } from '@/context/LanguageContext';
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from '@/components/LocalizedLink';
-import { useModalHistory } from '@/hooks/useModalHistory';
 import { usePathname, useRouter } from 'next/navigation';
 import { Menu, Search, ArrowLeft, Map, LayoutDashboard, BookOpen, Shield, X, LogOut, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -12,8 +11,6 @@ import { isAdmin, isInstructor, isMarketCoordinator } from '@/lib/permissions';
 import AuthButton from './AuthButton';
 import LanguageSwitcher from './LanguageSwitcher';
 import NotificationBell from './NotificationBell';
-import RegisterWorkshopModal from './RegisterWorkshopModal';
-import Toast from './Toast';
 import styles from './Header.module.css';
 
 export default function Header() {
@@ -23,8 +20,6 @@ export default function Header() {
   const router = useLocalizedRouter();
   const { searchQuery, setSearchQuery, viewMode, setViewMode } = useFilter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [showRegisterModal, setShowRegisterModal] = useState(false);
-  const [showToast, setShowToast] = useState(false);
   const [isMobileScreen, setIsMobileScreen] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
 
@@ -54,9 +49,6 @@ export default function Header() {
   };
 
   const closeMobileMenu = useCallback(() => setIsMobileMenuOpen(false), []);
-  const closeRegisterModal = useCallback(() => setShowRegisterModal(false), []);
-
-  useModalHistory(showRegisterModal, closeRegisterModal);
 
   const navLinks = (isMobile: boolean) => (
     <>
@@ -191,16 +183,6 @@ export default function Header() {
           <AuthButton />
         </div>
 
-        {/* Register Button */}
-        {!user && (
-          <button
-            className={`btn ${styles.registerButton}`}
-            onClick={() => setShowRegisterModal(true)}
-          >
-            내 공방 등록
-          </button>
-        )}
-
         {/* Mobile Hamburger Button */}
         <button className={styles.menuButton} onClick={toggleMobileMenu} aria-label="Toggle menu">
           <Menu size={24} />
@@ -227,23 +209,6 @@ export default function Header() {
         </nav>
       </div>
 
-      {showRegisterModal && (
-        <RegisterWorkshopModal
-          onClose={closeRegisterModal}
-          onSuccess={() => {
-            closeRegisterModal();
-            setShowToast(true);
-          }}
-        />
-      )}
-
-      {showToast && (
-        <Toast
-          type="success"
-          message="공방 등록 신청이 접수되었습니다!"
-          onClose={() => setShowToast(false)}
-        />
-      )}
     </header>
   );
 }

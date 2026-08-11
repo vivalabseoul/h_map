@@ -125,28 +125,6 @@
   gap: var(--space-2);
 }
 
-.registerButton {
-  position: fixed;
-  bottom: 60px;
-  right: 20px;
-  z-index: 1000;
-  background: var(--color-accent);
-  color: white;
-  border: none;
-  border-radius: var(--radius-full);
-  font-weight: 600;
-  cursor: pointer;
-  font-size: 0.95rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transition: transform 0.2s ease, background 0.2s ease;
-  white-space: nowrap;
-}
-
-.registerButton:hover {
-  transform: scale(1.05);
-}
-
-
 .headerRight {
   display: flex;
   align-items: center;
@@ -449,10 +427,6 @@
 
   .hideOnMobileLoggedIn {
     display: none !important;
-  }
-
-  .registerButton {
-    bottom: 20px;
   }
 
 }
