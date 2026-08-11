@@ -1,9 +1,11 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import type { Region } from '@/types';
+import { requestUserLocation, type Coordinates } from '@/lib/geolocation';
 
 type ViewMode = 'map' | 'list';
+export type LocationStatus = 'idle' | 'loading' | 'granted' | 'denied' | 'error';
 
 interface FilterContextType {
   selectedRegion: Region;
@@ -16,6 +18,10 @@ interface FilterContextType {
   setViewMode: (mode: ViewMode) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
+  userLocation: Coordinates | null;
+  locationStatus: LocationStatus;
+  requestNearbySort: () => Promise<void>;
+  clearNearbySort: () => void;
 }
 
 const FilterContext = createContext<FilterContextType | undefined>(undefined);
@@ -26,6 +32,25 @@ export function FilterProvider({ children }: { children: ReactNode }) {
   const [activeTags, setActiveTags] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('map');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [userLocation, setUserLocation] = useState<Coordinates | null>(null);
+  const [locationStatus, setLocationStatus] = useState<LocationStatus>('idle');
+
+  const requestNearbySort = useCallback(async () => {
+    setLocationStatus('loading');
+    try {
+      const coords = await requestUserLocation();
+      setUserLocation(coords);
+      setLocationStatus('granted');
+    } catch {
+      setUserLocation(null);
+      setLocationStatus('denied');
+    }
+  }, []);
+
+  const clearNearbySort = useCallback(() => {
+    setUserLocation(null);
+    setLocationStatus('idle');
+  }, []);
 
   return (
     <FilterContext.Provider
@@ -40,6 +65,10 @@ export function FilterProvider({ children }: { children: ReactNode }) {
         setViewMode,
         searchQuery,
         setSearchQuery,
+        userLocation,
+        locationStatus,
+        requestNearbySort,
+        clearNearbySort,
       }}
     >
       {children}

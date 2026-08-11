@@ -5,7 +5,8 @@ import { CATEGORIES, SMART_TAGS, REGIONS } from '@/types';
 import { getDynamicCategories } from '@/lib/categoryUtils';
 import { getDynamicRegions } from '@/lib/regionUtils';
 import type { WorkshopCategory, Region, Workshop } from '@/types';
-import { ChevronDown, Search, Map, List } from 'lucide-react';
+import { ChevronDown, Search, Map, List, LocateFixed, Loader2 } from 'lucide-react';
+import { useFilter } from '@/context/FilterContext';
 import styles from './FilterBar.module.css';
 
 interface FilterBarProps {
@@ -34,6 +35,7 @@ export default function FilterBar({
   const { locale, t } = useLanguage();
   const [openDropdown, setOpenDropdown] = useState<'region' | 'category' | 'language' | null>(null);
   const barRef = useRef<HTMLDivElement>(null);
+  const { userLocation, locationStatus, requestNearbySort, clearNearbySort } = useFilter();
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -163,6 +165,26 @@ export default function FilterBar({
       </div>
 
       <div style={{ flexGrow: 1 }} />
+
+      {/* Nearby Sort Toggle */}
+      <button
+        className={styles.chip}
+        onClick={() => (userLocation ? clearNearbySort() : requestNearbySort())}
+        disabled={locationStatus === 'loading'}
+        title={locationStatus === 'denied' ? (locale === 'ko' ? '위치 접근이 거부되었습니다' : 'Location access denied') : undefined}
+        style={{
+          background: userLocation ? 'var(--color-accent)' : 'var(--color-surface)',
+          color: userLocation ? '#ffffff' : 'var(--color-text-secondary)',
+          borderColor: userLocation ? 'var(--color-accent)' : undefined,
+        }}
+      >
+        {locationStatus === 'loading' ? (
+          <Loader2 size={14} className={styles.spin} />
+        ) : (
+          <LocateFixed size={14} />
+        )}
+        {locale === 'ko' ? '내 주변' : 'Near Me'}
+      </button>
 
       {/* View Mode Toggle */}
       <div className={styles.viewModeToggle}>

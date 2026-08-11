@@ -26,6 +26,9 @@ export default function PrivacyPage() {
           <li><strong>필수항목:</strong> 이메일 주소, 이름(디스플레이 네임), 로그인 식별자</li>
           <li><strong>자동 수집항목:</strong> 접속 IP 정보, 쿠키, 서비스 이용 기록, 위치 정보(동의 시)</li>
         </ul>
+        <p style={{ marginTop: '10px' }}>
+          위치 정보는 이용자가 &apos;내 주변&apos; 기능을 사용할 때 브라우저 또는 단말기(OS)의 위치 권한 동의를 통해 취득하며, 주변 공방·지역 축제를 우선 안내하는 목적으로만 사용됩니다. 취득한 위치 정보는 서버에 저장되지 않고 이용자 기기(브라우저 세션) 내에서만 일시적으로 처리되며, 페이지를 벗어나거나 새로고침 시 즉시 소멸됩니다.
+        </p>
       </section>
 
       <section style={{ marginBottom: '24px' }}>

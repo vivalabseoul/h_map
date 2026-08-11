@@ -26,6 +26,7 @@ interface MapViewProps {
   onMarkerClick: (workshop: Workshop) => void;
   onFleaMarketClick?: (market: FleaMarket) => void;
   onBoundsChanged?: (bounds: { north: number; south: number; east: number; west: number }) => void;
+  userLocation?: { lat: number; lng: number } | null;
 }
 
 function MapUpdater({ center, zoom }: { center: [number, number]; zoom: number }) {
@@ -80,10 +81,16 @@ function MapEvents({ onBoundsChanged }: { onBoundsChanged?: (bounds: { north: nu
   return null;
 }
 
-function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChange, onMarkerClick, onFleaMarketClick, onBoundsChanged }: MapViewProps) {
+function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChange, onMarkerClick, onFleaMarketClick, onBoundsChanged, userLocation }: MapViewProps) {
   const { locale, t } = useLanguage();
   const regionData = REGIONS.find((r) => r.key === selectedRegion) || REGIONS[0];
   const containerRef = React.useRef<HTMLDivElement>(null);
+
+  const mapCenter = React.useMemo<[number, number]>(
+    () => (userLocation ? [userLocation.lat, userLocation.lng] : regionData.center),
+    [userLocation?.lat, userLocation?.lng, regionData]
+  );
+  const mapZoom = userLocation ? 14 : regionData.zoom;
 
   React.useEffect(() => {
     return () => {
@@ -113,6 +120,13 @@ function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChang
     popupAnchor: [0, -12],
   }), []);
 
+  const userLocationIcon = React.useMemo(() => L.divIcon({
+    className: 'user-location-marker',
+    html: '<div class="user-location-pulse"></div><div class="user-location-dot"></div>',
+    iconSize: [22, 22],
+    iconAnchor: [11, 11],
+  }), []);
+
   return (
     <>
       <div ref={containerRef} className={styles.mapContainer}>
@@ -127,8 +141,12 @@ function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChang
             url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           />
-          <MapUpdater center={regionData.center} zoom={regionData.zoom} />
+          <MapUpdater center={mapCenter} zoom={mapZoom} />
           <MapEvents onBoundsChanged={onBoundsChanged} />
+
+          {userLocation && (
+            <Marker position={[userLocation.lat, userLocation.lng]} icon={userLocationIcon} zIndexOffset={1000} />
+          )}
 
           {workshops.map((workshop) => (
             <WorkshopMarker

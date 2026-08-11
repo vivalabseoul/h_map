@@ -5,12 +5,15 @@ import { getFallbackImage } from '@/lib/imageUtils';
 import type { Workshop, FleaMarket, Locale } from '@/types';
 import { REGIONS } from '@/types';
 import { useLanguage } from '@/context/LanguageContext';
+import { getDistanceKm, formatDistance } from '@/lib/distance';
+import type { Coordinates } from '@/lib/geolocation';
 import styles from './ListView.module.css';
 
 interface ListViewProps {
   workshops: Workshop[];
   fleaMarkets: FleaMarket[];
   mapBounds?: { north: number; south: number; east: number; west: number } | null;
+  userLocation?: Coordinates | null;
   onWorkshopClick: (workshop: Workshop) => void;
   onFleaMarketClick: (market: FleaMarket) => void;
   viewMode?: 'map' | 'list';
@@ -98,6 +101,7 @@ export default function ListView({
   workshops,
   fleaMarkets,
   mapBounds,
+  userLocation,
   onWorkshopClick,
   onFleaMarketClick,
   viewMode,
@@ -106,12 +110,13 @@ export default function ListView({
   const { locale } = useLanguage();
 
   const mapCenter = useMemo(() => {
+    if (userLocation) return userLocation;
     if (!mapBounds) return null;
     return {
       lat: (mapBounds.north + mapBounds.south) / 2,
       lng: (mapBounds.east + mapBounds.west) / 2,
     };
-  }, [mapBounds]);
+  }, [mapBounds, userLocation]);
 
   const groupedRegions = useMemo(() => {
     const groupsMap = new Map<string, { fleaMarkets: FleaMarket[]; workshops: Workshop[] }>();
@@ -226,7 +231,14 @@ export default function ListView({
                         </div>
                         <div className={styles.contentArea}>
                           <h3 className={styles.title}>{name}</h3>
-                          <div className={styles.subtitle} style={{ color: '#ff6b35' }}>⭐ {workshop.rating} ({workshop.reviewCount})</div>
+                          <div className={styles.subtitle} style={{ color: '#ff6b35' }}>
+                            ⭐ {workshop.rating} ({workshop.reviewCount})
+                            {userLocation && (
+                              <span style={{ marginLeft: 8, color: 'var(--color-accent)', fontWeight: 600 }}>
+                                📍 {formatDistance(getDistanceKm(userLocation.lat, userLocation.lng, workshop.lat, workshop.lng))}
+                              </span>
+                            )}
+                          </div>
 
                           <div className={styles.meta}>
                             <div className={styles.metaItem}>
@@ -268,7 +280,14 @@ export default function ListView({
                         </div>
                         <div className={styles.contentArea}>
                           <h3 className={styles.title}>{name}</h3>
-                          <div className={styles.subtitle}>{market.date.replace(/20(\d{2})/g, '$1').replace(/-/g, '.')}</div>
+                          <div className={styles.subtitle}>
+                            {market.date.replace(/20(\d{2})/g, '$1').replace(/-/g, '.')}
+                            {userLocation && (
+                              <span style={{ marginLeft: 8, color: 'var(--color-accent)', fontWeight: 600 }}>
+                                📍 {formatDistance(getDistanceKm(userLocation.lat, userLocation.lng, market.lat, market.lng))}
+                              </span>
+                            )}
+                          </div>
 
                           <div className={styles.meta}>
                             <div className={styles.metaItem}>

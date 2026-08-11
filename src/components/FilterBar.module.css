@@ -35,6 +35,15 @@
   background: var(--color-accent-light);
 }
 
+.spin {
+  animation: filterBarSpin 0.8s linear infinite;
+}
+
+@keyframes filterBarSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .viewModeToggle {
   display: flex;
   gap: 4px;

@@ -7,6 +7,7 @@ import type { Workshop, WorkshopCategory, Region, FleaMarket } from '@/types';
 import { getWorkshops, getFleaMarkets, incrementWorkshopLinkClick } from '@/lib/database';
 import { useFilter } from '@/context/FilterContext';
 import { useLocalizedRouter } from '@/context/LanguageContext';
+import { getDistanceKm } from '@/lib/distance';
 
 import ListView from '@/components/ListView';
 import pageStyles from '@/app/[locale]/page.module.css';
@@ -37,7 +38,7 @@ export default function HomeClient({ initialWorkshopId }: { initialWorkshopId?: 
   const [activeCategory, setActiveCategory] = useState<WorkshopCategory | 'all'>('all');
   const [activeLanguage, setActiveLanguage] = useState<string>('all');
   const [selectedRegion, setSelectedRegion] = useState<Region>('korea');
-  const { searchQuery, viewMode, setViewMode } = useFilter();
+  const { searchQuery, viewMode, setViewMode, userLocation } = useFilter();
   const [mapBounds, setMapBounds] = useState<{ north: number; south: number; east: number; west: number } | null>(null);
   const router = useLocalizedRouter();
 
@@ -106,17 +107,26 @@ export default function HomeClient({ initialWorkshopId }: { initialWorkshopId?: 
     });
   }, [workshops, activeCategory, activeLanguage, selectedRegion, searchQuery, user]);
 
+  const sortedGlobalWorkshops = useMemo(() => {
+    if (!userLocation) return globalWorkshops;
+    return [...globalWorkshops].sort((a, b) => {
+      const distA = getDistanceKm(userLocation.lat, userLocation.lng, a.lat, a.lng);
+      const distB = getDistanceKm(userLocation.lat, userLocation.lng, b.lat, b.lng);
+      return distA - distB;
+    });
+  }, [globalWorkshops, userLocation]);
+
   const viewportWorkshops = useMemo(() => {
-    if (searchQuery.trim() !== '') return globalWorkshops;
-    if (!isMobile && viewMode === 'list') return globalWorkshops;
+    if (searchQuery.trim() !== '') return sortedGlobalWorkshops;
+    if (!isMobile && viewMode === 'list') return sortedGlobalWorkshops;
     if (mapBounds) {
-      return globalWorkshops.filter(w => {
+      return sortedGlobalWorkshops.filter(w => {
         return w.lat <= mapBounds.north && w.lat >= mapBounds.south &&
                w.lng <= mapBounds.east && w.lng >= mapBounds.west;
       });
     }
-    return globalWorkshops;
-  }, [globalWorkshops, mapBounds, searchQuery, isMobile, viewMode]);
+    return sortedGlobalWorkshops;
+  }, [sortedGlobalWorkshops, mapBounds, searchQuery, isMobile, viewMode]);
 
   const globalFleaMarkets = useMemo(() => {
     return fleaMarkets.filter((m) => {
@@ -133,16 +143,25 @@ export default function HomeClient({ initialWorkshopId }: { initialWorkshopId?: 
     });
   }, [fleaMarkets, searchQuery, selectedRegion]);
 
+  const sortedGlobalFleaMarkets = useMemo(() => {
+    if (!userLocation) return globalFleaMarkets;
+    return [...globalFleaMarkets].sort((a, b) => {
+      const distA = getDistanceKm(userLocation.lat, userLocation.lng, a.lat, a.lng);
+      const distB = getDistanceKm(userLocation.lat, userLocation.lng, b.lat, b.lng);
+      return distA - distB;
+    });
+  }, [globalFleaMarkets, userLocation]);
+
   const viewportFleaMarkets = useMemo(() => {
-    if (!isMobile && viewMode === 'list') return globalFleaMarkets;
+    if (!isMobile && viewMode === 'list') return sortedGlobalFleaMarkets;
     if (mapBounds) {
-      return globalFleaMarkets.filter(m => {
+      return sortedGlobalFleaMarkets.filter(m => {
         return m.lat <= mapBounds.north && m.lat >= mapBounds.south &&
                m.lng <= mapBounds.east && m.lng >= mapBounds.west;
       });
     }
-    return globalFleaMarkets;
-  }, [globalFleaMarkets, mapBounds, isMobile, viewMode]);
+    return sortedGlobalFleaMarkets;
+  }, [sortedGlobalFleaMarkets, mapBounds, isMobile, viewMode]);
 
   const handleMarkerClick = useCallback((workshop: Workshop) => {
     incrementWorkshopLinkClick(workshop.id, 'map_pin').catch(console.error);
@@ -182,6 +201,7 @@ export default function HomeClient({ initialWorkshopId }: { initialWorkshopId?: 
             onMarkerClick={handleMarkerClick}
             onFleaMarketClick={handleFleaMarketClick}
             onBoundsChanged={setMapBounds}
+            userLocation={userLocation}
           />
         </div>
         
@@ -190,6 +210,7 @@ export default function HomeClient({ initialWorkshopId }: { initialWorkshopId?: 
             workshops={viewportWorkshops}
             fleaMarkets={viewportFleaMarkets}
             mapBounds={mapBounds}
+            userLocation={userLocation}
             onWorkshopClick={handleListItemClick}
             onFleaMarketClick={handleFleaMarketClick}
             viewMode={viewMode}
