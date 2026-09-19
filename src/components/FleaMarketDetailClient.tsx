@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Navigation, Share2, MapPin, Phone, Globe, Calendar, Image as ImageIcon, Map, List } from 'lucide-react';
+import { ArrowLeft, Navigation, Share2, MapPin, Phone, Globe, Calendar, Ticket, Map, List } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { incrementVendorApplicationClick, getFleaMarkets, getWorkshops } from '@/lib/database';
 import { getFallbackImage } from '@/lib/imageUtils';
@@ -184,7 +184,7 @@ export default function FleaMarketDetailClient({ market }: FleaMarketDetailClien
         </div>
         {market.admissionFee && (
           <div className={styles.infoItem}>
-            <ImageIcon size={16} className={styles.infoIcon} />
+            <Ticket size={16} className={styles.infoIcon} />
             <span>Admission: {market.admissionFee}</span>
           </div>
         )}
