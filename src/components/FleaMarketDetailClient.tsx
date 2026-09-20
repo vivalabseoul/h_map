@@ -178,14 +178,14 @@ export default function FleaMarketDetailClient({ market }: FleaMarketDetailClien
           <Calendar size={16} className={styles.infoIcon} />
           <span style={{ color: 'var(--color-accent)', fontWeight: 600 }}>{market.date.replace(/20(\d{2})/g, '$1').replace(/-/g, '.')}</span>
         </div>
-        <div className={styles.infoItem}>
+        <div className={`${styles.infoItem} ${styles.infoItemFull}`}>
           <MapPin size={16} className={styles.infoIcon} />
           <span>{market.address[locale] || market.address.ko || market.address.en}</span>
         </div>
         {market.admissionFee && (
           <div className={styles.infoItem}>
             <Ticket size={16} className={styles.infoIcon} />
-            <span>Admission: {market.admissionFee}</span>
+            <span>입장료: {market.admissionFee}</span>
           </div>
         )}
         {market.phone && (
@@ -197,7 +197,7 @@ export default function FleaMarketDetailClient({ market }: FleaMarketDetailClien
         {market.website && (
           <div className={styles.infoItem}>
             <Globe size={16} className={styles.infoIcon} />
-            <a href={market.website} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-primary)' }}>Website</a>
+            <a href={market.website} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-primary)' }}>정보 더 보기</a>
           </div>
         )}
         {market.instagram && (
