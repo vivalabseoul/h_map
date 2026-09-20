@@ -3,7 +3,8 @@ import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import FilterBar from '@/components/FilterBar';
 
-import type { Workshop, WorkshopCategory, Region, FleaMarket } from '@/types';
+import type { Workshop, Region, FleaMarket } from '@/types';
+import { matchesCategoryOrLanguage } from '@/lib/workshopSearch';
 import { getWorkshops, getFleaMarkets, incrementWorkshopLinkClick } from '@/lib/database';
 import { useFilter } from '@/context/FilterContext';
 import { useLocalizedRouter } from '@/context/LanguageContext';
@@ -35,8 +36,7 @@ const MapView = dynamic(() => import('@/components/map/MapView'), {
 export default function HomeClient({ initialWorkshopId }: { initialWorkshopId?: string }) {
   const [workshops, setWorkshops] = useState<Workshop[]>([]);
   const [fleaMarkets, setFleaMarkets] = useState<FleaMarket[]>([]);
-  const [activeCategory, setActiveCategory] = useState<WorkshopCategory | 'all'>('all');
-  const [activeLanguage, setActiveLanguage] = useState<string>('all');
+  const [filterQuery, setFilterQuery] = useState('');
   const [selectedRegion, setSelectedRegion] = useState<Region>('korea');
   const { searchQuery, viewMode, setViewMode, userLocation } = useFilter();
   const [mapBounds, setMapBounds] = useState<{ north: number; south: number; east: number; west: number } | null>(null);
@@ -93,8 +93,7 @@ export default function HomeClient({ initialWorkshopId }: { initialWorkshopId?: 
 
       if (w.status !== 'active') return false;
       if (selectedRegion !== 'all' && w.region !== selectedRegion) return false;
-      if (activeCategory !== 'all' && w.category !== activeCategory) return false;
-      if (activeLanguage !== 'all' && (!w.languages || !w.languages.includes(activeLanguage))) return false;
+      if (!matchesCategoryOrLanguage(w, filterQuery)) return false;
       if (searchQuery.trim() !== '') {
         const q = searchQuery.toLowerCase();
         const matchesName = Object.values(w.name).some(n => n?.toLowerCase().includes(q));
@@ -105,7 +104,7 @@ export default function HomeClient({ initialWorkshopId }: { initialWorkshopId?: 
       }
       return true;
     });
-  }, [workshops, activeCategory, activeLanguage, selectedRegion, searchQuery, user]);
+  }, [workshops, filterQuery, selectedRegion, searchQuery, user]);
 
   const sortedGlobalWorkshops = useMemo(() => {
     if (!userLocation) return globalWorkshops;
@@ -117,7 +116,7 @@ export default function HomeClient({ initialWorkshopId }: { initialWorkshopId?: 
   }, [globalWorkshops, userLocation]);
 
   const viewportWorkshops = useMemo(() => {
-    if (searchQuery.trim() !== '') return sortedGlobalWorkshops;
+    if (searchQuery.trim() !== '' || filterQuery.trim() !== '') return sortedGlobalWorkshops;
     if (!isMobile && viewMode === 'list') return sortedGlobalWorkshops;
     if (mapBounds) {
       return sortedGlobalWorkshops.filter(w => {
@@ -126,7 +125,7 @@ export default function HomeClient({ initialWorkshopId }: { initialWorkshopId?: 
       });
     }
     return sortedGlobalWorkshops;
-  }, [sortedGlobalWorkshops, mapBounds, searchQuery, isMobile, viewMode]);
+  }, [sortedGlobalWorkshops, mapBounds, searchQuery, filterQuery, isMobile, viewMode]);
 
   const globalFleaMarkets = useMemo(() => {
     return fleaMarkets.filter((m) => {
@@ -183,10 +182,8 @@ export default function HomeClient({ initialWorkshopId }: { initialWorkshopId?: 
         workshops={workshops}
         selectedRegion={selectedRegion}
         onRegionChange={setSelectedRegion}
-        activeCategory={activeCategory}
-        activeLanguage={activeLanguage}
-        onCategoryChange={setActiveCategory}
-        onLanguageChange={setActiveLanguage}
+        query={filterQuery}
+        onQueryChange={setFilterQuery}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
       />
