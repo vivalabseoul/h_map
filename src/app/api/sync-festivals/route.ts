@@ -13,11 +13,28 @@ export async function GET(request: Request) {
   }
 
   const supabase = createClient(supabaseUrl, supabaseKey);
-  // Optional: check a secret token in the URL to prevent unauthorized syncs
-  const { searchParams } = new URL(request.url);
-  const secret = searchParams.get('secret');
-  if (secret !== process.env.SYNC_SECRET && process.env.NODE_ENV === 'production') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // In production, allow either the shared secret (for schedulers) or a logged-in admin's token.
+  if (process.env.NODE_ENV === 'production') {
+    const { searchParams } = new URL(request.url);
+    const expectedSecret = process.env.SYNC_SECRET;
+    let authorized = Boolean(expectedSecret) && searchParams.get('secret') === expectedSecret;
+
+    if (!authorized) {
+      const authHeader = request.headers.get('authorization');
+      const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      if (authHeader?.startsWith('Bearer ') && anonKey) {
+        const { data: { user }, error: verifyError } = await createClient(supabaseUrl, anonKey)
+          .auth.getUser(authHeader.slice('Bearer '.length));
+        if (!verifyError && user) {
+          const { data: profile } = await supabase.from('users').select('role').eq('id', user.id).single();
+          authorized = profile?.role === 'super_admin' || profile?.role === 'manager';
+        }
+      }
+    }
+
+    if (!authorized) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
   }
 
   const apiKey = process.env.FESTIVAL_API_KEY?.trim();

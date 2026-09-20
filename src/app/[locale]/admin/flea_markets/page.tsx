@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from '@/components/LocalizedLink';
 import { getFleaMarkets, deleteFleaMarket, updateFleaMarket } from '@/lib/database';
+import { supabase } from '@/lib/supabase';
 import type { FleaMarket } from '@/types';
 import { Trash2, Pencil, RefreshCw, Search } from 'lucide-react';
 
@@ -70,7 +71,10 @@ export default function AdminFleaMarketsPage() {
     if (!confirm('공공 데이터 포털에서 최신 축제 정보를 가져오시겠습니까? 이 작업은 몇 초 정도 걸릴 수 있습니다.')) return;
     setSyncing(true);
     try {
-      const res = await fetch('/api/sync-festivals');
+      const { data: { session } } = supabase ? await supabase.auth.getSession() : { data: { session: null } };
+      const res = await fetch('/api/sync-festivals', {
+        headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
+      });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to sync');
       alert(`동기화 성공! ${data.message}`);
