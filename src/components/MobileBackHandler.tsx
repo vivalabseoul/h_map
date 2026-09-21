@@ -3,9 +3,13 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { App } from '@capacitor/app';
-import type { PluginListenerHandle } from '@capacitor/core';
+import { Capacitor, type PluginListenerHandle } from '@capacitor/core';
 import { useFilter } from '@/context/FilterContext';
 import Toast from './Toast';
+
+// TEMPORARY: inside the Android app, show a small notice whenever the back button reaches this code
+// (or when the native back plugin could not be connected), to find out why the app closes on back.
+const SHOW_BACK_DEBUG = true;
 
 // Same breakpoint the home page uses to turn the list into a bottom sheet
 const MOBILE_MAX_WIDTH = 760;
@@ -27,6 +31,7 @@ export default function MobileBackHandler() {
   const router = useRouter();
   const { viewMode, setViewMode } = useFilter();
   const [showToast, setShowToast] = useState(false);
+  const [debugNote, setDebugNote] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const lastBackTimeRef = useRef<number>(0);
 
   // What a back press does. It is rebuilt every render so it always sees the current page,
@@ -34,6 +39,8 @@ export default function MobileBackHandler() {
   const handleBackRef = useRef<() => void>(() => {});
   useEffect(() => {
     handleBackRef.current = async () => {
+      if (SHOW_BACK_DEBUG) setDebugNote({ message: `뒤로가기 감지: ${pathname}`, type: 'success' });
+
       // 1. An open modal or sheet owns the back press: it pushed a history entry, so popping it closes it
       if (window.history.state?.modalOpen) {
         window.history.back();
@@ -82,8 +89,12 @@ export default function MobileBackHandler() {
         if (disposed) listener.remove();
         else handle = listener;
       })
-      .catch(() => {
+      .catch((error: unknown) => {
         // Capacitor App plugin not loaded (web mode)
+        if (SHOW_BACK_DEBUG && Capacitor.isNativePlatform()) {
+          const reason = error instanceof Error ? error.message : String(error);
+          setDebugNote({ message: `뒤로가기 연결 실패 (앱 업데이트 필요): ${reason}`, type: 'error' });
+        }
       });
 
     return () => {
@@ -119,14 +130,19 @@ export default function MobileBackHandler() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, [pathname]);
 
-  if (!showToast) return null;
-
   return (
-    <Toast
-      type="warning"
-      message="한 번 더 누르면 종료됩니다"
-      onClose={() => setShowToast(false)}
-      duration={2000}
-    />
+    <>
+      {showToast && (
+        <Toast
+          type="warning"
+          message="한 번 더 누르면 종료됩니다"
+          onClose={() => setShowToast(false)}
+          duration={2000}
+        />
+      )}
+      {debugNote && (
+        <Toast type={debugNote.type} message={debugNote.message} onClose={() => setDebugNote(null)} duration={5000} />
+      )}
+    </>
   );
 }
