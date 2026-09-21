@@ -115,7 +115,7 @@ export default function FilterBar({
       }}
     >
       {/* 1. Region Dropdown */}
-      <div style={{ position: "relative" }}>
+      <div className={styles.regionWrap} style={{ position: "relative" }}>
         <button
           className={styles.chip}
           onClick={() => setRegionOpen((prev) => !prev)}

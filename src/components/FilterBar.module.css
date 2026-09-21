@@ -172,7 +172,12 @@
     display: none;
   }
 
-  /* Tabs get their own full-width row under the region and search controls */
+  /* Region picker and search box are web-only; the header search stays on mobile */
+  .regionWrap,
+  .searchBox {
+    display: none;
+  }
+
   .typeTabs {
     flex: 1 1 100%;
   }
