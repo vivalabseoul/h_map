@@ -8,7 +8,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { getDynamicCategories } from '@/lib/categoryUtils';
 import { getFallbackImage } from '@/lib/imageUtils';
 import type { Workshop, Course, AppUser, FleaMarket } from '@/types';
-import { getCoursesByWorkshop, getUserProfile, getWorkshopById, incrementWorkshopLinkClick, getWorkshops, getFleaMarkets, recordPageView } from '@/lib/database';
+import { getCoursesByWorkshop, getUserProfile, getWorkshopById, incrementWorkshopLinkClick, getFleaMarkets, recordPageView } from '@/lib/database';
 import { useAuth } from '@/context/AuthContext';
 import CourseCard from './CourseCard';
 import ReviewSection from './ReviewSection';
@@ -24,7 +24,6 @@ export default function WorkshopDetailClient({ workshop }: WorkshopDetailClientP
   const { user, loading } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
   const [instructor, setInstructor] = useState<AppUser | null>(null);
-  const [allWorkshops, setAllWorkshops] = useState<Workshop[]>([]);
   const [allFleaMarkets, setAllFleaMarkets] = useState<FleaMarket[]>([]);
 
   const [currentRating, setCurrentRating] = useState(workshop.rating);
@@ -38,7 +37,6 @@ export default function WorkshopDetailClient({ workshop }: WorkshopDetailClientP
     
     getCoursesByWorkshop(workshop.id).then(setCourses);
     getUserProfile(workshop.ownerId).then(setInstructor);
-    getWorkshops().then(setAllWorkshops);
     getFleaMarkets().then(setAllFleaMarkets);
     recordPageView(`/workshops/${workshop.slug || workshop.id}`, workshop.id);
     setCurrentRating(workshop.rating);
@@ -92,7 +90,8 @@ export default function WorkshopDetailClient({ workshop }: WorkshopDetailClientP
   }, [courses, user, workshop.ownerId]);
 
   const nearbyPlaces = useMemo(() => {
-    const festivalsScored = (allFleaMarkets || [])
+    // A workshop page only suggests nearby festivals
+    return (allFleaMarkets || [])
       .filter((m) => m.status !== 'inactive')
       .map((m) => {
         const distance = getDistance(workshop.lat, workshop.lng, m.lat, m.lng);
@@ -112,42 +111,9 @@ export default function WorkshopDetailClient({ workshop }: WorkshopDetailClientP
           distance,
         };
       })
-      .sort((a, b) => a.distance - b.distance);
-
-    const workshopsScored = (allWorkshops || [])
-      .filter((w) => w.id !== workshop.id && w.status === 'active')
-      .map((w) => {
-        const distance = getDistance(workshop.lat, workshop.lng, w.lat, w.lng);
-        const name = w.name[locale] || w.name.ko || w.name.en || '';
-        const desc = w.description[locale] || w.description.ko || w.description.en || '';
-        return {
-          id: w.id,
-          type: 'workshop' as const,
-          name,
-          description: desc,
-          subtitle: `⭐ ${w.rating} (${w.reviewCount})`,
-          imageUrl: w.images && w.images.length > 0 ? w.images[0] : undefined,
-          linkUrl: `/${locale}/workshops/${w.slug || w.id}`,
-          badgeText: locale === 'ko' ? '공방' : 'Studio',
-          badgeBg: '#e0f2fe',
-          badgeColor: '#0284c7',
-          distance,
-        };
-      })
-      .sort((a, b) => a.distance - b.distance);
-
-    const result = [];
-    
-    // Prioritize festivals FIRST (up to 3 nearest festivals)
-    const maxFestivals = 3;
-    result.push(...festivalsScored.slice(0, maxFestivals));
-
-    // Fill remaining up to 4 total with nearest workshops
-    const remaining = Math.max(0, 4 - result.length);
-    result.push(...workshopsScored.slice(0, remaining));
-
-    return result;
-  }, [workshop, allWorkshops, allFleaMarkets, locale]);
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, 4);
+  }, [workshop, allFleaMarkets, locale]);
 
   const handleNavigate = useCallback(() => {
     incrementWorkshopLinkClick(workshop.id, 'nav').catch(console.error);

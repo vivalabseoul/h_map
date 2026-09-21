@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Navigation, Share2, MapPin, Phone, Globe, Calendar, Ticket, Map, List } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
-import { incrementVendorApplicationClick, getFleaMarkets, getWorkshops } from '@/lib/database';
+import { incrementVendorApplicationClick, getWorkshops } from '@/lib/database';
 import { getFallbackImage } from '@/lib/imageUtils';
 import type { FleaMarket, Workshop } from '@/types';
 import styles from './DetailLayout.module.css';
@@ -16,11 +16,9 @@ interface FleaMarketDetailClientProps {
 export default function FleaMarketDetailClient({ market }: FleaMarketDetailClientProps) {
   const { locale, t } = useLanguage();
   const router = useRouter();
-  const [allFleaMarkets, setAllFleaMarkets] = useState<FleaMarket[]>([]);
   const [allWorkshops, setAllWorkshops] = useState<Workshop[]>([]);
 
   useEffect(() => {
-    getFleaMarkets().then(setAllFleaMarkets);
     getWorkshops().then(setAllWorkshops);
   }, []);
 
@@ -34,29 +32,8 @@ export default function FleaMarketDetailClient({ market }: FleaMarketDetailClien
   };
 
   const nearbyPlaces = useMemo(() => {
-    const festivalsScored = (allFleaMarkets || [])
-      .filter((m) => m.id !== market.id && m.status !== 'inactive')
-      .map((m) => {
-        const distance = getDistance(market.lat, market.lng, m.lat, m.lng);
-        const name = m.name[locale] || m.name.ko || m.name.en || '';
-        const desc = m.description[locale] || m.description.ko || m.description.en || '';
-        return {
-          id: m.id,
-          type: 'festival' as const,
-          name,
-          description: desc,
-          subtitle: m.date ? `${m.date.replace(/20(\d{2})/g, '$1').replace(/-/g, '.')}` : (locale === 'ko' ? '지역 축제' : 'Festival'),
-          imageUrl: m.posterUrl,
-          linkUrl: `/${locale}/fleamarkets/${m.id}`,
-          badgeText: locale === 'ko' ? '축제' : 'Festival',
-          badgeBg: '#fef3c7',
-          badgeColor: '#d97706',
-          distance,
-        };
-      })
-      .sort((a, b) => a.distance - b.distance);
-
-    const workshopsScored = (allWorkshops || [])
+    // A festival page only suggests nearby workshops
+    return (allWorkshops || [])
       .filter((w) => w.status === 'active')
       .map((w) => {
         const distance = getDistance(market.lat, market.lng, w.lat, w.lng);
@@ -76,20 +53,9 @@ export default function FleaMarketDetailClient({ market }: FleaMarketDetailClien
           distance,
         };
       })
-      .sort((a, b) => a.distance - b.distance);
-
-    const result = [];
-    
-    // Prioritize festivals FIRST (up to 3 nearest festivals)
-    const maxFestivals = 3;
-    result.push(...festivalsScored.slice(0, maxFestivals));
-
-    // Fill remaining up to 4 total with nearest workshops
-    const remaining = Math.max(0, 4 - result.length);
-    result.push(...workshopsScored.slice(0, remaining));
-
-    return result;
-  }, [market, allWorkshops, allFleaMarkets, locale]);
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, 4);
+  }, [market, allWorkshops, locale]);
 
   const handleNavigate = useCallback(() => {
     const url = `https://www.google.com/maps/dir/?api=1&destination=${market.lat},${market.lng}`;
@@ -145,7 +111,7 @@ export default function FleaMarketDetailClient({ market }: FleaMarketDetailClien
           <div style={{ width: '100%', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginBottom: 'var(--space-4)', background: 'var(--color-bg-alt)' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img 
-              src={market.posterUrl || getFallbackImage(market.name[locale] || market.name.en || market.name.ko)} 
+              src={(market.source === 'api' && market.images?.[0]) || market.posterUrl || getFallbackImage(market.name[locale] || market.name.en || market.name.ko)} 
               alt="Poster" 
               style={{ width: '100%', maxHeight: '640px', objectFit: 'contain', display: 'block', margin: '0 auto' }} 
               onError={(e) => { 
