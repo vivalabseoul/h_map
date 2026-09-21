@@ -137,6 +137,9 @@ CREATE TABLE public.flea_markets (
   website TEXT,
   instagram TEXT,
   youtube TEXT,
+  venue_name TEXT,
+  operating_hours TEXT,
+  organizer TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

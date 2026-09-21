@@ -97,6 +97,9 @@ export interface FleaMarket {
   website?: string;
   instagram?: string;
   youtube?: string;
+  venueName?: string;
+  operatingHours?: string;
+  organizer?: string;
   vendorApplicationLink?: string;
   applicationClicks?: number;
   source?: 'user' | 'api';

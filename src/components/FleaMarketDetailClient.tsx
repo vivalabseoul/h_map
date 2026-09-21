@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Navigation, Share2, MapPin, Phone, Globe, Calendar, Ticket, Map, List } from 'lucide-react';
+import { ArrowLeft, Navigation, Share2, MapPin, Phone, Globe, Calendar, Ticket, Map, List, Clock, Landmark, Building2 } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { incrementVendorApplicationClick, getWorkshops } from '@/lib/database';
 import { getFallbackImage } from '@/lib/imageUtils';
@@ -148,10 +148,28 @@ export default function FleaMarketDetailClient({ market }: FleaMarketDetailClien
           <MapPin size={16} className={styles.infoIcon} />
           <span>{market.address[locale] || market.address.ko || market.address.en}</span>
         </div>
+        {market.venueName && (
+          <div className={`${styles.infoItem} ${styles.infoItemFull}`}>
+            <Landmark size={16} className={styles.infoIcon} />
+            <span>장소: {market.venueName}</span>
+          </div>
+        )}
+        {market.operatingHours && (
+          <div className={styles.infoItem}>
+            <Clock size={16} className={styles.infoIcon} />
+            <span>운영시간: {market.operatingHours}</span>
+          </div>
+        )}
         {market.admissionFee && (
           <div className={styles.infoItem}>
             <Ticket size={16} className={styles.infoIcon} />
             <span>입장료: {market.admissionFee}</span>
+          </div>
+        )}
+        {market.organizer && (
+          <div className={styles.infoItem}>
+            <Building2 size={16} className={styles.infoIcon} />
+            <span>주최: {market.organizer}</span>
           </div>
         )}
         {market.phone && (

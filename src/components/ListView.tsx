@@ -6,6 +6,7 @@ import type { Workshop, FleaMarket, Locale } from '@/types';
 import { REGIONS } from '@/types';
 import { useLanguage } from '@/context/LanguageContext';
 import { getDistanceKm, formatDistance } from '@/lib/distance';
+import { getKoreaRegion } from '@/lib/koreaRegions';
 import type { Coordinates } from '@/lib/geolocation';
 import styles from './ListView.module.css';
 
@@ -20,81 +21,27 @@ interface ListViewProps {
   onViewModeChange?: (mode: 'map' | 'list') => void;
 }
 
-function getRegionName(item: Workshop | FleaMarket, locale: Locale): string {
-  const addrObj = item.address;
-  let addrStr = '';
-  if (typeof addrObj === 'string') {
-    addrStr = addrObj;
-  } else if (addrObj) {
-    addrStr = addrObj[locale] || addrObj.ko || addrObj.en || '';
-  }
+interface RegionGroupInfo {
+  key: string;
+  label: Record<Locale, string>;
+}
 
-  addrStr = addrStr.trim();
-  if (addrStr) {
-    const tokens = addrStr.split(/\s+/);
-    if (tokens.length >= 1) {
-      const first = tokens[0];
+const OTHER_REGION: RegionGroupInfo = {
+  key: 'other',
+  label: { ko: '기타 지역', en: 'Other Regions', ja: 'その他の地域', zh: '其他地区' },
+};
 
-      const normalized = first
-        .replace(/^서울특별시$|^서울시$/g, '서울')
-        .replace(/^경기도$/g, '경기')
-        .replace(/^부산광역시$|^부산시$/g, '부산')
-        .replace(/^인천광역시$|^인천시$/g, '인천')
-        .replace(/^대구광역시$|^대구시$/g, '대구')
-        .replace(/^대전광역시$|^대전시$/g, '대전')
-        .replace(/^광주광역시$|^광주시$/g, '광주')
-        .replace(/^울산광역시$|^울산시$/g, '울산')
-        .replace(/^세종특별자치시$|^세종시$/g, '세종')
-        .replace(/^제주특별자치도$|^제주도$|^제주시$/g, '제주')
-        .replace(/^강원특별자치도$|^강원도$/g, '강원')
-        .replace(/^충청북도$/g, '충북')
-        .replace(/^충청남도$/g, '충남')
-        .replace(/^전라북도$|^전북특별자치도$/g, '전북')
-        .replace(/^전라남도$/g, '전남')
-        .replace(/^경상북도$/g, '경북')
-        .replace(/^경상남도$/g, '경남');
+// Grouping is decided by the Korean address (key is always the Korean name); the language only picks the label.
+function getRegionGroup(item: Workshop | FleaMarket): RegionGroupInfo {
+  const koreaRegion = getKoreaRegion(item.address);
+  if (koreaRegion) return { key: koreaRegion.key, label: koreaRegion.label };
 
-      // Handle English address format like "Jongno-gu, Seoul" -> "서울"
-      if (tokens.length >= 2 && tokens[1].toLowerCase().includes('seoul')) {
-        return locale === 'ko' ? '서울' : 'Seoul';
-      }
-
-      if (['서울', '경기', '인천', '부산', '대구', '대전', '광주', '울산', '세종', '제주', '강원', '충북', '충남', '전북', '전남', '경북', '경남'].includes(normalized)) {
-        if (locale !== 'ko') {
-          const enMap: Record<string, string> = {
-            '서울': 'Seoul',
-            '경기': 'Gyeonggi',
-            '인천': 'Incheon',
-            '부산': 'Busan',
-            '대구': 'Daegu',
-            '대전': 'Daejeon',
-            '광주': 'Gwangju',
-            '울산': 'Ulsan',
-            '세종': 'Sejong',
-            '제주': 'Jeju',
-            '강원': 'Gangwon',
-            '충북': 'Chungbuk',
-            '충남': 'Chungnam',
-            '전북': 'Jeonbuk',
-            '전남': 'Jeonnam',
-            '경북': 'Gyeongbuk',
-            '경남': 'Gyeongnam',
-          };
-          return enMap[normalized] || normalized;
-        }
-        return normalized;
-      }
-
-      return first;
-    }
-  }
-
-  if ('region' in item && item.region) {
+  if ('region' in item && item.region && item.region !== 'korea') {
     const regObj = REGIONS.find((r) => r.key === item.region);
-    if (regObj) return regObj.label[locale] || regObj.label.ko || regObj.label.en;
+    if (regObj) return { key: `country:${regObj.key}`, label: regObj.label };
   }
 
-  return locale === 'ko' ? '기타 지역' : 'Other Regions';
+  return OTHER_REGION;
 }
 
 export default function ListView({
@@ -119,25 +66,18 @@ export default function ListView({
   }, [mapBounds, userLocation]);
 
   const groupedRegions = useMemo(() => {
-    const groupsMap = new Map<string, { fleaMarkets: FleaMarket[]; workshops: Workshop[] }>();
-
-    fleaMarkets.forEach((market) => {
-      const regionName = getRegionName(market, locale);
-      if (!groupsMap.has(regionName)) {
-        groupsMap.set(regionName, { fleaMarkets: [], workshops: [] });
+    const groupsMap = new Map<string, { label: Record<Locale, string>; fleaMarkets: FleaMarket[]; workshops: Workshop[] }>();
+    const groupOf = (info: RegionGroupInfo) => {
+      if (!groupsMap.has(info.key)) {
+        groupsMap.set(info.key, { label: info.label, fleaMarkets: [], workshops: [] });
       }
-      groupsMap.get(regionName)!.fleaMarkets.push(market);
-    });
+      return groupsMap.get(info.key)!;
+    };
 
-    workshops.forEach((workshop) => {
-      const regionName = getRegionName(workshop, locale);
-      if (!groupsMap.has(regionName)) {
-        groupsMap.set(regionName, { fleaMarkets: [], workshops: [] });
-      }
-      groupsMap.get(regionName)!.workshops.push(workshop);
-    });
+    fleaMarkets.forEach((market) => groupOf(getRegionGroup(market)).fleaMarkets.push(market));
+    workshops.forEach((workshop) => groupOf(getRegionGroup(workshop)).workshops.push(workshop));
 
-    const groups = Array.from(groupsMap.entries()).map(([regionName, data]) => {
+    const groups = Array.from(groupsMap.entries()).map(([key, data]) => {
       const allItems = [...data.workshops, ...data.fleaMarkets];
       let minDistance = Infinity;
 
@@ -155,7 +95,8 @@ export default function ListView({
       }
 
       return {
-        regionName,
+        key,
+        regionName: data.label[locale] || data.label.ko,
         fleaMarkets: data.fleaMarkets,
         workshops: data.workshops,
         minDistance,
@@ -195,7 +136,7 @@ export default function ListView({
         if (totalItems === 0) return null;
 
         return (
-          <div key={group.regionName} className={styles.regionGroupBlock}>
+          <div key={group.key} className={styles.regionGroupBlock}>
             {/* Region Header */}
             <div className={styles.regionHeader}>
               <h2 className={styles.regionTitle}>

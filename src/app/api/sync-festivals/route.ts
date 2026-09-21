@@ -4,7 +4,11 @@ import { createClient } from '@supabase/supabase-js';
 const TOUR_API_BASE = 'https://apis.data.go.kr/B551011';
 const PAGE_SIZE = 1000;
 const MAX_PAGES = 5;
+const DETAIL_CONCURRENCY = 10;
 const HANGUL = /[가-힣]/;
+
+// Detail lookups for a few hundred festivals need more than the default function timeout
+export const maxDuration = 60;
 
 // Fetch every festival that has not ended yet from the Korea Tourism Organization API
 // (KorService2 = Korean, EngService2 = English). Keys can be passed raw or decoded.
@@ -41,11 +45,57 @@ async function fetchTourFestivals(service: 'KorService2' | 'EngService2', apiKey
       totalCount = Number(root?.body?.totalCount) || collected.length;
     }
 
-    if (collected.length > 0) return collected;
+    if (collected.length > 0) return { items: collected, key };
   }
 
   throw new Error(lastError || '한국관광공사 API에서 축제 데이터를 가져오지 못했습니다. (서비스키 승인 상태를 확인해주세요)');
 }
+
+const decodeEntities = (text: string) =>
+  text.replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#0?39;/g, "'").replace(/&amp;/g, '&');
+
+// Overviews come with <br> tags and entities
+const cleanOverview = (html?: string) =>
+  decodeEntities((html || '').replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '')).replace(/\n{3,}/g, '\n\n').trim();
+
+// Homepage is usually a bare URL but sometimes an <a href="..."> snippet
+const cleanHomepage = (html?: string) => {
+  const url = decodeEntities(html?.match(/href=["']([^"']+)["']/i)?.[1] || (html || '').replace(/<[^>]+>/g, '')).trim();
+  if (/^https?:\/\//i.test(url)) return url;
+  return /^www\./i.test(url) ? `http://${url}` : '';
+};
+
+// Short one-line values (fee, hours, ...) sometimes start with a stray "- " bullet
+const cleanLine = (html?: string) => cleanOverview(html).replace(/^-\s*/, '').replace(/\n+/g, ' / ');
+
+async function fetchTourItem(service: 'KorService2' | 'EngService2', endpoint: string, key: string, params: string) {
+  const url = `${TOUR_API_BASE}/${service}/${endpoint}?serviceKey=${key}&MobileOS=ETC&MobileApp=handmademap&_type=json&${params}`;
+  const item = JSON.parse(await (await fetch(url)).text())?.response?.body?.items?.item;
+  return (Array.isArray(item) ? item[0] : item) as any;
+}
+
+// Everything the detail endpoints add for one festival, or null when a call failed (so it is retried next sync).
+// detailCommon2: overview, homepage. detailIntro2 (festival type 15): fee, hours, venue, organizer.
+async function fetchTourDetail(service: 'KorService2' | 'EngService2', key: string, contentId: string) {
+  try {
+    const common = await fetchTourItem(service, 'detailCommon2', key, `contentId=${contentId}`);
+    const intro = service === 'KorService2'
+      ? await fetchTourItem(service, 'detailIntro2', key, `contentId=${contentId}&contentTypeId=15`)
+      : null;
+    return {
+      overview: cleanOverview(common?.overview),
+      homepage: cleanHomepage(common?.homepage),
+      fee: cleanLine(intro?.usetimefestival),
+      hours: cleanLine(intro?.playtime),
+      venue: cleanLine(intro?.eventplace),
+      organizer: cleanLine(intro?.sponsor1),
+    };
+  } catch {
+    return null;
+  }
+}
+
+type TourDetail = NonNullable<Awaited<ReturnType<typeof fetchTourDetail>>>;
 
 // "20261016" -> "2026-10-16"
 const toIsoDate = (yyyymmdd: string) =>
@@ -105,8 +155,8 @@ export async function GET(request: Request) {
     const today = new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
     const eventStartDate = today.replace(/-/g, '');
 
-    const korItems = await fetchTourFestivals('KorService2', apiKey, eventStartDate);
-    const engItems = await fetchTourFestivals('EngService2', apiKey, eventStartDate).catch(() => [] as any[]);
+    const { items: korItems, key: tourKey } = await fetchTourFestivals('KorService2', apiKey, eventStartDate);
+    const engItems = await fetchTourFestivals('EngService2', apiKey, eventStartDate).then((result) => result.items).catch(() => [] as any[]);
 
     const items = korItems.filter((item) => {
       const lastDay = toIsoDate(item.eventenddate) || toIsoDate(item.eventstartdate);
@@ -116,12 +166,12 @@ export async function GET(request: Request) {
     // 2. Pair each English entry with its Korean one (by Korean title in parentheses, else start date + coordinates)
     const korByName = new Map(korItems.map((item) => [String(item.title).replace(/\s+/g, ''), item.contentid]));
     const korByCoord = new Map(korItems.map((item) => [coordKey(item), item.contentid]));
-    const englishById = new Map<string, { name: string; address: string }>();
+    const englishById = new Map<string, { contentId: string; name: string; address: string }>();
     for (const eng of engItems) {
       const contentId = korByName.get(koreanTitleOf(String(eng.title))) ?? korByCoord.get(coordKey(eng));
       const name = englishTitleOf(String(eng.title));
       if (!contentId || !name || HANGUL.test(name)) continue;
-      englishById.set(contentId, { name, address: HANGUL.test(eng.addr1 || '') ? '' : (eng.addr1 || '') });
+      englishById.set(contentId, { contentId: eng.contentid, name, address: HANGUL.test(eng.addr1 || '') ? '' : (eng.addr1 || '') });
     }
 
     // Fetch a valid user to satisfy the foreign key constraint
@@ -133,7 +183,7 @@ export async function GET(request: Request) {
     for (let from = 0; ; from += 1000) {
       const { data: rows, error: existingError } = await supabase
         .from('flea_markets')
-        .select('id, external_id, name, address, date, lat, lng, poster_url, images, source')
+        .select('id, external_id, name, address, description, website, admission_fee, venue_name, date, lat, lng, poster_url, images, source')
         .range(from, from + 999);
       if (existingError) throw existingError;
       if (!rows || rows.length === 0) break;
@@ -172,7 +222,14 @@ export async function GET(request: Request) {
     let skippedDuplicates = 0;
     let skippedNoCoords = 0;
     const toInsert: any[] = [];
-    const toUpdate: { id: string; data: Record<string, any> }[] = [];
+    const candidateUpdates: { id: string; data: Record<string, any> }[] = [];
+    // Description, homepage, fee, hours, venue and organizer come from per-festival detail calls,
+    // only made for festivals that have not been enriched yet (venue_name stays null until then)
+    const detailJobs: {
+      contentId: string;
+      engContentId?: string;
+      apply: (ko: TourDetail, en: TourDetail | null) => void;
+    }[] = [];
 
     // 4. New festivals are inserted; existing api festivals only get the fields they are missing
     for (const item of items) {
@@ -208,8 +265,23 @@ export async function GET(request: Request) {
           if (!existing.name?.en && english?.name) update.name = { ...existing.name, en: english.name };
           if (!existing.address?.en && english?.address) update.address = { ...existing.address, en: english.address };
         }
-        if (Object.keys(update).length > 0) toUpdate.push({ id: existing.id, data: update });
-        else skippedDuplicates++;
+        if (existing.source === 'api' && (existing.venue_name == null || !existing.description?.ko)) {
+          detailJobs.push({
+            contentId: item.contentid,
+            engContentId: english?.contentId,
+            apply: (ko, en) => {
+              if (!existing.description?.ko && ko.overview) {
+                update.description = { ...existing.description, ko: ko.overview, en: existing.description?.en || en?.overview || '' };
+              }
+              if (!existing.website && ko.homepage) update.website = ko.homepage;
+              if ((!existing.admission_fee || existing.admission_fee === '확인 필요') && ko.fee) update.admission_fee = ko.fee;
+              update.venue_name = ko.venue;
+              update.operating_hours = ko.hours;
+              update.organizer = ko.organizer;
+            },
+          });
+        }
+        candidateUpdates.push({ id: existing.id, data: update });
         continue;
       }
 
@@ -222,6 +294,9 @@ export async function GET(request: Request) {
         lat,
         lng,
         admission_fee: '확인 필요',
+        venue_name: null as string | null,
+        operating_hours: '',
+        organizer: '',
         poster_url: thumbnail || null,
         images: detailImage ? [detailImage] : [],
         description: { ko: '', en: '', ja: '', zh: '' },
@@ -232,7 +307,34 @@ export async function GET(request: Request) {
       };
       rowByExternalId.set(externalId, newRow);
       toInsert.push(newRow);
+      detailJobs.push({
+        contentId: item.contentid,
+        engContentId: english?.contentId,
+        apply: (ko, en) => {
+          newRow.description = { ...newRow.description, ko: ko.overview, en: en?.overview || '' };
+          newRow.website = ko.homepage;
+          if (ko.fee) newRow.admission_fee = ko.fee;
+          newRow.venue_name = ko.venue;
+          newRow.operating_hours = ko.hours;
+          newRow.organizer = ko.organizer;
+        },
+      });
     }
+
+    for (let i = 0; i < detailJobs.length; i += DETAIL_CONCURRENCY) {
+      await Promise.all(
+        detailJobs.slice(i, i + DETAIL_CONCURRENCY).map(async (job) => {
+          const [ko, en] = await Promise.all([
+            fetchTourDetail('KorService2', tourKey, job.contentId),
+            job.engContentId ? fetchTourDetail('EngService2', tourKey, job.engContentId) : null,
+          ]);
+          if (ko) job.apply(ko, en);
+        })
+      );
+    }
+
+    const toUpdate = candidateUpdates.filter(({ data }) => Object.keys(data).length > 0);
+    skippedDuplicates = candidateUpdates.length - toUpdate.length;
 
     let insertedCount = 0;
     for (let i = 0; i < toInsert.length; i += 100) {

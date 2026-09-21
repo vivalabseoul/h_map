@@ -97,6 +97,7 @@ const mapFleaMarket = (d: any): FleaMarket => ({
   posterUrl: d.poster_url, images: safeParse(d.images) || [], 
   description: ensureLocaleObject(d.description),
   phone: d.phone, website: d.website, instagram: d.instagram, youtube: d.youtube,
+  venueName: d.venue_name, operatingHours: d.operating_hours, organizer: d.organizer,
   vendorApplicationLink: d.vendor_application_link,
   applicationClicks: d.application_clicks || 0,
   source: d.source || 'user',
