@@ -1,6 +1,6 @@
 'use client';
 import React, { useMemo } from 'react';
-import { ChevronUp, ChevronDown } from 'lucide-react';
+import { ChevronUp, ChevronDown, Map as MapIcon } from 'lucide-react';
 import { getFallbackImage } from '@/lib/imageUtils';
 import type { Workshop, FleaMarket, Locale } from '@/types';
 import { REGIONS } from '@/types';
@@ -21,6 +21,13 @@ interface ListViewProps {
   viewMode?: 'map' | 'list';
   onViewModeChange?: (mode: 'map' | 'list') => void;
 }
+
+const MAP_BUTTON_LABEL: Record<Locale, string> = {
+  ko: '지도 보기',
+  en: 'Map',
+  ja: '地図で見る',
+  zh: '查看地图',
+};
 
 interface RegionGroupInfo {
   key: string;
@@ -131,6 +138,22 @@ export default function ListView({
           {viewMode === 'map' ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
         </button>
       </div>
+
+      {/* Mobile: while the list is open, a button pinned to the bottom always brings the map back.
+          The handle above can end up under the header when the text size is enlarged. */}
+      {viewMode === 'list' && (
+        <button
+          type="button"
+          className={styles.mobileCloseFab}
+          onClick={(e) => {
+            e.stopPropagation();
+            onViewModeChange?.('map');
+          }}
+        >
+          <MapIcon size={16} />
+          {MAP_BUTTON_LABEL[locale] || MAP_BUTTON_LABEL.en}
+        </button>
+      )}
 
       {groupedRegions.map((group) => {
         const totalItems = group.fleaMarkets.length + group.workshops.length;

@@ -153,6 +153,10 @@
   display: none;
 }
 
+.mobileCloseFab {
+  display: none;
+}
+
 @media (max-width: 760px) {
   .grid,
   .fullListView .grid {
@@ -219,5 +223,32 @@
 
   .mobileToggleButton:active {
     transform: scale(0.95);
+  }
+
+  /* Pinned to the bottom of the open list sheet, so it stays reachable whatever the header or text size */
+  .mobileCloseFab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    position: fixed;
+    left: 50%;
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%);
+    z-index: 60;
+    padding: 10px 18px;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #ffffff;
+    background: var(--color-text-primary);
+    border: none;
+    border-radius: 999px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .mobileCloseFab:active {
+    transform: translateX(-50%) scale(0.96);
   }
 }
