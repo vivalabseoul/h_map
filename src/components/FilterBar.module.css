@@ -172,20 +172,10 @@
     display: none;
   }
 
-  /* Region picker and search box are web-only; the header search stays on mobile */
+  /* Region picker and the studio / festival tabs are web-only; the search box stays on mobile */
   .regionWrap,
-  .searchBox {
-    display: none;
-  }
-
   .typeTabs {
-    flex: 1 1 100%;
-  }
-
-  .typeTab {
-    flex: 1;
-    justify-content: center;
-    padding: 6px 8px;
+    display: none;
   }
 
   .nearbyLabel {
