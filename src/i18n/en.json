@@ -12,8 +12,8 @@
     "register": "Create Account"
   },
   "search": {
-    "placeholder_short": "Find a craft studio",
-    "placeholder_long": "Art Flow Map - Find a craft studio"
+    "placeholder_short": "Find studios & festivals",
+    "placeholder_long": "Art Flow Map - Find studios & festivals"
   },
   "auth": {
     "login_title": "Welcome Back",

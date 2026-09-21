@@ -274,7 +274,7 @@ export default function WorkshopDetailClient({ workshop }: WorkshopDetailClientP
 
       {/* Info Grid */}
       <div className={styles.infoGrid}>
-        <div className={styles.infoItem}>
+        <div className={`${styles.infoItem} ${styles.infoItemFull}`}>
           <MapPin size={16} className={styles.infoIcon} />
           <span>{typeof workshop.address === 'string' ? workshop.address : workshop.address?.[locale] || workshop.address?.ko || ''}</span>
         </div>

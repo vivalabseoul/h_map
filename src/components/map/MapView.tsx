@@ -7,6 +7,7 @@ import WorkshopMarker from './WorkshopMarker';
 import { useLanguage } from '@/context/LanguageContext';
 import type { Workshop, Region, FleaMarket } from '@/types';
 import { REGIONS } from '@/types';
+import { PLACE_TYPE_COLORS, placeLabel, eventKindLabel } from '@/lib/placeTypes';
 import { Marker, Popup } from 'react-leaflet';
 import styles from './MapView.module.css';
 
@@ -27,6 +28,8 @@ interface MapViewProps {
   onFleaMarketClick?: (market: FleaMarket) => void;
   onBoundsChanged?: (bounds: { north: number; south: number; east: number; west: number }) => void;
   userLocation?: { lat: number; lng: number } | null;
+  // Changes when a search is submitted; the map then moves to show the results
+  fitKey?: string;
 }
 
 function MapUpdater({ center, zoom }: { center: [number, number]; zoom: number }) {
@@ -34,6 +37,22 @@ function MapUpdater({ center, zoom }: { center: [number, number]; zoom: number }
   React.useEffect(() => {
     map.setView(center, zoom, { animate: true, duration: 0.8 });
   }, [map, center, zoom]);
+  return null;
+}
+
+// After a search, bring the results into view (e.g. searching "제주" while the map shows Seoul)
+function MapFitter({ points, fitKey }: { points: [number, number][]; fitKey?: string }) {
+  const map = useMap();
+  const pointsRef = React.useRef(points);
+  // Runs before the fit effect below, so the fit always sees the results of the current search
+  React.useEffect(() => {
+    pointsRef.current = points;
+  });
+
+  React.useEffect(() => {
+    if (!fitKey || pointsRef.current.length === 0) return;
+    map.fitBounds(L.latLngBounds(pointsRef.current), { padding: [48, 48], maxZoom: 13, animate: true, duration: 0.8 });
+  }, [map, fitKey]);
   return null;
 }
 
@@ -81,7 +100,7 @@ function MapEvents({ onBoundsChanged }: { onBoundsChanged?: (bounds: { north: nu
   return null;
 }
 
-function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChange, onMarkerClick, onFleaMarketClick, onBoundsChanged, userLocation }: MapViewProps) {
+function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChange, onMarkerClick, onFleaMarketClick, onBoundsChanged, userLocation, fitKey }: MapViewProps) {
   const { locale, t } = useLanguage();
   const regionData = REGIONS.find((r) => r.key === selectedRegion) || REGIONS[0];
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -104,17 +123,10 @@ function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChang
     };
   }, []);
 
-  const apiDotIcon = React.useMemo(() => L.divIcon({
+  // Festivals and flea markets share one color; blue is reserved for studios everywhere else on the site
+  const eventDotIcon = React.useMemo(() => L.divIcon({
     className: 'festival-dot-marker',
-    html: '<div style="width: 100%; height: 100%; border-radius: 50%; background: #f59e0b;"></div>',
-    iconSize: [18, 18],
-    iconAnchor: [9, 9],
-    popupAnchor: [0, -12],
-  }), []);
-
-  const userDotIcon = React.useMemo(() => L.divIcon({
-    className: 'festival-dot-marker',
-    html: '<div style="width: 100%; height: 100%; border-radius: 50%; background: #0284c7;"></div>',
+    html: `<div style="width: 100%; height: 100%; border-radius: 50%; background: ${PLACE_TYPE_COLORS.event.fg};"></div>`,
     iconSize: [18, 18],
     iconAnchor: [9, 9],
     popupAnchor: [0, -12],
@@ -130,6 +142,16 @@ function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChang
   return (
     <>
       <div ref={containerRef} className={styles.mapContainer}>
+        <div className={styles.legend}>
+          <span className={styles.legendItem}>
+            <span className={styles.legendPin}>📍</span>
+            {placeLabel('workshop', locale)}
+          </span>
+          <span className={styles.legendItem}>
+            <span className={styles.legendDot} style={{ background: PLACE_TYPE_COLORS.event.fg }} />
+            {placeLabel('event', locale)}
+          </span>
+        </div>
         <MapContainer
           center={regionData.center}
           zoom={regionData.zoom}
@@ -143,6 +165,10 @@ function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChang
           />
           <MapUpdater center={mapCenter} zoom={mapZoom} />
           <MapEvents onBoundsChanged={onBoundsChanged} />
+          <MapFitter
+            points={[...workshops, ...fleaMarkets].map((place) => [place.lat, place.lng] as [number, number])}
+            fitKey={fitKey}
+          />
 
           {userLocation && (
             <Marker position={[userLocation.lat, userLocation.lng]} icon={userLocationIcon} zIndexOffset={1000} />
@@ -157,25 +183,26 @@ function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChang
           ))}
 
           {fleaMarkets.map((market) => {
-            const icon = market.source === 'api' ? apiDotIcon : userDotIcon;
-            
             return (
               <Marker
                 key={market.id}
                 position={[market.lat, market.lng]}
-                icon={icon}
+                icon={eventDotIcon}
               >
               <Popup>
                 <div style={{ fontFamily: 'Inter, sans-serif', width: '200px' }}>
+                  <span style={{ display: 'inline-block', marginBottom: '6px', padding: '1px 8px', borderRadius: '999px', fontSize: '11px', fontWeight: 700, background: PLACE_TYPE_COLORS.event.bg, color: PLACE_TYPE_COLORS.event.fg }}>
+                    {eventKindLabel(market, locale)}
+                  </span>
                   <strong style={{ fontSize: '14px', display: 'block', marginBottom: '4px' }}>{market.name[locale] || market.name.ko || market.name.en}</strong>
                   <div style={{ fontSize: '12px', color: '#555', marginBottom: '2px', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {market.description[locale] || market.description.ko || market.description.en || '소개글이 없습니다.'}
                   </div>
-                  <div style={{ fontSize: '12px', color: '#0284c7', fontWeight: 500 }}>
+                  <div style={{ fontSize: '12px', color: PLACE_TYPE_COLORS.event.fg, fontWeight: 500 }}>
                     일정: {market.date.replace(/20(\d{2})/g, '$1').replace(/-/g, '.')}
                   </div>
                   <button 
-                    style={{ marginTop: '8px', width: '100%', padding: '6px', background: '#0284c7', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+                    style={{ marginTop: '8px', width: '100%', padding: '6px', background: PLACE_TYPE_COLORS.event.fg, color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
                     onClick={(e) => {
                       e.stopPropagation();
                       if (onFleaMarketClick) onFleaMarketClick(market);

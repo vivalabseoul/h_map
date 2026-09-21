@@ -12,8 +12,8 @@
     "register": "회원가입"
   },
   "search": {
-    "placeholder_short": "원하는 공방 찾기",
-    "placeholder_long": "Art Flow Map - 원하는 공방 찾기"
+    "placeholder_short": "공방·축제 찾기",
+    "placeholder_long": "Art Flow Map - 공방·축제 찾기"
   },
   "auth": {
     "login_title": "다시 오신 것을 환영합니다",

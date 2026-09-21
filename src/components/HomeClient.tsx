@@ -4,7 +4,8 @@ import dynamic from 'next/dynamic';
 import FilterBar from '@/components/FilterBar';
 
 import type { Workshop, Region, FleaMarket } from '@/types';
-import { matchesCategoryOrLanguage } from '@/lib/workshopSearch';
+import { matchesWorkshopQuery, matchesEventQuery } from '@/lib/workshopSearch';
+import type { PlaceTypeFilter } from '@/lib/placeTypes';
 import { getWorkshops, getFleaMarkets, incrementWorkshopLinkClick } from '@/lib/database';
 import { useFilter } from '@/context/FilterContext';
 import { useLocalizedRouter } from '@/context/LanguageContext';
@@ -37,6 +38,7 @@ export default function HomeClient({ initialWorkshopId }: { initialWorkshopId?: 
   const [workshops, setWorkshops] = useState<Workshop[]>([]);
   const [fleaMarkets, setFleaMarkets] = useState<FleaMarket[]>([]);
   const [filterQuery, setFilterQuery] = useState('');
+  const [typeFilter, setTypeFilter] = useState<PlaceTypeFilter>('all');
   const [selectedRegion, setSelectedRegion] = useState<Region>('korea');
   const { searchQuery, viewMode, setViewMode, userLocation } = useFilter();
   const [mapBounds, setMapBounds] = useState<{ north: number; south: number; east: number; west: number } | null>(null);
@@ -81,7 +83,8 @@ export default function HomeClient({ initialWorkshopId }: { initialWorkshopId?: 
 
   const { user } = useAuth();
   
-  const globalWorkshops = useMemo(() => {
+  // Everything that matches region and search; the type tab is applied afterwards so each tab can show its own count
+  const matchedWorkshops = useMemo(() => {
     return workshops.filter((w) => {
       // Role-based visibility
       if (w.isPrivate) {
@@ -93,18 +96,16 @@ export default function HomeClient({ initialWorkshopId }: { initialWorkshopId?: 
 
       if (w.status !== 'active') return false;
       if (selectedRegion !== 'all' && w.region !== selectedRegion) return false;
-      if (!matchesCategoryOrLanguage(w, filterQuery)) return false;
-      if (searchQuery.trim() !== '') {
-        const q = searchQuery.toLowerCase();
-        const matchesName = Object.values(w.name).some(n => n?.toLowerCase().includes(q));
-        const matchesAddress = Object.values(w.address).some(a => a?.toLowerCase().includes(q));
-        const matchesDescription = Object.values(w.description || {}).some(d => d?.toLowerCase().includes(q));
-        const matchesTags = w.tags.some(t => t.toLowerCase().includes(q));
-        if (!matchesName && !matchesAddress && !matchesDescription && !matchesTags) return false;
-      }
+      if (!matchesWorkshopQuery(w, filterQuery)) return false;
+      if (!matchesWorkshopQuery(w, searchQuery)) return false;
       return true;
     });
   }, [workshops, filterQuery, selectedRegion, searchQuery, user]);
+
+  const globalWorkshops = useMemo(
+    () => (typeFilter === 'event' ? [] : matchedWorkshops),
+    [matchedWorkshops, typeFilter],
+  );
 
   const sortedGlobalWorkshops = useMemo(() => {
     if (!userLocation) return globalWorkshops;
@@ -127,20 +128,20 @@ export default function HomeClient({ initialWorkshopId }: { initialWorkshopId?: 
     return sortedGlobalWorkshops;
   }, [sortedGlobalWorkshops, mapBounds, searchQuery, filterQuery, isMobile, viewMode]);
 
-  const globalFleaMarkets = useMemo(() => {
+  const matchedFleaMarkets = useMemo(() => {
     return fleaMarkets.filter((m) => {
       if (m.status === 'inactive') return false;
       if (selectedRegion !== 'all' && (m as any).region && (m as any).region !== selectedRegion) return false;
-      if (searchQuery.trim() !== '') {
-        const q = searchQuery.toLowerCase();
-        const matchesName = Object.values(m.name || {}).some(n => n?.toLowerCase().includes(q));
-        const matchesAddress = Object.values(m.address || {}).some(a => a?.toLowerCase().includes(q));
-        const matchesDescription = Object.values(m.description || {}).some(d => d?.toLowerCase().includes(q));
-        if (!matchesName && !matchesAddress && !matchesDescription) return false;
-      }
+      if (!matchesEventQuery(m, filterQuery)) return false;
+      if (!matchesEventQuery(m, searchQuery)) return false;
       return true;
     });
-  }, [fleaMarkets, searchQuery, selectedRegion]);
+  }, [fleaMarkets, filterQuery, searchQuery, selectedRegion]);
+
+  const globalFleaMarkets = useMemo(
+    () => (typeFilter === 'workshop' ? [] : matchedFleaMarkets),
+    [matchedFleaMarkets, typeFilter],
+  );
 
   const sortedGlobalFleaMarkets = useMemo(() => {
     if (!userLocation) return globalFleaMarkets;
@@ -152,6 +153,7 @@ export default function HomeClient({ initialWorkshopId }: { initialWorkshopId?: 
   }, [globalFleaMarkets, userLocation]);
 
   const viewportFleaMarkets = useMemo(() => {
+    if (searchQuery.trim() !== '' || filterQuery.trim() !== '') return sortedGlobalFleaMarkets;
     if (!isMobile && viewMode === 'list') return sortedGlobalFleaMarkets;
     if (mapBounds) {
       return sortedGlobalFleaMarkets.filter(m => {
@@ -160,7 +162,7 @@ export default function HomeClient({ initialWorkshopId }: { initialWorkshopId?: 
       });
     }
     return sortedGlobalFleaMarkets;
-  }, [sortedGlobalFleaMarkets, mapBounds, isMobile, viewMode]);
+  }, [sortedGlobalFleaMarkets, mapBounds, searchQuery, filterQuery, isMobile, viewMode]);
 
   const handleMarkerClick = useCallback((workshop: Workshop) => {
     incrementWorkshopLinkClick(workshop.id, 'map_pin').catch(console.error);
@@ -184,6 +186,9 @@ export default function HomeClient({ initialWorkshopId }: { initialWorkshopId?: 
         onRegionChange={setSelectedRegion}
         query={filterQuery}
         onQueryChange={setFilterQuery}
+        typeFilter={typeFilter}
+        onTypeChange={setTypeFilter}
+        counts={{ workshop: matchedWorkshops.length, event: matchedFleaMarkets.length }}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
       />
@@ -199,6 +204,7 @@ export default function HomeClient({ initialWorkshopId }: { initialWorkshopId?: 
             onFleaMarketClick={handleFleaMarketClick}
             onBoundsChanged={setMapBounds}
             userLocation={userLocation}
+            fitKey={searchQuery.trim() || filterQuery.trim() ? `${searchQuery.trim()}|${filterQuery.trim()}` : undefined}
           />
         </div>
         

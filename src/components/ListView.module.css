@@ -89,6 +89,18 @@
   flex-shrink: 0;
 }
 
+.typeBadge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: var(--radius-full);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+}
+
 .image {
   width: 100%;
   height: 100%;

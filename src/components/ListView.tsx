@@ -7,6 +7,7 @@ import { REGIONS } from '@/types';
 import { useLanguage } from '@/context/LanguageContext';
 import { getDistanceKm, formatDistance } from '@/lib/distance';
 import { getKoreaRegion } from '@/lib/koreaRegions';
+import { PLACE_TYPE_COLORS, placeLabel, eventKindLabel } from '@/lib/placeTypes';
 import type { Coordinates } from '@/lib/geolocation';
 import styles from './ListView.module.css';
 
@@ -149,7 +150,7 @@ export default function ListView({
             {group.workshops.length > 0 && (
               <div className={styles.subCategorySection}>
                 <h3 className={styles.subCategoryTitle}>
-                  {locale === 'ko' ? '공방 & 클래스' : 'Local Studios & Classes'}
+                  {placeLabel('workshop', locale)}
                 </h3>
                 <div className={styles.grid}>
                   {group.workshops.map((workshop) => {
@@ -169,6 +170,7 @@ export default function ListView({
                               e.currentTarget.src = getFallbackImage('default'); 
                             }}
                           />
+                          <span className={styles.typeBadge} style={{ background: PLACE_TYPE_COLORS.workshop.bg, color: PLACE_TYPE_COLORS.workshop.fg }}>{placeLabel('workshop', locale)}</span>
                         </div>
                         <div className={styles.contentArea}>
                           <h3 className={styles.title}>{name}</h3>
@@ -198,7 +200,7 @@ export default function ListView({
             {group.fleaMarkets.length > 0 && (
               <div className={styles.subCategorySection}>
                 <h3 className={styles.subCategoryTitle}>
-                  {locale === 'ko' ? '지역 축제 & 플리마켓' : 'Local Festivals & Flea Markets'}
+                  {placeLabel('event', locale)}
                 </h3>
                 <div className={styles.grid}>
                   {group.fleaMarkets.map((market) => {
@@ -218,6 +220,7 @@ export default function ListView({
                               e.currentTarget.src = getFallbackImage('default'); 
                             }}
                           />
+                          <span className={styles.typeBadge} style={{ background: PLACE_TYPE_COLORS.event.bg, color: PLACE_TYPE_COLORS.event.fg }}>{eventKindLabel(market, locale)}</span>
                         </div>
                         <div className={styles.contentArea}>
                           <h3 className={styles.title}>{name}</h3>

@@ -53,7 +53,7 @@
 .searchInput {
   width: 100%;
   min-width: 0;
-  padding: 6px 32px 6px 32px;
+  padding: 6px 68px 6px 32px;
   font-family: var(--font-body);
   font-size: 16px; /* 16px keeps iOS from zooming in on focus */
   color: var(--color-text-primary);
@@ -70,7 +70,7 @@
 
 .searchClear {
   position: absolute;
-  right: 8px;
+  right: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -84,6 +84,70 @@
 
 .searchClear:hover {
   color: var(--color-accent);
+}
+
+.searchSubmit {
+  position: absolute;
+  right: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  color: #ffffff;
+  background: var(--color-accent);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.searchSubmit:hover {
+  filter: brightness(0.92);
+}
+
+.typeTabs {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+  padding: 3px;
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-full);
+}
+
+.typeTab {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+}
+
+.typeTabActive {
+  color: #ffffff;
+  background: var(--color-text-primary);
+}
+
+.typeDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid #ffffff;
+  flex-shrink: 0;
+}
+
+.typeCount {
+  font-size: 0.7rem;
+  font-weight: 500;
+  opacity: 0.75;
 }
 
 .spin {
@@ -106,6 +170,17 @@
 @media (max-width: 768px) {
   .viewModeToggle {
     display: none;
+  }
+
+  /* Tabs get their own full-width row under the region and search controls */
+  .typeTabs {
+    flex: 1 1 100%;
+  }
+
+  .typeTab {
+    flex: 1;
+    justify-content: center;
+    padding: 6px 8px;
   }
 
   .nearbyLabel {

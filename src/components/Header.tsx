@@ -19,6 +19,13 @@ export default function Header() {
   const pathname = usePathname();
   const router = useLocalizedRouter();
   const { searchQuery, setSearchQuery, viewMode, setViewMode } = useFilter();
+  // What is typed stays a draft; the list only changes when the search is submitted
+  const [searchDraft, setSearchDraft] = useState(searchQuery);
+  const [syncedSearchQuery, setSyncedSearchQuery] = useState(searchQuery);
+  if (searchQuery !== syncedSearchQuery) {
+    setSyncedSearchQuery(searchQuery);
+    setSearchDraft(searchQuery);
+  }
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileScreen, setIsMobileScreen] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
@@ -146,17 +153,37 @@ export default function Header() {
   return (
     <header className={styles.header} id="main-header">
       {pathname === '/' ? (
-        <div className={styles.headerSearchContainer}>
+        <form
+          className={styles.headerSearchContainer}
+          role="search"
+          onSubmit={(e) => {
+            e.preventDefault();
+            setSearchQuery(searchDraft.trim());
+          }}
+        >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo.png" alt="Art Flow Map Logo" className={styles.headerSearchIcon} style={{ width: '22px', height: '22px', objectFit: 'contain', borderRadius: '4px' }} />
           <input 
             type="text"
             className={styles.headerSearchInput}
             placeholder={isMobileScreen ? (t('search.placeholder_short') || "Art Flow Map") : (t('search.placeholder_long') || "Art Flow Map - Find a craft studio")}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={searchDraft}
+            onChange={(e) => setSearchDraft(e.target.value)}
           />
-        </div>
+          {(searchDraft || searchQuery) && (
+            <button
+              type="button"
+              className={styles.headerSearchClear}
+              onClick={() => { setSearchDraft(''); setSearchQuery(''); }}
+              aria-label="Clear search"
+            >
+              <X size={14} />
+            </button>
+          )}
+          <button type="submit" className={styles.headerSearchButton} aria-label="Search" title="Search">
+            <Search size={14} />
+          </button>
+        </form>
       ) : (
         <Link href="/" className={styles.headerBrandLink}>
           {/* eslint-disable-next-line @next/next/no-img-element */}

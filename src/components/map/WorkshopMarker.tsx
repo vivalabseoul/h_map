@@ -6,6 +6,7 @@ import { CATEGORIES } from '@/types';
 import type { Workshop } from '@/types';
 import { getDynamicCategories } from '@/lib/categoryUtils';
 import { useLanguage } from '@/context/LanguageContext';
+import { PLACE_TYPE_COLORS, placeLabel } from '@/lib/placeTypes';
 
 interface WorkshopMarkerProps {
   workshop: Workshop;
@@ -64,6 +65,10 @@ const WorkshopMarker = React.memo(function WorkshopMarker({ workshop, onClick }:
     >
       <Tooltip direction="top" offset={[0, -44]} opacity={0.95}>
         <div style={{ fontFamily: 'Inter, sans-serif', fontSize: '13px' }}>
+          <span style={{ display: 'inline-block', marginBottom: '4px', padding: '1px 8px', borderRadius: '999px', fontSize: '11px', fontWeight: 700, background: PLACE_TYPE_COLORS.workshop.bg, color: PLACE_TYPE_COLORS.workshop.fg }}>
+            {placeLabel('workshop', locale)}
+          </span>
+          <br />
           <strong>{workshop.name[locale]}</strong>
           <div style={{ color: '#000000', fontSize: '11px', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
             <span>⭐ {workshop.rating} · {workshop.reviewCount} reviews</span>

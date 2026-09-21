@@ -14,6 +14,8 @@ export default function AdminFleaMarketsPage() {
   const [bulkStatus, setBulkStatus] = useState<'active' | 'inactive'>('inactive');
   const [updating, setUpdating] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState<10 | 20>(10);
 
   useEffect(() => {
     fetchMarkets();
@@ -28,12 +30,15 @@ export default function AdminFleaMarketsPage() {
     });
   };
 
+  // The header checkbox selects or clears the rows on the current page; selections on other pages are kept
   const toggleSelectAll = () => {
-    if (selectedMarkets.size === filteredMarkets.length && filteredMarkets.length > 0) {
-      setSelectedMarkets(new Set());
+    const newSelected = new Set(selectedMarkets);
+    if (allPageSelected) {
+      paginatedMarkets.forEach(m => newSelected.delete(m.id));
     } else {
-      setSelectedMarkets(new Set(filteredMarkets.map(m => m.id)));
+      paginatedMarkets.forEach(m => newSelected.add(m.id));
     }
+    setSelectedMarkets(newSelected);
   };
 
   const toggleSelect = (id: string) => {
@@ -109,6 +114,11 @@ export default function AdminFleaMarketsPage() {
     return nameMatch || descMatch || addressMatch || creatorMatch;
   });
 
+  const totalPages = Math.ceil(filteredMarkets.length / itemsPerPage) || 1;
+  const page = Math.min(currentPage, totalPages);
+  const paginatedMarkets = filteredMarkets.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+  const allPageSelected = paginatedMarkets.length > 0 && paginatedMarkets.every(m => selectedMarkets.has(m.id));
+
   return (
     <div>
       <div className="page-header">
@@ -134,9 +144,19 @@ export default function AdminFleaMarketsPage() {
             type="text" className="form-input"
             style={{ paddingLeft: '36px', width: '100%' }}
             placeholder="Search by name, description, address..."
-            value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+            value={searchQuery} onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
           />
         </div>
+        <select
+          value={itemsPerPage}
+          onChange={(e) => { setItemsPerPage(Number(e.target.value) as 10 | 20); setCurrentPage(1); }}
+          className="form-input"
+          style={{ width: '110px', padding: 'var(--space-2)' }}
+          aria-label="페이지당 개수"
+        >
+          <option value={10}>10개씩</option>
+          <option value={20}>20개씩</option>
+        </select>
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
@@ -170,7 +190,7 @@ export default function AdminFleaMarketsPage() {
               <th style={{ width: '40px' }}>
                 <input 
                   type="checkbox" 
-                  checked={filteredMarkets.length > 0 && selectedMarkets.size === filteredMarkets.length}
+                  checked={allPageSelected}
                   onChange={toggleSelectAll}
                 />
               </th>
@@ -183,7 +203,7 @@ export default function AdminFleaMarketsPage() {
             </tr>
           </thead>
           <tbody>
-            {filteredMarkets.map((m) => (
+            {paginatedMarkets.map((m) => (
               <tr key={m.id} style={{ background: selectedMarkets.has(m.id) ? 'var(--color-surface-hover)' : 'transparent' }}>
                 <td>
                   <input 
@@ -236,6 +256,26 @@ export default function AdminFleaMarketsPage() {
             )}
           </tbody>
         </table>
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 'var(--space-4)', marginTop: 'var(--space-6)' }}>
+        <button
+          className="btn btn-secondary"
+          disabled={page === 1}
+          onClick={() => setCurrentPage(page - 1)}
+        >
+          이전
+        </button>
+        <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: 500 }}>
+          {page} / {totalPages}
+        </span>
+        <button
+          className="btn btn-secondary"
+          disabled={page >= totalPages}
+          onClick={() => setCurrentPage(page + 1)}
+        >
+          다음
+        </button>
       </div>
     </div>
   );

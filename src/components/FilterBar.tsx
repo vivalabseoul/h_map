@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { REGIONS } from "@/types";
 import { getDynamicRegions } from "@/lib/regionUtils";
+import { PLACE_TYPE_COLORS, placeLabel, type PlaceTypeFilter } from "@/lib/placeTypes";
 import type { Region, Workshop } from "@/types";
 import {
   ChevronDown,
@@ -25,6 +26,9 @@ interface FilterBarProps {
   onRegionChange: (region: Region) => void;
   query: string;
   onQueryChange: (query: string) => void;
+  typeFilter?: PlaceTypeFilter;
+  onTypeChange?: (type: PlaceTypeFilter) => void;
+  counts?: { workshop: number; event: number };
   viewMode?: "map" | "list";
   onViewModeChange?: (mode: "map" | "list") => void;
 }
@@ -35,11 +39,21 @@ export default function FilterBar({
   onRegionChange,
   query,
   onQueryChange,
+  typeFilter = "all",
+  onTypeChange = () => {},
+  counts = { workshop: 0, event: 0 },
   viewMode = "map",
   onViewModeChange = () => {},
 }: FilterBarProps) {
   const { locale } = useLanguage();
   const [regionOpen, setRegionOpen] = useState(false);
+  // What is typed stays a draft; the list only changes when the search is submitted
+  const [draft, setDraft] = useState(query);
+  const [syncedQuery, setSyncedQuery] = useState(query);
+  if (query !== syncedQuery) {
+    setSyncedQuery(query);
+    setDraft(query);
+  }
   const barRef = useRef<HTMLDivElement>(null);
   const { userLocation, locationStatus, requestNearbySort, clearNearbySort } =
     useFilter();
@@ -68,6 +82,23 @@ export default function FilterBar({
 
   const searchPlaceholder =
     locale === "ko" ? "종목·언어 검색 (예: 도자기, 영어)" : "Search craft or language";
+  const searchLabel = locale === "ko" ? "검색" : "Search";
+
+  const submitSearch = (event: React.FormEvent) => {
+    event.preventDefault();
+    onQueryChange(draft.trim());
+  };
+
+  const clearSearch = () => {
+    setDraft("");
+    onQueryChange("");
+  };
+
+  const typeTabs: { key: PlaceTypeFilter; label: string; count?: number; dot?: string }[] = [
+    { key: "all", label: placeLabel("all", locale), count: counts.workshop + counts.event },
+    { key: "workshop", label: placeLabel("workshop", locale), count: counts.workshop, dot: PLACE_TYPE_COLORS.workshop.fg },
+    { key: "event", label: placeLabel("event", locale), count: counts.event, dot: PLACE_TYPE_COLORS.event.fg },
+  ];
 
   return (
     <div
@@ -162,26 +193,47 @@ export default function FilterBar({
       </div>
 
       {/* 2. Category + Language text search */}
-      <div className={styles.searchBox}>
+      <form className={styles.searchBox} onSubmit={submitSearch} role="search">
         <Search size={14} className={styles.searchIcon} />
         <input
           type="text"
           className={styles.searchInput}
-          value={query}
-          onChange={(e) => onQueryChange(e.target.value)}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
           placeholder={searchPlaceholder}
           aria-label={searchPlaceholder}
         />
-        {query && (
+        {(draft || query) && (
           <button
             type="button"
             className={styles.searchClear}
-            onClick={() => onQueryChange("")}
+            onClick={clearSearch}
             aria-label={locale === "ko" ? "검색어 지우기" : "Clear search"}
           >
             <X size={14} />
           </button>
         )}
+        <button type="submit" className={styles.searchSubmit} aria-label={searchLabel} title={searchLabel}>
+          <Search size={14} />
+        </button>
+      </form>
+
+      {/* Studios only / festivals only / both */}
+      <div className={styles.typeTabs} role="tablist" aria-label={locale === "ko" ? "보기 유형" : "Show"}>
+        {typeTabs.map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            role="tab"
+            aria-selected={typeFilter === tab.key}
+            className={`${styles.typeTab} ${typeFilter === tab.key ? styles.typeTabActive : ""}`}
+            onClick={() => onTypeChange(tab.key)}
+          >
+            {tab.dot && <span className={styles.typeDot} style={{ background: tab.dot }} />}
+            {tab.label}
+            <span className={styles.typeCount}>{tab.count}</span>
+          </button>
+        ))}
       </div>
 
       {/* Nearby Sort Toggle (hidden, see SHOW_NEARBY_BUTTON) */}

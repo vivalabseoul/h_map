@@ -66,3 +66,14 @@ export function getKoreaRegion(address: Partial<Record<Locale, string>> | string
   }
   return null;
 }
+
+// "제주", "Jeju", "済州" and "济州" all point to the same region, so a search by region name works in any language
+export function findKoreaRegionByQuery(query: string): KoreaRegion | null {
+  const q = query.trim().toLowerCase();
+  if (!q) return null;
+  return (
+    KOREA_REGIONS.find(
+      (region) => region.koNames.includes(q) || Object.values(region.label).some((label) => label.toLowerCase() === q),
+    ) ?? null
+  );
+}

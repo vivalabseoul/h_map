@@ -119,6 +119,41 @@
   font-weight: 500;
 }
 
+.headerSearchClear,
+.headerSearchButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: none;
+  cursor: pointer;
+}
+
+.headerSearchClear {
+  padding: 4px;
+  margin-left: 4px;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border-radius: 50%;
+}
+
+.headerSearchClear:hover {
+  color: var(--color-accent);
+}
+
+.headerSearchButton {
+  width: 28px;
+  height: 28px;
+  margin-left: 4px;
+  color: #ffffff;
+  background: var(--color-accent);
+  border-radius: 50%;
+}
+
+.headerSearchButton:hover {
+  filter: brightness(0.92);
+}
+
 .headerActions {
   display: flex;
   align-items: center;
