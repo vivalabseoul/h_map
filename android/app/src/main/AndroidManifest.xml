@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- 향후 광고(AdMob) 및 분석 SDK 선제 대응을 위한 AD_ID 권한 추가 -->
-    <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
