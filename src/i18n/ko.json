@@ -229,7 +229,9 @@
     "edit": "수정",
     "delete": "삭제",
     "search": "검색...",
-    "no_results": "결과가 없습니다"
+    "no_results": "결과가 없습니다",
+    "private_workshop_title": "비공개 공방입니다",
+    "private_workshop_desc": "이 공방은 소유자와 관리자만 볼 수 있어요."
   },
   "language": {
     "en": "English",

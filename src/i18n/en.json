@@ -229,7 +229,9 @@
     "edit": "Edit",
     "delete": "Delete",
     "search": "Search...",
-    "no_results": "No results found"
+    "no_results": "No results found",
+    "private_workshop_title": "Private workshop",
+    "private_workshop_desc": "Only the owner and admins can view this workshop."
   },
   "language": {
     "en": "English",

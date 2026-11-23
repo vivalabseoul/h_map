@@ -1,6 +1,8 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
 import { getWorkshopBySlug } from '@/lib/database';
+import { isHiddenWorkshop } from '@/lib/serverWorkshop';
+import HiddenWorkshopLoader from '@/components/HiddenWorkshopLoader';
 import type { Metadata } from 'next';
 import type { Locale } from '@/types';
 import WorkshopDetailClient from '@/components/WorkshopDetailClient';
@@ -21,6 +23,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const workshop = await getWorkshopBySlug(slug);
 
   if (!workshop) {
+    // A hidden (private) workshop must not be indexed or described
+    if (await isHiddenWorkshop(slug)) return { title: 'Private Workshop', robots: { index: false, follow: false } };
     return { title: 'Workshop Not Found' };
   }
 
@@ -68,6 +72,8 @@ export default async function WorkshopPage({ params }: Props) {
   const workshop = await getWorkshopBySlug(slug);
 
   if (!workshop) {
+    // Exists but hidden from anonymous readers (private/unapproved): let the browser try with the visitor's session
+    if (await isHiddenWorkshop(slug)) return <HiddenWorkshopLoader slug={slug} />;
     notFound();
   }
 

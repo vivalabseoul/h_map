@@ -39,9 +39,9 @@ const ensureLocaleObject = (val: any): Record<Locale, string> => {
 
 const mapWorkshop = (d: any): Workshop => {
   const nameObj = safeParse(d.name) || {en:'',ko:'',ja:'',zh:''};
-  const fallbackSlug = (nameObj.en || nameObj.ko || d.id || 'workshop').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  // Workshops created through the app have no slug column value; the detail page can resolve a plain id
   return {
-  id: d.id, slug: d.slug || fallbackSlug, ownerId: d.owner_id, ownerName: d.owner_name, name: nameObj, category: d.category,
+  id: d.id, slug: d.slug || d.id, ownerId: d.owner_id, ownerName: d.owner_name, name: nameObj, category: d.category,
   description: safeParse(d.description) || {en:'',ko:'',ja:'',zh:''}, address: safeParse(d.address) || {en:'',ko:'',ja:'',zh:''}, lat: d.lat, lng: d.lng,
   images: safeParse(d.images) || [], rating: d.rating, reviewCount: d.review_count,
   tags: safeParse(d.tags)?.filter((t:string) => !t.startsWith('lang:')) || [], 

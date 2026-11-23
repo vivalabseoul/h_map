@@ -229,7 +229,9 @@
     "edit": "编辑",
     "delete": "删除",
     "search": "搜索...",
-    "no_results": "未找到结果"
+    "no_results": "未找到结果",
+    "private_workshop_title": "这是未公开的工坊",
+    "private_workshop_desc": "仅所有者和管理员可以查看此工坊。"
   },
   "language": {
     "en": "English",
