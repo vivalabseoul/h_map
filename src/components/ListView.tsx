@@ -34,6 +34,9 @@ interface RegionGroupInfo {
   label: Record<Locale, string>;
 }
 
+// Regions with fewer places than this are folded into the shared "other regions" section
+const MIN_ITEMS_PER_REGION = 3;
+
 const OTHER_REGION: RegionGroupInfo = {
   key: 'other',
   label: { ko: '기타 지역', en: 'Other Regions', ja: 'その他の地域', zh: '其他地区' },
@@ -55,7 +58,6 @@ function getRegionGroup(item: Workshop | FleaMarket): RegionGroupInfo {
 export default function ListView({
   workshops,
   fleaMarkets,
-  mapBounds,
   userLocation,
   onWorkshopClick,
   onFleaMarketClick,
@@ -64,65 +66,71 @@ export default function ListView({
 }: ListViewProps) {
   const { locale } = useLanguage();
 
-  const mapCenter = useMemo(() => {
-    if (userLocation) return userLocation;
-    if (!mapBounds) return null;
-    return {
-      lat: (mapBounds.north + mapBounds.south) / 2,
-      lng: (mapBounds.east + mapBounds.west) / 2,
-    };
-  }, [mapBounds, userLocation]);
-
   const groupedRegions = useMemo(() => {
-    const groupsMap = new Map<string, { label: Record<Locale, string>; fleaMarkets: FleaMarket[]; workshops: Workshop[] }>();
+    type ListItem =
+      | { kind: 'workshop'; data: Workshop; regionLabel: string }
+      | { kind: 'event'; data: FleaMarket; regionLabel: string };
+
+    const groupsMap = new Map<string, { label: Record<Locale, string>; items: ListItem[] }>();
     const groupOf = (info: RegionGroupInfo) => {
-      if (!groupsMap.has(info.key)) {
-        groupsMap.set(info.key, { label: info.label, fleaMarkets: [], workshops: [] });
-      }
+      if (!groupsMap.has(info.key)) groupsMap.set(info.key, { label: info.label, items: [] });
       return groupsMap.get(info.key)!;
     };
 
-    fleaMarkets.forEach((market) => groupOf(getRegionGroup(market)).fleaMarkets.push(market));
-    workshops.forEach((workshop) => groupOf(getRegionGroup(workshop)).workshops.push(workshop));
+    // Studios first, then events, so every region reads as one continuous grid
+    workshops.forEach((data) => {
+      const info = getRegionGroup(data);
+      groupOf(info).items.push({ kind: 'workshop', data, regionLabel: info.label[locale] || info.label.ko });
+    });
+    fleaMarkets.forEach((data) => {
+      const info = getRegionGroup(data);
+      groupOf(info).items.push({ kind: 'event', data, regionLabel: info.label[locale] || info.label.ko });
+    });
 
     const groups = Array.from(groupsMap.entries()).map(([key, data]) => {
-      const allItems = [...data.workshops, ...data.fleaMarkets];
       let minDistance = Infinity;
-
-      if (mapCenter && allItems.length > 0) {
-        allItems.forEach((item) => {
+      if (userLocation) {
+        data.items.forEach(({ data: item }) => {
           if (typeof item.lat === 'number' && typeof item.lng === 'number') {
-            const dLat = item.lat - mapCenter.lat;
-            const dLng = item.lng - mapCenter.lng;
-            const distSq = dLat * dLat + dLng * dLng;
-            if (distSq < minDistance) {
-              minDistance = distSq;
-            }
+            const dLat = item.lat - userLocation.lat;
+            const dLng = item.lng - userLocation.lng;
+            minDistance = Math.min(minDistance, dLat * dLat + dLng * dLng);
           }
         });
       }
-
-      return {
-        key,
-        regionName: data.label[locale] || data.label.ko,
-        fleaMarkets: data.fleaMarkets,
-        workshops: data.workshops,
-        minDistance,
-      };
+      return { key, regionName: data.label[locale] || data.label.ko, items: data.items, minDistance, merged: false };
     });
 
-    // Sort groups
-    groups.sort((a, b) => {
-      if (mapCenter && a.minDistance !== b.minDistance) {
-        return a.minDistance - b.minDistance;
-      }
-      const totalA = a.fleaMarkets.length + a.workshops.length;
-      const totalB = b.fleaMarkets.length + b.workshops.length;
-      return totalB - totalA;
-    });
+    // Nearest region first in "nearby" mode, otherwise the region with the most places first.
+    // "Other regions" always goes last.
+    const byImportance = (x: typeof groups[number], y: typeof groups[number]) => {
+      if (x.key === OTHER_REGION.key) return 1;
+      if (y.key === OTHER_REGION.key) return -1;
+      if (userLocation && x.minDistance !== y.minDistance) return x.minDistance - y.minDistance;
+      return y.items.length - x.items.length;
+    };
+    groups.sort(byImportance);
 
-    return groups;
-  }, [workshops, fleaMarkets, locale, mapCenter]);
+    // Regions with only a couple of places would leave a mostly empty row: fold them into one shared section
+    // (each card keeps a small region label). Skipped when no region is big enough to stand on its own.
+    const big = groups.filter((g) => g.items.length >= MIN_ITEMS_PER_REGION);
+    const small = groups.filter((g) => g.items.length < MIN_ITEMS_PER_REGION);
+    if (big.length === 0 || small.length === 0) return groups;
+
+    const mergedItems = small.flatMap((g) => g.items).sort((x, y) => {
+      // keep studios before events inside the shared section
+      if (x.kind !== y.kind) return x.kind === 'workshop' ? -1 : 1;
+      return 0;
+    });
+    big.push({
+      key: OTHER_REGION.key,
+      regionName: OTHER_REGION.label[locale] || OTHER_REGION.label.ko,
+      items: mergedItems,
+      minDistance: Math.min(...small.map((g) => g.minDistance)),
+      merged: true,
+    });
+    return big;
+  }, [workshops, fleaMarkets, locale, userLocation]);
 
   return (
     <div className={`${styles.listContainer} ${viewMode === 'list' ? styles.fullListView : ''}`}>
@@ -156,8 +164,7 @@ export default function ListView({
       )}
 
       {groupedRegions.map((group) => {
-        const totalItems = group.fleaMarkets.length + group.workshops.length;
-        if (totalItems === 0) return null;
+        if (group.items.length === 0) return null;
 
         return (
           <div key={group.key} className={styles.regionGroupBlock}>
@@ -165,109 +172,99 @@ export default function ListView({
             <div className={styles.regionHeader}>
               <h2 className={styles.regionTitle}>
                 <span>{group.regionName}</span>
-                <span className={styles.regionCounts}>{totalItems}</span>
+                <span className={styles.regionCounts}>{group.items.length}</span>
               </h2>
             </div>
 
-            {/* 1. Region Workshops (Placed First) */}
-            {group.workshops.length > 0 && (
-              <div className={styles.subCategorySection}>
-                <h3 className={styles.subCategoryTitle}>
-                  {placeLabel('workshop', locale)}
-                </h3>
-                <div className={styles.grid}>
-                  {group.workshops.map((workshop) => {
-                    const name = workshop.name[locale] || workshop.name.ko || workshop.name.en || '';
-                    const desc = workshop.description[locale] || workshop.description.ko || workshop.description.en || '';
+            <div className={styles.grid}>
+              {group.items.map((item) => {
+                const regionChip = group.merged ? (
+                  <span className={styles.regionChip}>{item.regionLabel}</span>
+                ) : null;
 
-                    return (
-                      <div key={workshop.id} className={styles.card} onClick={() => onWorkshopClick(workshop)}>
-                        <div className={styles.imageArea}>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img 
-                            src={(workshop.images && workshop.images[0] && workshop.images[0] !== 'null' && workshop.images[0] !== 'undefined') ? workshop.images[0] : getFallbackImage(workshop.category)} 
-                            alt={name} 
-                            className={styles.image} 
-                            onError={(e) => { 
-                              e.currentTarget.onerror = null; 
-                              e.currentTarget.src = getFallbackImage('default'); 
-                            }}
-                          />
-                          <span className={styles.typeBadge} style={{ background: PLACE_TYPE_COLORS.workshop.bg, color: PLACE_TYPE_COLORS.workshop.fg }}>{placeLabel('workshop', locale)}</span>
+                if (item.kind === 'workshop') {
+                  const workshop = item.data;
+                  const name = workshop.name[locale] || workshop.name.ko || workshop.name.en || '';
+                  const desc = workshop.description[locale] || workshop.description.ko || workshop.description.en || '';
+
+                  return (
+                    <div key={`w-${workshop.id}`} className={styles.card} onClick={() => onWorkshopClick(workshop)}>
+                      <div className={styles.imageArea}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={(workshop.images && workshop.images[0] && workshop.images[0] !== 'null' && workshop.images[0] !== 'undefined') ? workshop.images[0] : getFallbackImage(workshop.category)}
+                          alt={name}
+                          className={styles.image}
+                          loading="lazy"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = getFallbackImage('default');
+                          }}
+                        />
+                        <span className={styles.typeBadge} style={{ background: PLACE_TYPE_COLORS.workshop.bg, color: PLACE_TYPE_COLORS.workshop.fg }}>{placeLabel('workshop', locale)}</span>
+                      </div>
+                      <div className={styles.contentArea}>
+                        <h3 className={styles.title}>{regionChip}{name}</h3>
+                        <div className={styles.subtitle} style={{ color: PLACE_TYPE_COLORS.workshop.fg }}>
+                          ⭐ {workshop.rating} ({workshop.reviewCount})
+                          {userLocation && (
+                            <span style={{ marginLeft: 8, color: 'var(--color-accent)', fontWeight: 600 }}>
+                              📍 {formatDistance(getDistanceKm(userLocation.lat, userLocation.lng, workshop.lat, workshop.lng))}
+                            </span>
+                          )}
                         </div>
-                        <div className={styles.contentArea}>
-                          <h3 className={styles.title}>{name}</h3>
-                          <div className={styles.subtitle} style={{ color: '#ff6b35' }}>
-                            ⭐ {workshop.rating} ({workshop.reviewCount})
-                            {userLocation && (
-                              <span style={{ marginLeft: 8, color: 'var(--color-accent)', fontWeight: 600 }}>
-                                📍 {formatDistance(getDistanceKm(userLocation.lat, userLocation.lng, workshop.lat, workshop.lng))}
-                              </span>
-                            )}
-                          </div>
 
-                          <div className={styles.meta}>
-                            <div className={styles.metaItem}>
-                              <span style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{desc}</span>
-                            </div>
+                        <div className={styles.meta}>
+                          <div className={styles.metaItem}>
+                            <span style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{desc}</span>
                           </div>
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+                    </div>
+                  );
+                }
 
-            {/* 2. Region Festivals (Placed Second) */}
-            {group.fleaMarkets.length > 0 && (
-              <div className={styles.subCategorySection}>
-                <h3 className={styles.subCategoryTitle}>
-                  {placeLabel('event', locale)}
-                </h3>
-                <div className={styles.grid}>
-                  {group.fleaMarkets.map((market) => {
-                    const name = market.name[locale] || market.name.ko || market.name.en || '';
-                    const desc = market.description[locale] || market.description.ko || market.description.en || '';
+                const market = item.data;
+                const name = market.name[locale] || market.name.ko || market.name.en || '';
+                const desc = market.description[locale] || market.description.ko || market.description.en || '';
 
-                    return (
-                      <div key={market.id} className={styles.card} onClick={() => onFleaMarketClick(market)}>
-                        <div className={styles.imageArea}>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img 
-                            src={market.posterUrl && market.posterUrl !== 'null' && market.posterUrl !== 'undefined' ? market.posterUrl : getFallbackImage(name + ' ' + desc)} 
-                            alt={name} 
-                            className={styles.image} 
-                            onError={(e) => { 
-                              e.currentTarget.onerror = null; 
-                              e.currentTarget.src = getFallbackImage('default'); 
-                            }}
-                          />
-                          <span className={styles.typeBadge} style={{ background: PLACE_TYPE_COLORS.event.bg, color: PLACE_TYPE_COLORS.event.fg }}>{eventKindLabel(market, locale)}</span>
-                        </div>
-                        <div className={styles.contentArea}>
-                          <h3 className={styles.title}>{name}</h3>
-                          <div className={styles.subtitle}>
-                            {market.date.replace(/20(\d{2})/g, '$1').replace(/-/g, '.')}
-                            {userLocation && (
-                              <span style={{ marginLeft: 8, color: 'var(--color-accent)', fontWeight: 600 }}>
-                                📍 {formatDistance(getDistanceKm(userLocation.lat, userLocation.lng, market.lat, market.lng))}
-                              </span>
-                            )}
-                          </div>
+                return (
+                  <div key={`e-${market.id}`} className={styles.card} onClick={() => onFleaMarketClick(market)}>
+                    <div className={styles.imageArea}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={market.posterUrl && market.posterUrl !== 'null' && market.posterUrl !== 'undefined' ? market.posterUrl : getFallbackImage(name + ' ' + desc)}
+                        alt={name}
+                        className={styles.image}
+                        loading="lazy"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = getFallbackImage('default');
+                        }}
+                      />
+                      <span className={styles.typeBadge} style={{ background: PLACE_TYPE_COLORS.event.bg, color: PLACE_TYPE_COLORS.event.fg }}>{eventKindLabel(market, locale)}</span>
+                    </div>
+                    <div className={styles.contentArea}>
+                      <h3 className={styles.title}>{regionChip}{name}</h3>
+                      <div className={styles.subtitle}>
+                        {market.date.replace(/20(\d{2})/g, '$1').replace(/-/g, '.')}
+                        {userLocation && (
+                          <span style={{ marginLeft: 8, color: 'var(--color-accent)', fontWeight: 600 }}>
+                            📍 {formatDistance(getDistanceKm(userLocation.lat, userLocation.lng, market.lat, market.lng))}
+                          </span>
+                        )}
+                      </div>
 
-                          <div className={styles.meta}>
-                            <div className={styles.metaItem}>
-                              <span style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{desc}</span>
-                            </div>
-                          </div>
+                      <div className={styles.meta}>
+                        <div className={styles.metaItem}>
+                          <span style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{desc}</span>
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         );
       })}
