@@ -48,7 +48,17 @@
     "agree_privacy": "[必須] プライバシーポリシーに同意します。",
     "view_details": "詳細を見る",
     "error_terms_required": "利用規約とプライバシーポリシーの両方に同意する必要があります。",
-    "error_privacy_required": "プライバシーポリシーに同意する必要があります。"
+    "error_privacy_required": "プライバシーポリシーに同意する必要があります。",
+    "select_role": "登録タイプを選択してください (Select Role)",
+    "role_member": "一般会員 (Member)",
+    "role_member_desc": "工房を見て回り、クラスを予約します。",
+    "role_creator": "クリエイター (Creator)",
+    "role_creator_desc": "自分の工房やクラスを登録して宣伝します。",
+    "creator_notice_highlight": "ご案内:",
+    "creator_notice_text": "クリエイターおよびマーケットコーディネーターは、名刺の確認など管理者の承認を経て該当の等級に変更されます。（承認までは一般会員として登録されます）",
+    "business_card_label": "名刺の添付（高画質の写真でも自動的に最適化されます）",
+    "business_card_desc1": "* 会社名（または工房/フェス名）、お名前、連絡先がはっきり写った名刺の写真を添付してください。",
+    "business_card_desc2": "* 登録後、管理者が内容を確認して等級を承認します。"
   },
   "filters": {
     "all": "すべて",

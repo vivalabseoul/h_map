@@ -1,6 +1,18 @@
 import { NextResponse } from 'next/server';
+import { getCaller, isAdminRole, rateLimit } from '@/lib/serverAuth';
 
 export async function POST(request: Request) {
+  const caller = await getCaller(request);
+  if (!caller) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  if (!isAdminRole(caller.role)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+  if (!rateLimit(`places:${caller.id}`, 30, 60_000)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   try {
     const body = await request.json();
     const { query, languageCode } = body;
@@ -30,13 +42,13 @@ export async function POST(request: Request) {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Google API Error:', errorText);
-      return NextResponse.json({ error: 'Failed to fetch from Google Places API', details: errorText }, { status: response.status });
+      return NextResponse.json({ error: 'Failed to fetch from Google Places API' }, { status: response.status });
     }
 
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error: any) {
     console.error('API Route Error:', error);
-    return NextResponse.json({ error: 'Internal Server Error', message: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

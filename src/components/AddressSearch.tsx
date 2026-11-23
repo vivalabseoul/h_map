@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Search, MapPin, X } from 'lucide-react';
 import DaumPostcodeEmbed from 'react-daum-postcode';
+import { supabase } from '@/lib/supabase';
 
 export interface AddressComponents {
   city?: string;
@@ -43,7 +44,11 @@ export default function AddressSearch({
     setIsSearching(true);
 
     try {
-      const res = await fetch(`/api/geocode?address=${encodeURIComponent(data.address)}`);
+      const { data: sessionData } = (await supabase?.auth.getSession()) ?? { data: { session: null } };
+      const token = sessionData.session?.access_token;
+      const res = await fetch(`/api/geocode?address=${encodeURIComponent(data.address)}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       const geocodeData = await res.json();
       
       if (res.ok && geocodeData.lat && geocodeData.lng) {

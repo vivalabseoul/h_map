@@ -48,7 +48,17 @@
     "agree_privacy": "[必填] 我同意隐私政策。",
     "view_details": "查看详情",
     "error_terms_required": "您必须同意服务条款和隐私政策。",
-    "error_privacy_required": "您必须同意隐私政策。"
+    "error_privacy_required": "您必须同意隐私政策。",
+    "select_role": "请选择注册类型 (Select Role)",
+    "role_member": "普通会员 (Member)",
+    "role_member_desc": "浏览工坊并预约课程。",
+    "role_creator": "创作者 (Creator)",
+    "role_creator_desc": "登记并推广您的工坊和课程。",
+    "creator_notice_highlight": "提示：",
+    "creator_notice_text": "创作者和市集协调员需经管理员审核名片等材料后，才会升级为相应等级。（审核通过前将先注册为普通会员）",
+    "business_card_label": "上传名片（高清照片也会自动优化）",
+    "business_card_desc1": "* 请上传清晰显示公司（或工坊/活动）名称、姓名和联系方式的名片照片。",
+    "business_card_desc2": "* 注册后，管理员会确认内容并批准等级。"
   },
   "filters": {
     "all": "全部",

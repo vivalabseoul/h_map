@@ -626,7 +626,7 @@ export async function addReview(data: Omit<Review, 'id' | 'createdAt'>): Promise
   }).select('id').single();
   if (error) throw error;
 
-  await updateWorkshopRating(data.workshopId);
+  // workshops.rating / review_count are refreshed by the DB trigger on reviews (scripts/rls_hardening.sql)
   return res.id;
 }
 
@@ -634,39 +634,11 @@ export async function updateReview(id: string, text: string, rating: number): Pr
   if (!supabase) throw new Error('Supabase not configured');
   const { error } = await supabase.from('reviews').update({ text, rating }).eq('id', id);
   if (error) throw error;
-  
-  const { data: rev } = await supabase.from('reviews').select('workshop_id').eq('id', id).single();
-  if (rev?.workshop_id) {
-    await updateWorkshopRating(rev.workshop_id);
-  }
 }
 
 export async function deleteReview(id: string): Promise<void> {
   if (!supabase) throw new Error('Supabase not configured');
-  // Get workshop_id before deleting
-  const { data: rev } = await supabase.from('reviews').select('workshop_id').eq('id', id).single();
-  
   await supabase.from('reviews').delete().eq('id', id);
-  
-  if (rev?.workshop_id) {
-    await updateWorkshopRating(rev.workshop_id);
-  }
-}
-
-async function updateWorkshopRating(workshopId: string) {
-  if (!supabase) return;
-  const { data: reviews } = await supabase.from('reviews').select('rating').eq('workshop_id', workshopId);
-  if (reviews) {
-    const newCount = reviews.length;
-    const sum = reviews.reduce((acc, r) => acc + (r.rating || 0), 0);
-    const newRating = newCount > 0 ? sum / newCount : 0;
-    const roundedRating = Math.round(newRating * 10) / 10;
-
-    await supabase.from('workshops').update({ 
-      review_count: newCount,
-      rating: roundedRating
-    }).eq('id', workshopId);
-  }
 }
 
 // ==========================================

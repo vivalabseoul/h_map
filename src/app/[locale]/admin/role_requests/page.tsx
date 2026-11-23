@@ -30,6 +30,23 @@ export default function RoleRequestsAdminPage() {
   const [loading, setLoading] = useState(true);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
+  // The business_cards bucket is private, so the stored URL can't be opened directly:
+  // turn it into a short-lived signed URL first.
+  const openBusinessCard = async (storedUrl: string) => {
+    if (!supabase) return;
+    const path = decodeURIComponent(storedUrl.split('business_cards/')[1]?.split('?')[0] || '');
+    if (!path) {
+      alert('명함 파일 경로를 확인할 수 없습니다.');
+      return;
+    }
+    const { data, error } = await supabase.storage.from('business_cards').createSignedUrl(path, 300);
+    if (error || !data) {
+      alert('명함 이미지를 불러오지 못했습니다: ' + (error?.message || ''));
+      return;
+    }
+    setPreviewImage(data.signedUrl);
+  };
+
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
@@ -265,7 +282,7 @@ export default function RoleRequestsAdminPage() {
                     {req.business_card_url ? (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         <button 
-                          onClick={() => setPreviewImage(req.business_card_url)} 
+                          onClick={() => openBusinessCard(req.business_card_url)} 
                           style={{ color: '#0284c7', textDecoration: 'underline', background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}
                         >
                           이미지 보기

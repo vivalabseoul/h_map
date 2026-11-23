@@ -1,6 +1,21 @@
 import { NextResponse } from 'next/server';
+import { getCaller, rateLimit } from '@/lib/serverAuth';
+
+const ALLOWED_ROLES = ['super_admin', 'manager', 'instructor', 'market_coordinator'];
 
 export async function GET(request: Request) {
+  // Only people who register places need geocoding; keeps the Google quota from being abused.
+  const caller = await getCaller(request);
+  if (!caller) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  if (!ALLOWED_ROLES.includes(caller.role)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+  if (!rateLimit(`geocode:${caller.id}`, 30, 60_000)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   const { searchParams } = new URL(request.url);
   const address = searchParams.get('address');
 
