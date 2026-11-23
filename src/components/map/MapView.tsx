@@ -3,6 +3,8 @@ import React, { useMemo } from 'react';
 import { MapContainer, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import MarkerClusterGroup from 'react-leaflet-cluster';
+import 'react-leaflet-cluster/dist/assets/MarkerCluster.css';
 import WorkshopMarker from './WorkshopMarker';
 import { useLanguage } from '@/context/LanguageContext';
 import type { Workshop, Region, FleaMarket } from '@/types';
@@ -100,6 +102,17 @@ function MapEvents({ onBoundsChanged }: { onBoundsChanged?: (bounds: { north: nu
   return null;
 }
 
+// Round count badge for grouped markers; bigger groups get a bigger, darker badge
+function createClusterIcon(cluster: { getChildCount(): number }): L.DivIcon {
+  const count = cluster.getChildCount();
+  const size = count < 10 ? 36 : count < 50 ? 42 : 50;
+  return L.divIcon({
+    html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:#ff6b35;color:#fff;border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font:700 ${size > 40 ? 15 : 13}px Inter,sans-serif;">${count}</div>`,
+    className: '',
+    iconSize: [size, size],
+  });
+}
+
 function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChange, onMarkerClick, onFleaMarketClick, onBoundsChanged, userLocation, fitKey }: MapViewProps) {
   const { locale, t } = useLanguage();
   const regionData = REGIONS.find((r) => r.key === selectedRegion) || REGIONS[0];
@@ -174,6 +187,13 @@ function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChang
             <Marker position={[userLocation.lat, userLocation.lng]} icon={userLocationIcon} zIndexOffset={1000} />
           )}
 
+          <MarkerClusterGroup
+            chunkedLoading
+            maxClusterRadius={50}
+            disableClusteringAtZoom={15}
+            showCoverageOnHover={false}
+            iconCreateFunction={createClusterIcon}
+          >
           {workshops.map((workshop) => (
             <WorkshopMarker
               key={workshop.id}
@@ -215,6 +235,7 @@ function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChang
             </Marker>
             );
           })}
+          </MarkerClusterGroup>
         </MapContainer>
       </div>
 
