@@ -210,7 +210,13 @@
     "no_bookings": "您还没有预订任何课程",
     "no_reviews": "您还没有写任何评论",
     "booking_confirmed": "已确认",
-    "booking_cancelled": "已取消"
+    "booking_cancelled": "已取消",
+    "col_workshop": "工坊",
+    "col_rating": "评分",
+    "col_review": "评价",
+    "col_date": "发布日期",
+    "reviews_written": "已发表评价 {n} 条",
+    "workshop_unavailable": "已删除或未公开的工坊"
   },
   "common": {
     "loading": "加载中...",

@@ -210,7 +210,13 @@
     "no_bookings": "아직 신청한 워크샵이 없습니다",
     "no_reviews": "아직 작성한 리뷰가 없습니다",
     "booking_confirmed": "확정",
-    "booking_cancelled": "취소됨"
+    "booking_cancelled": "취소됨",
+    "col_workshop": "공방",
+    "col_rating": "평점",
+    "col_review": "리뷰",
+    "col_date": "작성일",
+    "reviews_written": "작성한 리뷰 {n}개",
+    "workshop_unavailable": "삭제되었거나 비공개인 공방"
   },
   "common": {
     "loading": "로딩 중...",

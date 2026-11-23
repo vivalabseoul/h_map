@@ -210,7 +210,13 @@
     "no_bookings": "You haven't booked any workshops yet",
     "no_reviews": "You haven't written any reviews yet",
     "booking_confirmed": "Confirmed",
-    "booking_cancelled": "Cancelled"
+    "booking_cancelled": "Cancelled",
+    "col_workshop": "Workshop",
+    "col_rating": "Rating",
+    "col_review": "Review",
+    "col_date": "Date",
+    "reviews_written": "{n} reviews written",
+    "workshop_unavailable": "Workshop removed or unavailable"
   },
   "common": {
     "loading": "Loading...",

@@ -210,7 +210,13 @@
     "no_bookings": "まだコースを予約していません",
     "no_reviews": "まだレビューを書いていません",
     "booking_confirmed": "確認済み",
-    "booking_cancelled": "キャンセル済み"
+    "booking_cancelled": "キャンセル済み",
+    "col_workshop": "工房",
+    "col_rating": "評価",
+    "col_review": "レビュー",
+    "col_date": "投稿日",
+    "reviews_written": "投稿したレビュー {n}件",
+    "workshop_unavailable": "削除または非公開の工房"
   },
   "common": {
     "loading": "読み込み中...",

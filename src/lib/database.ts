@@ -180,6 +180,22 @@ export async function getWorkshopById(id: string): Promise<Workshop | null> {
   return data ? mapWorkshop(data) : null;
 }
 
+/** Name/slug lookup for a set of workshop ids (e.g. the workshops a user reviewed). Hidden workshops are simply absent. */
+export async function getWorkshopNamesByIds(ids: string[]): Promise<Record<string, { name: Record<Locale, string>; slug: string }>> {
+  const unique = [...new Set(ids)].filter(Boolean);
+  if (unique.length === 0) return {};
+  if (!supabase || !isSupabaseConfigured) {
+    return Object.fromEntries(
+      getLocalWorkshops().filter(w => unique.includes(w.id)).map(w => [w.id, { name: w.name, slug: w.slug || w.id }])
+    );
+  }
+  const { data } = await supabase.from('workshops').select('id, slug, name').in('id', unique);
+  return Object.fromEntries((data || []).map((d: any) => {
+    const w = mapWorkshop(d);
+    return [w.id, { name: w.name, slug: w.slug || w.id }];
+  }));
+}
+
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const getWorkshopBySlug = cache(async (slugOrId: string): Promise<Workshop | null> => {
