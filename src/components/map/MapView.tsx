@@ -104,11 +104,11 @@ function MapEvents({ onBoundsChanged }: { onBoundsChanged?: (bounds: { north: nu
 
 // Round count badge for grouped markers; bigger groups get a bigger badge.
 // Studios and events are clustered separately, each in its own color.
-const createClusterIcon = (color: string) => (cluster: { getChildCount(): number }): L.DivIcon => {
+const createClusterIcon = (color: string, compact = false) => (cluster: { getChildCount(): number }): L.DivIcon => {
   const count = cluster.getChildCount();
-  const size = count < 10 ? 36 : count < 50 ? 42 : 50;
+  const size = (count < 10 ? 36 : count < 50 ? 42 : 50) - (compact ? 8 : 0);
   return L.divIcon({
-    html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};color:#fff;border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font:700 ${size > 40 ? 15 : 13}px Inter,sans-serif;">${count}</div>`,
+    html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};color:#fff;border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font:700 ${size > 40 ? 15 : compact ? 12 : 13}px Inter,sans-serif;">${count}</div>`,
     className: '',
     iconSize: [size, size],
   });
@@ -138,17 +138,17 @@ function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChang
     };
   }, []);
 
-  // Festivals and flea markets share one color (navy); orange is reserved for studios everywhere else on the site
+  // Festivals and flea markets share one color (logo blue); coral is reserved for studios everywhere else on the site
   const eventDotIcon = React.useMemo(() => L.divIcon({
     className: 'festival-dot-marker',
-    html: `<div style="width: 100%; height: 100%; border-radius: 50%; background: ${PLACE_TYPE_COLORS.event.fg};"></div>`,
-    iconSize: [18, 18],
-    iconAnchor: [9, 9],
-    popupAnchor: [0, -12],
+    html: `<div style="width: 100%; height: 100%; border-radius: 50%; background: ${PLACE_TYPE_COLORS.event.solid};"></div>`,
+    iconSize: [12, 12],
+    iconAnchor: [6, 6],
+    popupAnchor: [0, -9],
   }), []);
 
-  const workshopClusterIcon = React.useMemo(() => createClusterIcon(PLACE_TYPE_COLORS.workshop.fg), []);
-  const eventClusterIcon = React.useMemo(() => createClusterIcon(PLACE_TYPE_COLORS.event.fg), []);
+  const workshopClusterIcon = React.useMemo(() => createClusterIcon(PLACE_TYPE_COLORS.workshop.solid), []);
+  const eventClusterIcon = React.useMemo(() => createClusterIcon(PLACE_TYPE_COLORS.event.solid, true), []);
 
   const userLocationIcon = React.useMemo(() => L.divIcon({
     className: 'user-location-marker',
@@ -166,7 +166,7 @@ function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChang
             {placeLabel('workshop', locale)}
           </span>
           <span className={styles.legendItem}>
-            <span className={styles.legendDot} style={{ background: PLACE_TYPE_COLORS.event.fg }} />
+            <span className={styles.legendDot} style={{ background: PLACE_TYPE_COLORS.event.solid }} />
             {placeLabel('event', locale)}
           </span>
         </div>
@@ -194,8 +194,8 @@ function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChang
 
           <MarkerClusterGroup
             chunkedLoading
-            maxClusterRadius={50}
-            disableClusteringAtZoom={15}
+            maxClusterRadius={32}
+            disableClusteringAtZoom={12}
             showCoverageOnHover={false}
             iconCreateFunction={workshopClusterIcon}
           >
@@ -210,8 +210,8 @@ function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChang
 
           <MarkerClusterGroup
             chunkedLoading
-            maxClusterRadius={50}
-            disableClusteringAtZoom={15}
+            maxClusterRadius={60}
+            disableClusteringAtZoom={14}
             showCoverageOnHover={false}
             iconCreateFunction={eventClusterIcon}
           >
@@ -235,7 +235,7 @@ function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChang
                     일정: {market.date.replace(/20(\d{2})/g, '$1').replace(/-/g, '.')}
                   </div>
                   <button 
-                    style={{ marginTop: '8px', width: '100%', padding: '6px', background: PLACE_TYPE_COLORS.event.fg, color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+                    style={{ marginTop: '8px', width: '100%', padding: '6px', background: PLACE_TYPE_COLORS.event.solid, color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
                     onClick={(e) => {
                       e.stopPropagation();
                       if (onFleaMarketClick) onFleaMarketClick(market);

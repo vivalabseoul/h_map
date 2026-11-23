@@ -96,8 +96,8 @@ export default function FilterBar({
 
   const typeTabs: { key: PlaceTypeFilter; label: string; count?: number; dot?: string }[] = [
     { key: "all", label: placeLabel("all", locale), count: counts.workshop + counts.event },
-    { key: "workshop", label: placeLabel("workshop", locale), count: counts.workshop, dot: PLACE_TYPE_COLORS.workshop.fg },
-    { key: "event", label: placeLabel("event", locale), count: counts.event, dot: PLACE_TYPE_COLORS.event.fg },
+    { key: "workshop", label: placeLabel("workshop", locale), count: counts.workshop, dot: PLACE_TYPE_COLORS.workshop.solid },
+    { key: "event", label: placeLabel("event", locale), count: counts.event, dot: PLACE_TYPE_COLORS.event.solid },
   ];
 
   return (
