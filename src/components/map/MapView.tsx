@@ -102,16 +102,19 @@ function MapEvents({ onBoundsChanged }: { onBoundsChanged?: (bounds: { north: nu
   return null;
 }
 
-// Round count badge for grouped markers; bigger groups get a bigger, darker badge
-function createClusterIcon(cluster: { getChildCount(): number }): L.DivIcon {
+// Round count badge for grouped markers; bigger groups get a bigger badge.
+// Studios and events are clustered separately, each in its own color.
+const createClusterIcon = (color: string) => (cluster: { getChildCount(): number }): L.DivIcon => {
   const count = cluster.getChildCount();
   const size = count < 10 ? 36 : count < 50 ? 42 : 50;
   return L.divIcon({
-    html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:#ff6b35;color:#fff;border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font:700 ${size > 40 ? 15 : 13}px Inter,sans-serif;">${count}</div>`,
+    html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};color:#fff;border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font:700 ${size > 40 ? 15 : 13}px Inter,sans-serif;">${count}</div>`,
     className: '',
     iconSize: [size, size],
   });
-}
+};
+
+const WORKSHOP_CLUSTER_COLOR = '#ff6b35';
 
 function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChange, onMarkerClick, onFleaMarketClick, onBoundsChanged, userLocation, fitKey }: MapViewProps) {
   const { locale, t } = useLanguage();
@@ -144,6 +147,9 @@ function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChang
     iconAnchor: [9, 9],
     popupAnchor: [0, -12],
   }), []);
+
+  const workshopClusterIcon = React.useMemo(() => createClusterIcon(WORKSHOP_CLUSTER_COLOR), []);
+  const eventClusterIcon = React.useMemo(() => createClusterIcon(PLACE_TYPE_COLORS.event.fg), []);
 
   const userLocationIcon = React.useMemo(() => L.divIcon({
     className: 'user-location-marker',
@@ -192,7 +198,7 @@ function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChang
             maxClusterRadius={50}
             disableClusteringAtZoom={15}
             showCoverageOnHover={false}
-            iconCreateFunction={createClusterIcon}
+            iconCreateFunction={workshopClusterIcon}
           >
           {workshops.map((workshop) => (
             <WorkshopMarker
@@ -201,7 +207,15 @@ function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChang
               onClick={() => onMarkerClick(workshop)}
             />
           ))}
+          </MarkerClusterGroup>
 
+          <MarkerClusterGroup
+            chunkedLoading
+            maxClusterRadius={50}
+            disableClusteringAtZoom={15}
+            showCoverageOnHover={false}
+            iconCreateFunction={eventClusterIcon}
+          >
           {fleaMarkets.map((market) => {
             return (
               <Marker
