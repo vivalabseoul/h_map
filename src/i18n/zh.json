@@ -58,7 +58,8 @@
     "creator_notice_text": "创作者和市集协调员需经管理员审核名片等材料后，才会升级为相应等级。（审核通过前将先注册为普通会员）",
     "business_card_label": "上传名片（高清照片也会自动优化）",
     "business_card_desc1": "* 请上传清晰显示公司（或工坊/活动）名称、姓名和联系方式的名片照片。",
-    "business_card_desc2": "* 注册后，管理员会确认内容并批准等级。"
+    "business_card_desc2": "* 注册后，管理员会确认内容并批准等级。",
+    "error_email_exists": "该邮箱已注册。请直接登录或重置密码。"
   },
   "filters": {
     "all": "全部",

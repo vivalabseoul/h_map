@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Mail, Lock, Eye, EyeOff, User, Palette, Store } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
+import { EMAIL_EXISTS } from '@/lib/auth';
 
 export default function RegisterPage() {
   const { register } = useAuth();
@@ -128,6 +129,11 @@ export default function RegisterPage() {
       router.push('/');
     } catch (err: unknown) {
       const authErr = err as { message?: string };
+      if (authErr.message === EMAIL_EXISTS) {
+        setError(t('auth.error_email_exists'));
+        alert(t('auth.error_email_exists'));
+        return;
+      }
       setError(authErr.message || '가입에 실패했습니다. 이메일과 비밀번호를 다시 확인해 주세요.');
     } finally {
       setLoading(false);

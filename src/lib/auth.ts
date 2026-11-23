@@ -85,6 +85,9 @@ export async function signInWithEmail(email: string, password: string): Promise<
   return data.user;
 }
 
+/** Thrown by registerWithEmail when the email already has an account; the UI maps it to a localized message. */
+export const EMAIL_EXISTS = 'EMAIL_EXISTS';
+
 /**
  * Email/Password Registration
  */
@@ -112,7 +115,14 @@ export async function registerWithEmail(
         }
       }
     });
-    if (error) throw error;
+    if (error) {
+      if (/already\s+(been\s+)?registered|already exists/i.test(error.message)) throw new Error(EMAIL_EXISTS);
+      throw error;
+    }
+    // With email confirmation on, Supabase hides duplicates: it returns a fake user with no identities and no error
+    if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+      throw new Error(EMAIL_EXISTS);
+    }
     if (data.user) {
       // Create user as 'member' initially
       await ensureUserDocument(data.user, 'member');

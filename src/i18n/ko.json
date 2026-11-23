@@ -58,7 +58,8 @@
     "agree_privacy": "[필수] 개인정보 수집 및 이용에 동의합니다.",
     "view_details": "자세히 보기",
     "error_terms_required": "서비스 이용약관 및 개인정보 수집 이용에 모두 동의해야 합니다.",
-    "error_privacy_required": "개인정보 수집 및 이용에 동의해야 합니다."
+    "error_privacy_required": "개인정보 수집 및 이용에 동의해야 합니다.",
+    "error_email_exists": "이미 가입된 이메일입니다. 로그인하거나 비밀번호 찾기를 이용해 주세요."
   },
   "filters": {
     "all": "전체",
