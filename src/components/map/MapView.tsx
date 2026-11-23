@@ -114,7 +114,6 @@ const createClusterIcon = (color: string) => (cluster: { getChildCount(): number
   });
 };
 
-const WORKSHOP_CLUSTER_COLOR = '#ff6b35';
 
 function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChange, onMarkerClick, onFleaMarketClick, onBoundsChanged, userLocation, fitKey }: MapViewProps) {
   const { locale, t } = useLanguage();
@@ -139,7 +138,7 @@ function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChang
     };
   }, []);
 
-  // Festivals and flea markets share one color; blue is reserved for studios everywhere else on the site
+  // Festivals and flea markets share one color (navy); orange is reserved for studios everywhere else on the site
   const eventDotIcon = React.useMemo(() => L.divIcon({
     className: 'festival-dot-marker',
     html: `<div style="width: 100%; height: 100%; border-radius: 50%; background: ${PLACE_TYPE_COLORS.event.fg};"></div>`,
@@ -148,7 +147,7 @@ function MapContent({ workshops, fleaMarkets = [], selectedRegion, onRegionChang
     popupAnchor: [0, -12],
   }), []);
 
-  const workshopClusterIcon = React.useMemo(() => createClusterIcon(WORKSHOP_CLUSTER_COLOR), []);
+  const workshopClusterIcon = React.useMemo(() => createClusterIcon(PLACE_TYPE_COLORS.workshop.fg), []);
   const eventClusterIcon = React.useMemo(() => createClusterIcon(PLACE_TYPE_COLORS.event.fg), []);
 
   const userLocationIcon = React.useMemo(() => L.divIcon({
